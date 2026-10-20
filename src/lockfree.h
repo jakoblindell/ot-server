@@ -30,9 +30,14 @@ template <typename T, size_t CAPACITY>
 class LockfreePoolingAllocator : public std::allocator<T>
 {
 	public:
+		LockfreePoolingAllocator() = default;
+
 		template <typename U>
 		explicit constexpr LockfreePoolingAllocator(const U&) {}
 		typedef T value_type;
+
+		template <typename U>
+		struct rebind {typedef LockfreePoolingAllocator<U, CAPACITY> other;};
 
 		T* allocate(size_t) const {
 			T* p; // NOTE: p doesn't have to be initialized
