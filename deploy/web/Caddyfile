@@ -16,6 +16,9 @@
 	header {
 		Cross-Origin-Opener-Policy same-origin
 		Cross-Origin-Embedder-Policy require-corp
+		# Revalidate on every load so players get a new client release right
+		# away; unchanged files only cost a 304.
+		Cache-Control no-cache
 	}
 	encode zstd gzip
 	file_server
