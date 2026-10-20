@@ -91,8 +91,9 @@ In the login window: server = your hostname, port = 7171, client version = 792.
 
 ## Known issues
 
-- If the game connection fails (for example nothing listens on 443), the
-  client stops redrawing instead of showing an error. Reload the page.
+- Before client build d99fc01, a failed game connection (for example nothing
+  listening on 443) made the client stop redrawing. It now shows "Connection
+  Error" and returns to the character list.
 - The client logs "extended opcodes are not enabled". This is expected: it
   reports itself as a classic client for 7.80-7.92 so the server keeps to the
   standard protocol.
