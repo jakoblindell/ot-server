@@ -111,7 +111,9 @@ void ServicePort::onAccept(Connection_ptr connection, const boost::system::error
 		}
 
 		auto remote_ip = connection->getIP();
-		if (remote_ip != 0 && g_bans.acceptConnection(remote_ip)) {
+		// Connections from a trusted reverse proxy are checked per client
+		// once the WebSocket handshake reveals the forwarded address.
+		if (remote_ip != 0 && (Connection::isTrustedProxy(remote_ip) || g_bans.acceptConnection(remote_ip))) {
 			Service_ptr service = services.front();
 			if (service->is_single_socket()) {
 				connection->accept(service->make_protocol(connection));

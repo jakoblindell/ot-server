@@ -74,6 +74,10 @@ blockHeight = false
 dropItems = false
 -- Logging in as "King Tibianus" makes characters with players.fake_player = 1 log in over the next hour.
 fakePlayersEnabled = false
+-- Browser clients connect over WebSocket on the same ports. Behind a reverse
+-- proxy on this machine or a private network, take the client address from
+-- X-Forwarded-For (never enable this when the game ports are reachable directly).
+trustForwardedFor = false
 
 
 -- Character Rooking

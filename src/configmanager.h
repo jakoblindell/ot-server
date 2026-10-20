@@ -53,6 +53,7 @@ class ConfigManager
 			CORPSE_OWNER_ENABLED,
 			ROPE_SPOT_BLOCK,
 			FAKE_PLAYERS_ENABLED,
+			TRUST_FORWARDED_FOR,
 			LAST_BOOLEAN_CONFIG /* this must be the last one */
 		};
 

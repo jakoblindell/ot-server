@@ -97,7 +97,19 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		uint32_t getIP();
 
+		// Whether ip (network byte order) may supply X-Forwarded-For
+		static bool isTrustedProxy(uint32_t ip);
+
 	private:
+		using ReadHandler = std::function<void(const boost::system::error_code&)>;
+
+		void readBytes(uint8_t* buffer, size_t size, ReadHandler handler);
+		void readWebSocketFrames();
+		bool parseWebSocketFrames();
+		void parseWebSocketHandshake(const boost::system::error_code& error);
+		void onWebSocketHandshakeSent(const boost::system::error_code& error);
+		void readFirstHeader();
+
 		void parseHeader(const boost::system::error_code& error);
 		void parsePacket(const boost::system::error_code& error);
 
@@ -132,6 +144,19 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		bool connectionState;
 		bool receivedFirst;
+
+		// WebSocket transport (browser clients). Detected from the first bytes
+		// of the connection; the protocols above only ever see plain packets.
+		bool isWebSocket = false;
+		boost::asio::streambuf wsInput{256 * 1024}; // raw bytes read from the socket (capped)
+		std::vector<uint8_t> wsPayload;          // decoded payload not yet consumed
+		size_t wsPayloadPos = 0;
+		uint8_t* wsReadBuffer = nullptr;         // pending readBytes request
+		size_t wsReadSize = 0;
+		ReadHandler wsReadHandler;
+		std::string wsResponse;
+		uint8_t wsFrameHeader[4];
+		uint32_t forwardedIP = 0;
 };
 
 #endif

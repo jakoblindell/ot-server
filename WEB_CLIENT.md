@@ -6,20 +6,56 @@ and chat all work from Chromium.
 
 ## Pieces
 
+The server speaks WebSocket itself on its normal ports: a connection that
+starts with an HTTP upgrade request is handled as WebSocket, anything else as
+the classic TCP protocol, so desktop clients keep working. TLS is terminated
+by a reverse proxy (Caddy below).
+
 | Piece | Listens on | Notes |
 |---|---|---|
-| Sabrehaven (`tfs`) | `127.0.0.1:7171` (login), `127.0.0.1:7172` (game) | `bindOnlyGlobalAddress = true`, `ip = "127.0.0.1"` |
-| WebSocket bridge, login | public `:7171` (TLS) | forwards to `127.0.0.1:7171` |
-| WebSocket bridge, game | public `:443` (TLS) | forwards to `127.0.0.1:7172` |
-| Web server | public HTTPS | serves the client bundle with the headers below |
+| Sabrehaven (`tfs`) | `127.0.0.1:7171` (login), `127.0.0.1:7172` (game) | `bindOnlyGlobalAddress = true`, `trustForwardedFor = true` |
+| Reverse proxy, login | public `:7171` (TLS) | `wss://` to `127.0.0.1:7171` |
+| Reverse proxy, game | public `:443` (TLS) | `wss://` to `127.0.0.1:7172` |
+| Reverse proxy, web | public HTTPS | serves the client bundle with the headers below |
 
-The game bridge must be on **443**: the otclient browser build rewrites game
+The game proxy must be on **443**: the otclient browser build rewrites game
 port 7172 to 443 (`src/client/protocolgame.cpp`). If `gameProtocolPort` is
 anything other than 7172, the browser connects to that port unchanged.
 
 The browser reuses the hostname it logged in with for the game connection
 (the 7.92 character list can only carry an IPv4 address), so the TLS
 certificate only needs that hostname.
+
+`trustForwardedFor = true` makes the server take the client address from
+`X-Forwarded-For` when the connection comes from a loopback or private
+address, so connection flood limits, IP bans and `lastip` apply per player
+rather than to the proxy. Only enable it when the game ports are not reachable
+directly from the internet.
+
+Example Caddyfile:
+
+```
+game.example.com {
+	root * /srv/otclient-web
+	header {
+		Cross-Origin-Opener-Policy same-origin
+		Cross-Origin-Embedder-Policy require-corp
+	}
+	file_server
+}
+
+game.example.com:7171 {
+	reverse_proxy 127.0.0.1:7171
+}
+
+game.example.com:443 {
+	reverse_proxy 127.0.0.1:7172
+}
+```
+
+Note that the web client and the game connection both want port 443 on the
+same hostname; with Caddy, serve the page from a path or a second hostname
+(for example `play.example.com`) and keep `game.example.com:443` for the game.
 
 ## Client bundle
 
@@ -64,5 +100,3 @@ In the login window: server = your hostname, port = 7171, client version = 792.
 - The client logs "extended opcodes are not enabled". This is expected: it
   reports itself as a classic client for 7.80-7.92 so the server keeps to the
   standard protocol.
-- websockify starts one process per connection; fine for testing, not for
-  hundreds of players.
