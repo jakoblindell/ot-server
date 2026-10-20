@@ -1,0 +1,28 @@
+# DOMAIN: the hostname players use (default localhost).
+# TLS: "internal" for a self-signed certificate (local testing), or an email
+#      address to get a Let's Encrypt certificate for a public DOMAIN.
+# LOGIN_PORT: public port of the login server (default 7171).
+
+# Port 443 serves the web client and the game connection: WebSocket upgrades
+# go to the game server, everything else is the client bundle. (The browser
+# client connects to port 443 for game port 7172.)
+{$DOMAIN:localhost} {
+	tls {$TLS:internal}
+
+	@game header Upgrade websocket
+	reverse_proxy @game server:7172
+
+	root * /srv/web
+	header {
+		Cross-Origin-Opener-Policy same-origin
+		Cross-Origin-Embedder-Policy require-corp
+	}
+	encode zstd gzip
+	file_server
+}
+
+# Login server. LOGIN_PORT is the port players enter in the login window.
+{$DOMAIN:localhost}:{$LOGIN_PORT:7171} {
+	tls {$TLS:internal}
+	reverse_proxy server:7171
+}

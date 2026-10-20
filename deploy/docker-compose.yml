@@ -1,0 +1,72 @@
+# Sabrehaven with the browser client. From this directory:
+#   cp .env.example .env    # then edit it
+#   docker compose up -d --build
+#   ./create-account.sh 123456 secret "Character Name"
+name: sabrehaven
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: sabrehaven
+      MARIADB_USER: sabrehaven
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - db-data:/var/lib/mysql
+      # Run once, in this order, when the database volume is first created
+      - ../sabrehaven.sql:/docker-entrypoint-initdb.d/01-sabrehaven.sql:ro
+      - ./db/02-znote-schema.sql:/docker-entrypoint-initdb.d/02-znote-schema.sql:ro
+      - ../sabrehaven_znote.sql:/docker-entrypoint-initdb.d/03-sabrehaven-znote.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  server:
+    build:
+      context: ..
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: sabrehaven
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: sabrehaven
+      PUBLIC_IP: ${PUBLIC_IP:-127.0.0.1}
+      SERVER_NAME: ${SERVER_NAME:-}
+      MOTD: ${MOTD:-}
+    # Not published: only the proxy reaches the game ports (see trustForwardedFor)
+    expose:
+      - "7171"
+      - "7172"
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web/Dockerfile
+      args:
+        CLIENT_URL: ${CLIENT_URL:-https://github.com/jakoblindell/ot-client/releases/download/web-client-792-latest/otclient-web.zip}
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+      TLS: ${TLS:-internal}
+      LOGIN_PORT: ${LOGIN_PORT:-7171}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "${LOGIN_PORT:-7171}:${LOGIN_PORT:-7171}"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  db-data:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,10 @@
+.git
+build
+vc14
+tfs
+*.log
+deploy/.env
+SabrehavenOTClient/otclientv8.apk
+SabrehavenOTClient/layouts
+SabrehavenOTClient/modules
+SabrehavenOTClient/mods

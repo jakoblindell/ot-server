@@ -1,0 +1,36 @@
+#!/bin/sh
+# Creates an account with one character in the running compose database.
+#   ./create-account.sh ACCOUNT_NUMBER PASSWORD "Character Name" [premium days]
+# The character starts as a level 8 knight in Thais.
+set -eu
+
+if [ $# -lt 3 ]; then
+	echo "usage: $0 ACCOUNT_NUMBER PASSWORD \"Character Name\" [premium days]" >&2
+	exit 1
+fi
+
+account=$1
+password=$2
+name=$3
+premdays=${4:-0}
+
+case $account in
+	*[!0-9]*|'') echo "account number must be numeric" >&2; exit 1 ;;
+esac
+
+sql_quote() {
+	printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+}
+
+cd "$(dirname "$0")"
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' <<EOF
+INSERT INTO accounts (name, password, type, premdays, creation)
+VALUES ($account, SHA1($(sql_quote "$password")), 1, $premdays, UNIX_TIMESTAMP());
+
+INSERT INTO players (name, group_id, account_id, level, vocation, health, healthmax, experience,
+                     looktype, maglevel, mana, manamax, town_id, posx, posy, posz, cap, sex, conditions)
+VALUES ($(sql_quote "$name"), 1, LAST_INSERT_ID(), 8, 4, 185, 185, 4200,
+        128, 0, 35, 35, 1, 32369, 32241, 7, 470, 1, '');
+EOF
+
+echo "Created account $account with character $name."
