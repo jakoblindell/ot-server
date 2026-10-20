@@ -79,7 +79,13 @@ docker compose exec db sh -c 'mariadb-dump -u"$MARIADB_USER" -p"$MARIADB_PASSWOR
 
 The database lives in the `db-data` volume and survives restarts and
 rebuilds. The SQL files under `docker-entrypoint-initdb.d` only run when that
-volume is first created; `docker compose down -v` deletes it.
+volume is first created; `docker compose down -v` deletes it. When a new file
+is added to `deploy/db/`, apply it to an existing database by hand, for
+example:
+
+```sh
+docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' < db/04-powergamers.sql
+```
 
 ## Notes
 
