@@ -11,6 +11,8 @@ ropeSpotBlock = false
 showMonsterLoot = true
 blockHeight = true
 dropItems = false
+-- Logging in as "King Tibianus" makes characters with players.fake_player = 1 log in over the next hour.
+fakePlayersEnabled = false
 
 -- Combat settings
 -- NOTE: valid values for worldType are: "pvp", "no-pvp" and "pvp-enforced"

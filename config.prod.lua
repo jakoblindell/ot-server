@@ -72,6 +72,8 @@ maxMessageBuffer = 4
 showMonsterLoot = false
 blockHeight = false
 dropItems = false
+-- Logging in as "King Tibianus" makes characters with players.fake_player = 1 log in over the next hour.
+fakePlayersEnabled = false
 
 
 -- Character Rooking

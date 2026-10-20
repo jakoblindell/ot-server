@@ -84,6 +84,7 @@ bool ConfigManager::load()
 	boolean[ROPE_SPOT_BLOCK] = getGlobalBoolean(L, "ropeSpotBlock", false);
 	boolean[DROP_ITEMS] = getGlobalBoolean(L, "dropItems", false);
 	boolean[DISTANCE_WEAPONS_DROP_ON_GROUND] = getGlobalBoolean(L, "distanceWeaponsDropOnGround", true);
+	boolean[FAKE_PLAYERS_ENABLED] = getGlobalBoolean(L, "fakePlayersEnabled", false);
 
 	string[DEFAULT_PRIORITY] = getGlobalString(L, "defaultPriority", "high");
 	string[SERVER_NAME] = getGlobalString(L, "serverName", "");

@@ -1693,6 +1693,7 @@ void LuaScriptInterface::registerFunctions()
 	registerEnumIn("configKeys", ConfigManager::UH_TRAP)
 	registerEnumIn("configKeys", ConfigManager::ROPE_SPOT_BLOCK)
 	registerEnumIn("configKeys", ConfigManager::DROP_ITEMS)
+	registerEnumIn("configKeys", ConfigManager::FAKE_PLAYERS_ENABLED)
 	registerEnumIn("configKeys", ConfigManager::CLIENT_VERSION)
 	
 	// random

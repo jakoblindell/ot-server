@@ -319,7 +319,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	//Update premium days
 	Game::updatePremium(account);
 
-	if (characterName == "King Tibianus") {
+	if (characterName == "King Tibianus" && g_config.getBoolean(ConfigManager::FAKE_PLAYERS_ENABLED)) {
 		std::ostringstream query;
 		Database* db = Database::getInstance();
 		query << "SELECT `name`, `account_id` FROM `players` WHERE `fake_player` = 1 group by `account_id` limit 197";

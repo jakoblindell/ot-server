@@ -52,6 +52,7 @@ class ConfigManager
 			DISTANCE_WEAPONS_DROP_ON_GROUND,
 			CORPSE_OWNER_ENABLED,
 			ROPE_SPOT_BLOCK,
+			FAKE_PLAYERS_ENABLED,
 			LAST_BOOLEAN_CONFIG /* this must be the last one */
 		};
 
