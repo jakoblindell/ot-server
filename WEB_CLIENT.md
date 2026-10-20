@@ -15,8 +15,7 @@ by a reverse proxy (Caddy below).
 |---|---|---|
 | Sabrehaven (`tfs`) | `127.0.0.1:7171` (login), `127.0.0.1:7172` (game) | `bindOnlyGlobalAddress = true`, `trustForwardedFor = true` |
 | Reverse proxy, login | public `:7171` (TLS) | `wss://` to `127.0.0.1:7171` |
-| Reverse proxy, game | public `:443` (TLS) | `wss://` to `127.0.0.1:7172` |
-| Reverse proxy, web | public HTTPS | serves the client bundle with the headers below |
+| Reverse proxy, game + web | public `:443` (TLS) | WebSocket upgrades to `127.0.0.1:7172`, other requests serve the client bundle |
 
 The game proxy must be on **443**: the otclient browser build rewrites game
 port 7172 to 443 (`src/client/protocolgame.cpp`). If `gameProtocolPort` is
@@ -32,10 +31,15 @@ address, so connection flood limits, IP bans and `lastip` apply per player
 rather than to the proxy. Only enable it when the game ports are not reachable
 directly from the internet.
 
-Example Caddyfile:
+Example Caddyfile. Port 443 serves both the client page and the game
+connection: WebSocket upgrade requests go to the game server, everything else
+to the files.
 
 ```
 game.example.com {
+	@game header Upgrade websocket
+	reverse_proxy @game 127.0.0.1:7172
+
 	root * /srv/otclient-web
 	header {
 		Cross-Origin-Opener-Policy same-origin
@@ -47,15 +51,7 @@ game.example.com {
 game.example.com:7171 {
 	reverse_proxy 127.0.0.1:7171
 }
-
-game.example.com:443 {
-	reverse_proxy 127.0.0.1:7172
-}
 ```
-
-Note that the web client and the game connection both want port 443 on the
-same hostname; with Caddy, serve the page from a path or a second hostname
-(for example `play.example.com`) and keep `game.example.com:443` for the game.
 
 ## Client bundle
 
