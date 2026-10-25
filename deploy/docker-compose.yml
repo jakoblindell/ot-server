@@ -87,9 +87,15 @@ services:
       SERVER_NAME: ${SERVER_NAME:-Elderwood}
       TZ: ${TZ:-Europe/Stockholm}
       DEFAULT_THEME: ${DEFAULT_THEME:-gold}
+      GAME_DATA: /game/data
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
       # Behind Caddy: the page's public address and the player's address
       ORIGIN: https://${DOMAIN:-localhost}
       ADDRESS_HEADER: X-Real-IP
+    volumes:
+      # Monster, NPC and spell names (reserved for characters)
+      - ../data:/game/data:ro
     expose:
       - "3000"
 

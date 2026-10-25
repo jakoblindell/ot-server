@@ -9,7 +9,7 @@ export const SESSION_COOKIE = 'ew_session';
 const SHORT_SESSION_HOURS = 12;
 const LONG_SESSION_DAYS = 30;
 
-export type SessionAccount = { id: number; name: string; type: number; premdays: number; email: string };
+export type SessionAccount = { id: number; name: string; type: number; premdays: number; lastday: number; email: string; creation: number };
 
 function tokenHash(token: string) {
 	return createHash('sha256').update(token).digest('hex');
@@ -37,7 +37,7 @@ export async function getSessionAccount(cookies: Cookies): Promise<SessionAccoun
 	const token = cookies.get(SESSION_COOKIE);
 	if (!token) return null;
 	const account = await queryOne<SessionAccount>(
-		`SELECT a.id, a.name, a.type, a.premdays, a.email
+		`SELECT a.id, a.name, a.type, a.premdays, a.lastday, a.email, a.creation
 		 FROM site_sessions s JOIN accounts a ON a.id = s.account_id
 		 WHERE s.id = :id AND s.expires_at > UTC_TIMESTAMP()`,
 		{ id: tokenHash(token) }

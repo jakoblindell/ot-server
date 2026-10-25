@@ -61,6 +61,8 @@ h3 {
 
 /* Parchment card with a header bar */
 .card {
+	/* light native controls (checkboxes, radios) on parchment */
+	color-scheme: light;
 	background: var(--paper);
 	color: var(--paper-text);
 	border-radius: 6px;

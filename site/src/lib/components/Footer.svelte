@@ -14,7 +14,7 @@
 
 <footer>
 	<div class="wrap row">
-		<span>{serverName} · A fan-run server, not affiliated with CipSoft.</span>
+		<span>{serverName} · A fan-run server, not affiliated with CipSoft. · <a href="/rules">Rules</a></span>
 		<form method="GET" class="themes">
 			<label for="theme">Colours</label>
 			<select id="theme" name="theme" value={theme} onchange={choose}>
@@ -49,6 +49,10 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
+	}
+
+	a {
+		color: var(--text-soft);
 	}
 
 	select {

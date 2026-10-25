@@ -11,7 +11,8 @@
 
 	const links = [
 		{ href: '/', label: 'News' },
-		{ href: '/download', label: 'Download' }
+		{ href: '/download', label: 'Download' },
+		{ href: '/rules', label: 'Rules' }
 	];
 </script>
 

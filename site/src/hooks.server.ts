@@ -1,4 +1,5 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
+import { deleteDueCharacters } from '$lib/server/accounts';
 import { migrate } from '$lib/server/migrate';
 import { getSessionAccount, removeExpiredSessions } from '$lib/server/sessions';
 import { getSettings } from '$lib/server/settings';
@@ -7,8 +8,12 @@ import { findTheme, THEME_COOKIE, themeIds } from '$lib/themes';
 
 export const init: ServerInit = async () => {
 	await migrate();
-	await removeExpiredSessions();
-	setInterval(() => removeExpiredSessions().catch(console.error), 3600_000).unref();
+	const cleanUp = async () => {
+		await removeExpiredSessions();
+		await deleteDueCharacters();
+	};
+	await cleanUp();
+	setInterval(() => cleanUp().catch(console.error), 3600_000).unref();
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
