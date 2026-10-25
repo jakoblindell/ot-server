@@ -41,8 +41,10 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: sabrehaven
       PUBLIC_IP: ${PUBLIC_IP:-127.0.0.1}
-      SERVER_NAME: ${SERVER_NAME:-}
+      SERVER_NAME: ${SERVER_NAME:-Elderwood}
       MOTD: ${MOTD:-}
+      # Server time: the daily server save happens at 08:00 in this zone
+      TZ: ${TZ:-Europe/Stockholm}
       MAX_PACKETS_PER_SECOND: ${MAX_PACKETS_PER_SECOND:-25}
     # Not published: only the proxy reaches the game ports (see trustForwardedFor)
     expose:
@@ -68,6 +70,29 @@ services:
       - ./backup.sh:/backup.sh:ro
       - ./backups:/backups
 
+  # The website: account creation, highscores, admin (site/)
+  site:
+    build:
+      context: ../site
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: sabrehaven
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: sabrehaven
+      GAME_HOST: server
+      SERVER_NAME: ${SERVER_NAME:-Elderwood}
+      TZ: ${TZ:-Europe/Stockholm}
+      DEFAULT_THEME: ${DEFAULT_THEME:-gold}
+      # Behind Caddy: the page's public address and the player's address
+      ORIGIN: https://${DOMAIN:-localhost}
+      ADDRESS_HEADER: X-Real-IP
+    expose:
+      - "3000"
+
   web:
     build:
       context: ..
@@ -77,6 +102,7 @@ services:
     restart: unless-stopped
     depends_on:
       - server
+      - site
     environment:
       DOMAIN: ${DOMAIN:-localhost}
       TLS: ${TLS:-internal}

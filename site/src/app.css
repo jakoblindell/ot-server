@@ -1,0 +1,323 @@
+/* Shared styles from the Claude Design boards. Colours only through the
+   scheme tokens (src/lib/themes.ts). */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--bg);
+	color-scheme: dark;
+}
+
+:root[data-theme='scroll'] {
+	color-scheme: light;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family: 'Alegreya Sans', system-ui, sans-serif;
+	font-size: 17px;
+	line-height: 1.5;
+}
+
+a {
+	color: var(--danger);
+}
+
+a:hover {
+	color: var(--danger-dark);
+}
+
+h1,
+h2,
+h3 {
+	font-family: 'IM Fell English SC', serif;
+	font-weight: 400;
+	margin: 0;
+}
+
+.pixel {
+	font-family: 'Pixelify Sans', monospace;
+}
+
+.wrap {
+	max-width: 1240px;
+	margin: 0 auto;
+	padding-left: 24px;
+	padding-right: 24px;
+}
+
+@media (max-width: 520px) {
+	.wrap {
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+}
+
+/* Parchment card with a header bar */
+.card {
+	background: var(--paper);
+	color: var(--paper-text);
+	border-radius: 6px;
+	box-shadow:
+		0 0 0 1px var(--paper-muted),
+		0 0 0 4px var(--surface),
+		0 0 0 5px var(--border-strong);
+	overflow: hidden;
+}
+
+.card-head {
+	background: var(--head);
+	padding: 10px 20px;
+	border-bottom: 2px solid var(--head-edge);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.card-head h1,
+.card-head h2 {
+	color: var(--head-text);
+	font-size: 26px;
+}
+
+.card-head a {
+	color: var(--hero-soft);
+	font-size: 15px;
+	font-weight: 500;
+}
+
+.card-body {
+	padding: 24px 28px 28px;
+}
+
+/* Dark side panel */
+.panel {
+	background: var(--surface);
+	border: 1px solid var(--border-strong);
+	border-radius: 6px;
+	padding: 24px;
+}
+
+.panel h2 {
+	color: var(--accent);
+	font-size: 26px;
+}
+
+/* Buttons */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	min-height: 48px;
+	padding: 10px 22px;
+	border-radius: 4px;
+	font: inherit;
+	font-weight: 800;
+	font-size: 17px;
+	text-decoration: none;
+	cursor: pointer;
+	background: var(--accent);
+	color: var(--accent-text);
+	border: 2px solid var(--accent-border);
+	box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+	color: var(--accent-text);
+	filter: brightness(1.06);
+}
+
+.button.big {
+	min-height: 56px;
+	padding: 14px 30px;
+	font-size: 18px;
+	border-color: var(--accent-light);
+	box-shadow:
+		0 0 0 2px var(--accent-dark),
+		inset 0 -4px 0 rgba(0, 0, 0, 0.22);
+}
+
+.button.ghost {
+	background: transparent;
+	color: var(--text-bright);
+	border-color: var(--paper-muted);
+	box-shadow: none;
+	font-weight: 700;
+}
+
+.card .button.ghost {
+	color: var(--head);
+	border-color: var(--head);
+}
+
+.button.wide {
+	width: 100%;
+}
+
+/* Forms on parchment */
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-weight: 700;
+	font-size: 15px;
+}
+
+.field input,
+.field select,
+.field textarea {
+	min-height: 48px;
+	background: var(--input-bg);
+	border: 2px solid var(--input-border);
+	border-radius: 4px;
+	color: var(--paper-text);
+	padding: 0 14px;
+	font: inherit;
+	font-weight: 400;
+	font-size: 17px;
+}
+
+.field textarea {
+	padding: 10px 14px;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+	outline: 3px solid var(--accent);
+	outline-offset: 1px;
+}
+
+.field .hint {
+	font-weight: 400;
+	font-size: 14px;
+	color: var(--paper-muted);
+}
+
+.check {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 15px;
+	min-height: 44px;
+}
+
+.check input {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--head);
+}
+
+/* Messages on parchment */
+.notice {
+	border-radius: 4px;
+	padding: 12px 16px;
+	font-size: 16px;
+	border: 2px solid var(--paper-muted);
+	background: var(--input-bg);
+}
+
+.notice.error {
+	border-color: var(--danger);
+	color: var(--danger);
+	font-weight: 700;
+}
+
+/* Status strip (home, admin) */
+.stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 1px;
+	background: var(--border);
+	border: 1px solid var(--border-strong);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.stat {
+	background: var(--surface);
+	padding: 16px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.stat .label {
+	font-size: 13px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+.stat .value {
+	font-family: 'Pixelify Sans', monospace;
+	font-size: 22px;
+	color: var(--text-bright);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.stat .value small {
+	font-size: 14px;
+	color: var(--text-muted);
+}
+
+.dot {
+	width: 10px;
+	height: 10px;
+	display: inline-block;
+	background: var(--online);
+}
+
+.dot.off {
+	background: var(--danger);
+}
+
+/* Tables on parchment */
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table th {
+	text-align: left;
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--paper-muted);
+	padding: 8px 12px;
+	border-bottom: 2px solid var(--paper-rule);
+}
+
+.table td {
+	padding: 10px 12px;
+	border-bottom: 1px dashed var(--paper-rule);
+}
+
+.table tr:last-child td {
+	border-bottom: 0;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}

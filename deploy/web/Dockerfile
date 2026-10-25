@@ -12,8 +12,9 @@ COPY --from=caddy-build /usr/bin/caddy /usr/bin/caddy
 ARG CLIENT_URL=https://github.com/jakoblindell/ot-client/releases/download/web-client-792-latest/otclient-web.zip
 ADD ${CLIENT_URL} /tmp/otclient-web.zip
 
-WORKDIR /srv/web
-RUN unzip -q /tmp/otclient-web.zip -d /srv/web \
+# The client is served under /play/ (the website has the rest)
+WORKDIR /srv/web/play
+RUN unzip -q /tmp/otclient-web.zip -d /srv/web/play \
     && rm /tmp/otclient-web.zip \
     && sed -i 's|<script async src=otclient.js></script>|<script src=client-config.js></script><script src=things.js></script><script async src=otclient.js></script>|' otclient.html \
     && grep -q 'src=things.js' otclient.html \
@@ -24,7 +25,7 @@ COPY deploy/web/client-config.js ./client-config.js
 # Installing as an app: manifest, icons, service worker (deploy/web/app)
 COPY deploy/web/app ./app
 COPY deploy/web/sw.js ./sw.js
-RUN sed -i 's|<title>Loading</title>|<title>Elderwood</title><link rel=manifest href=app/manifest.webmanifest><link rel=icon href=app/icon-192.png><link rel=apple-touch-icon href=app/apple-touch-icon.png><meta name=theme-color content=#000000><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black><meta name=apple-mobile-web-app-title content=Sabrehaven><script src=app/app.js></script>|' otclient.html \
+RUN sed -i 's|<title>Loading</title>|<title>Elderwood</title><link rel=manifest href=app/manifest.webmanifest><link rel=icon href=app/icon-192.png><link rel=apple-touch-icon href=app/apple-touch-icon.png><meta name=theme-color content=#000000><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black><meta name=apple-mobile-web-app-title content=Elderwood><script src=app/app.js></script>|' otclient.html \
     && grep -q 'app/manifest.webmanifest' otclient.html
 COPY SabrehavenOTClient/data/things/792 ./things/792
 COPY deploy/web/Caddyfile /etc/caddy/Caddyfile

@@ -120,7 +120,7 @@ defaultPriority = "high"
 startupDatabaseOptimization = true
 
 -- Status server information
-ownerName = "Erikas"
+ownerName = ""
 ownerEmail = ""
-url = "https://tibianus.com/"
-location = "Poland"
+url = ""
+location = ""

@@ -28,7 +28,7 @@ self.addEventListener("fetch", function (event) {
         return caches.match(OFFLINE_PAGE);
       })
     );
-  } else if (new URL(event.request.url).pathname === "/app/icon-192.png") {
+  } else if (event.request.url === new URL("app/icon-192.png", self.registration.scope).href) {
     // the offline page's icon
     event.respondWith(
       fetch(event.request).catch(function () {
