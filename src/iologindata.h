@@ -32,8 +32,14 @@ class IOLoginData
 		static Account loadAccount(uint32_t accno);
 		static bool saveAccount(const Account& acc);
 
-		static bool loginserverAuthentication(uint32_t accountName, const std::string& password, Account& account);
-		static uint32_t gameworldAuthentication(uint32_t accountName, const std::string& password, std::string& characterName);
+		// The account's id when the password is right, 0 otherwise. Slow by
+		// design: runs on a password thread (see passwords.h).
+		static uint32_t authenticate(const std::string& accountName, const std::string& password);
+		// The account and its characters, for the character list
+		static bool loadAccountWithCharacters(uint32_t accountId, Account& account);
+		// Whether the character belongs to the account and can log in; sets
+		// the name's exact spelling
+		static bool canUseCharacter(uint32_t accountId, std::string& characterName);
 
 		static AccountType_t getAccountType(uint32_t accountId);
 		static void setAccountType(uint32_t accountId, AccountType_t accountType);

@@ -15,7 +15,7 @@ Services = {
 
 -- Servers accept http login url, websocket login url or ip:port:version
 Servers = {
-  Tibianus = "127.0.0.1:7171:792"
+  Elderwood = "127.0.0.1:7171:792"
 }
 
 --Server = "ws://otclient.ovh:3000/"

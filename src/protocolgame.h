@@ -60,6 +60,8 @@ class ProtocolGame final : public Protocol
 		explicit ProtocolGame(Connection_ptr connection) : Protocol(connection) {}
 
 		void login(const std::string& name, uint32_t accnumber, OperatingSystem_t operatingSystem, bool isFake);
+		// After the password check: checks the character and logs it in
+		void enterGame(uint32_t accountId, std::string characterName, OperatingSystem_t operatingSystem);
 		void logout(bool displayEffect, bool forced);
 		// Tells the client why it is being disconnected (shown like a login
 		// error); a client that gets this does not reconnect on its own

@@ -232,6 +232,10 @@ void mainLoader(int, char*[], ServiceManager* services)
 		startupErrorMessage("The database you have specified in config.lua is empty, please import the schema.sql to your database.");
 		return;
 	}
+	if (!DatabaseManager::updateAccountColumns()) {
+		startupErrorMessage("Unable to update the accounts table.");
+		return;
+	}
 	g_databaseTasks.start();
 
 	if (g_config.getBoolean(ConfigManager::OPTIMIZE_DATABASE) && !DatabaseManager::optimizeTables()) {

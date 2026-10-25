@@ -1,7 +1,7 @@
 {
-  "name": "Sabrehaven",
-  "short_name": "Sabrehaven",
-  "description": "Sabrehaven, a Tibia 7.92 server, in the browser.",
+  "name": "Elderwood",
+  "short_name": "Elderwood",
+  "description": "Elderwood, a classic Tibia 7.92 world, in the browser.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

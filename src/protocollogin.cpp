@@ -26,6 +26,7 @@
 
 #include "configmanager.h"
 #include "iologindata.h"
+#include "passwords.h"
 #include "ban.h"
 #include "game.h"
 
@@ -43,11 +44,11 @@ void ProtocolLogin::disconnectClient(const std::string& message, uint16_t versio
 	disconnect();
 }
 
-void ProtocolLogin::getCharacterList(uint32_t accountNumber, const std::string& password, uint16_t version)
+void ProtocolLogin::getCharacterList(uint32_t accountId, uint16_t version)
 {
 	Account account;
-	if (!IOLoginData::loginserverAuthentication(accountNumber, password, account)) {
-		disconnectClient("Accountnumber or password is not correct.", version);
+	if (accountId == 0 || !IOLoginData::loadAccountWithCharacters(accountId, account)) {
+		disconnectClient("Account name or password is not correct.", version);
 		return;
 	}
 
@@ -170,9 +171,11 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	uint32_t accountNumber = msg.get<uint32_t>();
-	if (!accountNumber) {
-		disconnectClient("Invalid account number.", version);
+	// The browser client sends the account name as text; 7.92 desktop clients
+	// can only send a number, which is used as the name
+	std::string accountName = connection->isWebSocketConnection() ? msg.getString() : std::to_string(msg.get<uint32_t>());
+	if (accountName.empty() || accountName == "0") {
+		disconnectClient("Invalid account name.", version);
 		return;
 	}
 
@@ -183,7 +186,13 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 	}
 
 	auto thisPtr = std::static_pointer_cast<ProtocolLogin>(shared_from_this());
-	g_dispatcher.addTask(createTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, accountNumber, password, version)));
+	bool queued = addPasswordCheck([thisPtr, accountName, password, version]() {
+		uint32_t accountId = IOLoginData::authenticate(accountName, password);
+		g_dispatcher.addTask(createTask(std::bind(&ProtocolLogin::getCharacterList, thisPtr, accountId, version)));
+	});
+	if (!queued) {
+		disconnectClient("Too many players are logging in right now.\nPlease try again in a moment.", version);
+	}
 }
 
 

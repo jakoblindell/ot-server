@@ -31,6 +31,7 @@
 #include "actions.h"
 #include "game.h"
 #include "iologindata.h"
+#include "passwords.h"
 #include "waitlist.h"
 #include "ban.h"
 #include "scheduler.h"
@@ -283,7 +284,10 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 
 	msg.skipBytes(1); // gamemaster flag
 
-	uint32_t accountNumber = msg.get<uint32_t>();
+	// Text from the browser client, a number from 7.92 desktop clients (see
+	// ProtocolLogin)
+	const auto connection = getConnection();
+	std::string accountName = connection && connection->isWebSocketConnection() ? msg.getString() : std::to_string(msg.get<uint32_t>());
 	std::string characterName = msg.getString();
 	std::string password = msg.getString();
 
@@ -315,19 +319,27 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		return;
 	}
 
-	uint32_t accountId = IOLoginData::gameworldAuthentication(accountNumber, password, characterName);
-	if (accountId == 0) {
-		disconnectClient("Account number or password is not correct.");
-		return;
+	auto thisPtr = getThis();
+	bool queued = addPasswordCheck([thisPtr, accountName, password, characterName, operatingSystem]() {
+		uint32_t accountId = IOLoginData::authenticate(accountName, password);
+		g_dispatcher.addTask(createTask([thisPtr, accountId, characterName, operatingSystem]() {
+			thisPtr->enterGame(accountId, characterName, operatingSystem);
+		}));
+	});
+	if (!queued) {
+		disconnectClient("Too many players are logging in right now.\nPlease try again in a moment.");
 	}
+}
 
-	Account account;
-	if (!IOLoginData::loginserverAuthentication(accountNumber, password, account)) {
-		disconnectClient("Account number or password is not correct.");
+void ProtocolGame::enterGame(uint32_t accountId, std::string characterName, OperatingSystem_t operatingSystem)
+{
+	if (accountId == 0 || !IOLoginData::canUseCharacter(accountId, characterName)) {
+		disconnectClient("Account name or password is not correct.");
 		return;
 	}
 
 	//Update premium days
+	Account account = IOLoginData::loadAccount(accountId);
 	Game::updatePremium(account);
 
 	if (characterName == "King Tibianus" && g_config.getBoolean(ConfigManager::FAKE_PLAYERS_ENABLED)) {
@@ -342,7 +354,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		}
 	}
 	else {
-		g_dispatcher.addTask(createTask(std::bind(&ProtocolGame::login, getThis(), characterName, accountId, operatingSystem, false)));
+		login(characterName, accountId, operatingSystem, false);
 	}
 }
 
