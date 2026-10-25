@@ -82,6 +82,11 @@ bool Player::setVocation(uint16_t vocId)
 		condition->setParam(CONDITION_PARAM_MANAGAIN, vocation->getManaGainAmount());
 		condition->setParam(CONDITION_PARAM_MANATICKS, vocation->getManaGainTicks() * 1000);
 	}
+
+	// a promotion
+	if (client) {
+		client->sendVocation();
+	}
 	return true;
 }
 

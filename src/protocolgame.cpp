@@ -352,6 +352,23 @@ void ProtocolGame::onConnect()
 
 }
 
+// Extended opcode (0x32) the browser client reads the vocation from
+static constexpr uint8_t EXTENDED_OPCODE_VOCATION = 100;
+
+void ProtocolGame::sendVocation()
+{
+	const auto connection = getConnection();
+	if (!player || !connection || !connection->isWebSocketConnection()) {
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(EXTENDED_OPCODE_VOCATION);
+	msg.addString(std::to_string(player->getVocationId()));
+	writeToOutputBuffer(msg);
+}
+
 void ProtocolGame::sendSessionEnd(const std::string& message)
 {
 	auto output = OutputMessagePool::getOutputMessage();
@@ -1704,6 +1721,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	sendVIPEntries();
 
 	player->sendIcons();
+	sendVocation();
 }
 
 void ProtocolGame::sendMoveCreature(const Creature* creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)

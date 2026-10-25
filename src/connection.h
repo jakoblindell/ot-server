@@ -89,6 +89,10 @@ class Connection : public std::enable_shared_from_this<Connection>
 		friend class ConnectionManager;
 
 		void close(bool force = false);
+		// A browser client (WebSocket transport) rather than a classic one
+		bool isWebSocketConnection() const {
+			return isWebSocket;
+		}
 		// Used by protocols that require server to send first
 		void accept(Protocol_ptr protocol);
 		void accept();
