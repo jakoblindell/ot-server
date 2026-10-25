@@ -72,9 +72,12 @@ bool equalStrings(const std::string& a, const std::string& b)
 	       CryptoPP::VerifyBufsEqual(reinterpret_cast<const uint8_t*>(a.data()), reinterpret_cast<const uint8_t*>(b.data()), a.size());
 }
 
-std::mutex checksLock;
-std::condition_variable checksSignal;
-std::deque<std::function<void()>> waitingChecks;
+// Never destroyed: the password threads wait on these until the process
+// ends, and destroying a condition variable at exit waits for its waiters
+// (the server would hang after shutting down)
+std::mutex& checksLock = *new std::mutex;
+std::condition_variable& checksSignal = *new std::condition_variable;
+std::deque<std::function<void()>>& waitingChecks = *new std::deque<std::function<void()>>;
 bool threadsStarted = false;
 
 void runChecks()
