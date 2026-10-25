@@ -21,6 +21,8 @@ export const config = {
 	gameData: env.GAME_DATA || '../data',
 	/** The 7.92 client assets (Tibia.dat, Tibia.spr), for outfit pictures */
 	gameAssets: env.GAME_ASSETS || '../SabrehavenOTClient/data/things/792',
+	/** The game-files volume: the server's editable files (deploy/game-files.sh) */
+	gameFiles: env.GAME_FILES || '/srv/game-files',
 	/** Database dumps of the backup service (read-only), for the dashboard */
 	backupsDir: env.BACKUPS_DIR || '../deploy/backups',
 	/** Cloudflare Turnstile; without keys the check is skipped (development) */
