@@ -91,7 +91,7 @@
 			<div class="character">
 				<div class="outfit">
 					<img
-						src="/outfits/{sex === 'female' ? 136 : 128}.png"
+						src="/outfit/{sex === 'female' ? 136 : 128}-78-69-58-76.png"
 						alt="{sex === 'female' ? 'Female' : 'Male'} citizen outfit"
 						width="64"
 						height="64"
@@ -230,6 +230,8 @@
 	.outfit img {
 		width: 128px;
 		height: 128px;
+		object-fit: contain;
+		padding: 8px;
 		image-rendering: pixelated;
 	}
 

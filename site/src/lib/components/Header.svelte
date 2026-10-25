@@ -11,6 +11,10 @@
 
 	const links = [
 		{ href: '/', label: 'News' },
+		{ href: '/highscores', label: 'Highscores' },
+		{ href: '/characters', label: 'Characters' },
+		{ href: '/online', label: 'Online' },
+		{ href: '/guilds', label: 'Guilds' },
 		{ href: '/download', label: 'Download' },
 		{ href: '/rules', label: 'Rules' }
 	];
@@ -27,14 +31,18 @@
 		</a>
 		<nav aria-label="Main">
 			{#each links as link (link.href)}
-				<a href={link.href} aria-current={page.url.pathname === link.href ? 'page' : undefined}>{link.label}</a>
+				<a
+					href={link.href}
+					aria-current={(link.href === '/' ? page.url.pathname === '/' || page.url.pathname.startsWith('/news') : page.url.pathname.startsWith(link.href))
+						? 'page'
+						: undefined}>{link.label}</a>
 			{/each}
 		</nav>
 		<div class="actions">
-			<span class="badge pixel" class:off={!online}>
+			<a class="badge pixel" class:off={!online} href="/online">
 				<span class="dot" class:off={!online}></span>
 				{online ? `${playersOnline} online` : 'Offline'}
-			</span>
+			</a>
 			{#if loggedIn}
 				<a class="outline" href="/account">My account</a>
 			{:else}
@@ -114,6 +122,7 @@
 	}
 
 	.badge {
+		text-decoration: none;
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;

@@ -158,8 +158,8 @@ export async function checkRecoveryKey(accountName: string, key: string) {
 }
 
 export async function siteAccount(accountId: number) {
-	return queryOne<{ recovery_key_created: Date | null; free_premium_at: Date | null }>(
-		'SELECT recovery_key_created, free_premium_at FROM site_accounts WHERE account_id = :accountId',
+	return queryOne<{ recovery_key_created: Date | null; free_premium_at: Date | null; show_characters: number }>(
+		'SELECT recovery_key_created, free_premium_at, show_characters FROM site_accounts WHERE account_id = :accountId',
 		{ accountId }
 	);
 }
@@ -207,4 +207,13 @@ export async function addFreePremiumDay(accountId: number) {
 		await connection.execute('UPDATE accounts SET premdays = ?, lastday = ? WHERE id = ?', [premdays + 1, lastday, accountId]);
 		return true;
 	});
+}
+
+/** Whether the account's characters list each other on their public pages */
+export async function setShowCharacters(accountId: number, show: boolean) {
+	await execute(
+		`INSERT INTO site_accounts (account_id, show_characters) VALUES (:accountId, :show)
+		 ON DUPLICATE KEY UPDATE show_characters = :show`,
+		{ accountId, show: show ? 1 : 0 }
+	);
 }

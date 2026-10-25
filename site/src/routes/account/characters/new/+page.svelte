@@ -17,7 +17,7 @@
 	{:else}
 		<form class="body" method="POST">
 			<div class="outfit">
-				<img src="/outfits/{sex === 'female' ? 136 : 128}.png" alt="" width="64" height="64" />
+				<img src="/outfit/{sex === 'female' ? 136 : 128}-78-69-58-76.png" alt="" width="64" height="64" />
 			</div>
 			<div class="form fields">
 				{#if form?.error}<p class="notice error" role="alert">{form.error}</p>{/if}
@@ -59,6 +59,8 @@
 	.outfit img {
 		width: 128px;
 		height: 128px;
+		object-fit: contain;
+		padding: 8px;
 		image-rendering: pixelated;
 	}
 
