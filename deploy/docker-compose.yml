@@ -89,6 +89,7 @@ services:
       DEFAULT_THEME: ${DEFAULT_THEME:-gold}
       GAME_DATA: /game/data
       GAME_ASSETS: /game/things
+      BACKUPS_DIR: /backups
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
       # Behind Caddy: the page's public address and the player's address
@@ -99,6 +100,8 @@ services:
       - ../data:/game/data:ro
       # Tibia.dat/Tibia.spr, for outfit pictures
       - ../SabrehavenOTClient/data/things/792:/game/things:ro
+      # The latest backup on the admin dashboard
+      - ./backups:/backups:ro
     expose:
       - "3000"
 

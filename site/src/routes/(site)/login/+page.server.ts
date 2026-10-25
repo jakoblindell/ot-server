@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { login } from '$lib/server/auth';
-import { createSession } from '$lib/server/sessions';
+import { createPendingLogin, createSession } from '$lib/server/sessions';
+import { totpSecret } from '$lib/server/totp';
 import type { Actions, PageServerLoad } from './$types';
 
 // Only paths on this site, so the login page cannot send anyone elsewhere
@@ -25,6 +26,10 @@ export const actions: Actions = {
 		const result = await login(account, password, ip, userAgent);
 		if ('error' in result) return fail(400, { account, remember, error: result.error });
 
+		if (await totpSecret(result.accountId)) {
+			await createPendingLogin(cookies, result.accountId, remember, ip, userAgent);
+			redirect(303, `/login/two-step?next=${encodeURIComponent(target(url))}`);
+		}
 		await createSession(cookies, result.accountId, remember, ip, userAgent);
 		redirect(303, target(url));
 	}

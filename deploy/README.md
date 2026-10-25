@@ -113,6 +113,28 @@ docker compose exec backup /backup.sh now   # extra database backup right now
 ./restore.sh backups/sabrehaven-YYYYMMDD-HHMMSS.sql.gz   # go back to a backup
 ```
 
+## Staff and the admin pages
+
+The website has admin pages at `/admin` for gamemasters and gods: a
+dashboard with server actions (broadcast, save, clean map, reload, restart),
+players and accounts (messages, kicks, notes, mutes, bans, namelocks), bans,
+news posts, staff roles and an audit log of everything staff do.
+
+Make the first god from the command line, then log in on the website, turn
+on two-step login on the account page (the admin pages need it) and open
+`/admin`:
+
+```sh
+./make-staff.sh myaccount god
+```
+
+Gods can then give other accounts roles on the website. Gamemasters can do
+everything about players except permanent bans, IP bans and deleting
+characters; server actions and roles are for gods.
+
+Server actions reach the game through the `site_admin_commands` table, which
+`data/globalevents/scripts/admin_commands.lua` checks every second.
+
 ## Backups
 
 The `backup` service dumps the database into `deploy/backups/` every

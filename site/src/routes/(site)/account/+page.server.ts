@@ -1,13 +1,15 @@
 import { fail } from '@sveltejs/kit';
 import { addFreePremiumDay, cancelDeletion, DELETION_DAYS, FREE_PREMIUM_HOURS, scheduleDeletion, setShowCharacters, siteAccount } from '$lib/server/accounts';
-import { query } from '$lib/server/db';
+import { execute, query, queryOne } from '$lib/server/db';
+import { characterNameError } from '$lib/server/names';
 import { vocationBadge, vocationName } from '$lib/server/game';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const account = locals.account!;
-	const characters = await query<{ name: string; level: number; vocation: number; online: number; deletion: number }>(
-		`SELECT p.name, p.level, p.vocation, p.deletion, (o.player_id IS NOT NULL) AS online
+	const characters = await query<{ name: string; level: number; vocation: number; online: number; deletion: number; namelocked: number }>(
+		`SELECT p.name, p.level, p.vocation, p.deletion, (o.player_id IS NOT NULL) AS online,
+			EXISTS (SELECT 1 FROM player_namelocks n WHERE n.player_id = p.id) AS namelocked
 		 FROM players p LEFT JOIN players_online o ON o.player_id = p.id
 		 WHERE p.account_id = :id ORDER BY p.name`,
 		{ id: account.id }
@@ -26,6 +28,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			vocation: vocationName(character.vocation),
 			badge: vocationBadge(character.vocation),
 			online: !!character.online,
+			namelocked: !!character.namelocked,
 			deletesAt: character.deletion ? character.deletion * 1000 : 0
 		})),
 		logins: logins.map((login) => ({ at: login.created_at.getTime(), ip: login.ip, success: !!login.success })),
@@ -56,6 +59,21 @@ export const actions: Actions = {
 		return {
 			message: show ? 'Your characters now list each other on their pages.' : 'Your characters no longer list each other.'
 		};
+	},
+	rename: async ({ locals, request }) => {
+		const form = await request.formData();
+		const name = String(form.get('name') ?? '');
+		const newName = String(form.get('newName') ?? '').trim();
+		const locked = await queryOne<{ id: number }>(
+			`SELECT p.id FROM players p JOIN player_namelocks n ON n.player_id = p.id WHERE p.name = :name AND p.account_id = :account`,
+			{ name, account: locals.account!.id }
+		);
+		if (!locked) return fail(400, { message: `${name} does not need a new name.` });
+		const error = await characterNameError(newName);
+		if (error) return fail(400, { message: error });
+		await execute('UPDATE players SET name = :newName WHERE id = :id', { newName, id: locked.id });
+		await execute('DELETE FROM player_namelocks WHERE player_id = :id', { id: locked.id });
+		return { message: `${name} is now called ${newName} and can log in again.` };
 	},
 	cancelDeletion: async ({ locals, request }) => {
 		const name = String((await request.formData()).get('name') ?? '');

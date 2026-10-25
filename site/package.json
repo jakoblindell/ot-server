@@ -14,12 +14,14 @@
     "@sveltejs/kit": "2.70.3",
     "@sveltejs/vite-plugin-svelte": "6.2.4",
     "@types/node": "22.18.12",
+    "@types/qrcode": "1.5.5",
     "svelte": "5.55.0",
     "svelte-check": "4.3.4",
     "typescript": "5.9.3",
     "vite": "7.1.12"
   },
   "dependencies": {
-    "mysql2": "3.15.3"
+    "mysql2": "3.15.3",
+    "qrcode": "1.5.4"
   }
 }
