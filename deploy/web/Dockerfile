@@ -15,6 +15,11 @@ RUN unzip -q /tmp/otclient-web.zip -d /srv/web \
 
 COPY deploy/web/things.js ./things.js
 COPY deploy/web/client-config.js ./client-config.js
+# Installing as an app: manifest, icons, service worker (deploy/web/app)
+COPY deploy/web/app ./app
+COPY deploy/web/sw.js ./sw.js
+RUN sed -i 's|<title>Loading</title>|<title>Sabrehaven</title><link rel=manifest href=app/manifest.webmanifest><link rel=icon href=app/icon-192.png><link rel=apple-touch-icon href=app/apple-touch-icon.png><meta name=theme-color content=#000000><meta name=mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-capable content=yes><meta name=apple-mobile-web-app-status-bar-style content=black><meta name=apple-mobile-web-app-title content=Sabrehaven><script src=app/app.js></script>|' otclient.html \
+    && grep -q 'app/manifest.webmanifest' otclient.html
 COPY SabrehavenOTClient/data/things/792 ./things/792
 COPY deploy/web/Caddyfile /etc/caddy/Caddyfile
 

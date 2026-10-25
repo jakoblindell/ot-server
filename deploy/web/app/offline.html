@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Offline</title>
+<style>
+  body { margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
+         background: #000; color: #ddd; font: 16px Verdana, sans-serif; text-align: center; }
+  img { width: 96px; height: 96px; }
+  button { margin-top: 16px; padding: 8px 20px; font: inherit; }
+</style>
+</head>
+<body>
+<div>
+  <!-- shown in place of the page at /, so paths start from there -->
+  <img src="app/icon-192.png" alt="">
+  <p>No connection to the server.<br>The game starts as soon as you are back online.</p>
+  <button onclick="location.reload()">Try again</button>
+</div>
+<script>
+  window.addEventListener("online", function () { location.reload(); });
+</script>
+</body>
+</html>
