@@ -61,6 +61,9 @@ class ProtocolGame final : public Protocol
 
 		void login(const std::string& name, uint32_t accnumber, OperatingSystem_t operatingSystem, bool isFake);
 		void logout(bool displayEffect, bool forced);
+		// Tells the client why it is being disconnected (shown like a login
+		// error); a client that gets this does not reconnect on its own
+		void sendSessionEnd(const std::string& message);
 
 		uint16_t getVersion() const {
 			return version;

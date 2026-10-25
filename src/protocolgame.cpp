@@ -161,6 +161,7 @@ void ProtocolGame::login(const std::string& name, uint32_t accountId, OperatingS
 		}
 
 		if (foundPlayer->client) {
+			foundPlayer->client->sendSessionEnd("You have been logged in from another location.");
 			foundPlayer->disconnect();
 			foundPlayer->isConnecting = true;
 
@@ -342,6 +343,14 @@ void ProtocolGame::onConnect()
 {
 
 
+}
+
+void ProtocolGame::sendSessionEnd(const std::string& message)
+{
+	auto output = OutputMessagePool::getOutputMessage();
+	output->addByte(0x14);
+	output->addString(message);
+	send(output);
 }
 
 void ProtocolGame::disconnectClient(const std::string& message) const

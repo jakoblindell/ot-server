@@ -143,7 +143,7 @@ class Player final : public Creature, public Cylinder
 
 		void removeList() final;
 		void addList() final;
-		void kickPlayer(bool displayEffect);
+		void kickPlayer(bool displayEffect, const std::string& message = "You have been logged out.");
 
 		static uint64_t getExpForLevel(int32_t lv) {
 			lv--;

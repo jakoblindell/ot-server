@@ -1204,7 +1204,7 @@ void Player::onThink(uint32_t interval)
 		// without a connection: disconnecting must not end a fight
 		if (((OTSYS_TIME() - lastPong >= 60000) || idleTime > (kickAfterMinutes * 60000) + 60000) && canLogout()) {
 			if (!isFakePlayer) {
-				kickPlayer(true);
+				kickPlayer(true, "You have been idle for too long.");
 			}
 		} else if (client && idleTime == 60000 * kickAfterMinutes) {
 			std::ostringstream ss;
@@ -1913,10 +1913,11 @@ void Player::addList()
 	g_game.addPlayer(this);
 }
 
-void Player::kickPlayer(bool displayEffect)
+void Player::kickPlayer(bool displayEffect, const std::string& message)
 {
 	g_creatureEvents->playerLogout(this);
 	if (client) {
+		client->sendSessionEnd(message);
 		client->logout(displayEffect, true);
 	} else {
 		g_game.removeCreature(this);

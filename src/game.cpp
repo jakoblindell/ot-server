@@ -119,7 +119,7 @@ void Game::setGameState(GameState_t newState)
 			//kick all players that are still online
 			auto it = players.begin();
 			while (it != players.end()) {
-				it->second->kickPlayer(true);
+				it->second->kickPlayer(true, "The server is shutting down.");
 				it = players.begin();
 			}
 
@@ -140,7 +140,7 @@ void Game::setGameState(GameState_t newState)
 			auto it = players.begin();
 			while (it != players.end()) {
 				if (!it->second->hasFlag(PlayerFlag_CanAlwaysLogin)) {
-					it->second->kickPlayer(true);
+					it->second->kickPlayer(true, "The server is closed for maintenance.");
 					it = players.begin();
 				} else {
 					++it;
