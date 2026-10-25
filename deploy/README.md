@@ -135,6 +135,32 @@ characters; server actions and roles are for gods.
 Server actions reach the game through the `site_admin_commands` table, which
 `data/globalevents/scripts/admin_commands.lua` checks every second.
 
+### Server files
+
+Gods edit the server's `data/` and `config.lua` on the website (Server
+files, Config & rates). The files live in the `game-files` volume as a git
+repository with two working copies: `live`, which the server runs, and
+`staged`, which the website edits. Every edit is a commit with the staff
+member's name, so each file has a history with diffs and restore.
+
+- Edits go live at the next server start, so at the daily server save
+  (Pending changes lists them). Files the server can reload (scripts,
+  monsters, NPCs, spells, items, config, ...) can go live at once.
+- Lua and XML are checked before saving; a file with a syntax error is not
+  saved.
+- On every start `game-files.sh` also merges the files of a newly built
+  server image into the volume, so `git pull && docker compose up -d
+  --build` brings updates without losing staff edits. When an update and a
+  staff edit change the same lines, the update waits and Pending changes
+  asks whose version to keep.
+- The maps (`*.otbm`) are not in the repository; they come from the image.
+- The repository is inside the volume, so backing up the volume (for
+  example `docker run --rm -v sabrehaven_game-files:/f -v "$PWD":/out
+  alpine tar czf /out/game-files.tgz -C /f .`) keeps the whole history.
+
+The Console page shows the server's output (`logs/server.log` in the same
+volume).
+
 ## Backups
 
 The `backup` service dumps the database into `deploy/backups/` every

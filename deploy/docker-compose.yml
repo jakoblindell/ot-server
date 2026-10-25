@@ -46,6 +46,9 @@ services:
       # Server time: the daily server save happens at 08:00 in this zone
       TZ: ${TZ:-Europe/Stockholm}
       MAX_PACKETS_PER_SECOND: ${MAX_PACKETS_PER_SECOND:-25}
+    volumes:
+      # data/ and config.lua as a git repository the website edits
+      - game-files:/srv/game-files
     # Not published: only the proxy reaches the game ports (see trustForwardedFor)
     expose:
       - "7171"
@@ -100,8 +103,9 @@ services:
       - ../data:/game/data:ro
       # Tibia.dat/Tibia.spr, for outfit pictures
       - ../SabrehavenOTClient/data/things/792:/game/things:ro
-      # The latest backup on the admin dashboard
-      - ./backups:/backups:ro
+      # The game server's files (admin pages) and the backups (admin pages)
+      - game-files:/srv/game-files
+      - ./backups:/backups
     expose:
       - "3000"
 
@@ -132,5 +136,6 @@ services:
 
 volumes:
   db-data:
+  game-files:
   caddy-data:
   caddy-config:

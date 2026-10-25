@@ -13,7 +13,22 @@
 INTERVAL=${WATCHDOG_INTERVAL:-30}
 FAILURES=${WATCHDOG_FAILURES:-4}
 
-./tfs &
+# The editable files: staged changes go live now (see game-files.sh)
+if [ -x ./game-files.sh ] && [ -d "${GAME_FILES:-/srv/game-files}" ]; then
+	./game-files.sh
+fi
+
+# The output also goes to a file the website's console shows (the last one
+# is kept when it grows past 5 MB)
+LOG_DIR=${GAME_FILES:-/srv/game-files}/logs
+mkdir -p "$LOG_DIR" 2>/dev/null
+LOG=$LOG_DIR/server.log
+if [ -f "$LOG" ] && [ "$(stat -c %s "$LOG")" -gt 5000000 ]; then
+	mv "$LOG" "$LOG.1"
+fi
+echo "=== server start $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$LOG" 2>/dev/null || LOG=/dev/null
+
+./tfs > >(tee -a "$LOG") 2>&1 &
 server=$!
 trap 'kill -TERM $server 2>/dev/null' TERM INT
 

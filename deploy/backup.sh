@@ -9,6 +9,9 @@ set -uo pipefail
 umask 077 # the dumps hold password hashes
 
 interval=$(( ${BACKUP_INTERVAL_HOURS:-6} * 3600 ))
+# The website (user 1000) lists and downloads the dumps and asks for one by
+# leaving .backup-now here
+OWNER=${BACKUP_OWNER:-1000}
 keep=${BACKUP_KEEP_DAYS:-14}
 export MYSQL_PWD=$DB_PASSWORD
 
@@ -17,6 +20,7 @@ backup() {
 	if mariadb-dump -h "$DB_HOST" -u "$DB_USER" --single-transaction --quick --routines --triggers "$DB_NAME" \
 		| sed -E 's/ DEFINER=`[^`]+`@`[^`]+`//' | gzip > "$file.partial"; then
 		mv "$file.partial" "$file"
+		chown "$OWNER" "$file" 2>/dev/null
 		echo "backup: $file ($(du -h "$file" | cut -f1))"
 	else
 		rm -f "$file.partial"
@@ -30,7 +34,18 @@ if [ "${1:-}" = "now" ]; then
 	exit
 fi
 
+chown "$OWNER" /backups 2>/dev/null
+chmod 700 /backups
 while true; do
 	backup
-	sleep "$interval"
+	waited=0
+	while [ "$waited" -lt "$interval" ]; do
+		sleep 30
+		waited=$((waited + 30))
+		if [ -f /backups/.backup-now ]; then
+			rm -f /backups/.backup-now
+			echo "backup: asked for on the website"
+			break
+		fi
+	done
 done
