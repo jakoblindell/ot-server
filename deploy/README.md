@@ -1,12 +1,14 @@
 # Deploying with Docker Compose
 
-Three containers:
+Five containers:
 
 | Service | What it is | Reachable from outside |
 |---|---|---|
 | `db` | MariaDB 11.4 with the Sabrehaven and Znote AAC schemas | no |
 | `server` | the game server, built from this repository | no |
-| `web` | Caddy: HTTPS, the browser client, and `wss://` to the server | 80, 443 and the login port |
+| `site` | the website (`site/`, SvelteKit): news, accounts, admin | through `web` |
+| `backup` | database dumps into `deploy/backups` | no |
+| `web` | Caddy: HTTPS, the website on `/`, the browser client on `/play/`, and `wss://` to the server | 80, 443 and the login port |
 
 The browser client is downloaded from the `web-client-792-latest` release of
 `jakoblindell/ot-client` when the `web` image is built. The 7.92 client
@@ -29,8 +31,9 @@ docker compose logs -f server # wait for "Server Online!"
 ./create-account.sh myaccount secret "Your Name" 30
 ```
 
-Open https://localhost/ and log in with server `localhost`, port `7171`,
-client version `792`, account `myaccount` and password `secret`.
+Open https://localhost/ for the website, or https://localhost/play/ for the
+client, and log in with server `localhost`, port `7171`, client version
+`792`, account `myaccount` and password `secret`.
 
 The certificate is self-signed (`TLS=internal`), so the browser warns about
 it. Accept the warning for `https://localhost/`, and also open
@@ -56,8 +59,9 @@ docker compose cp web:/data/caddy/pki/authorities/local/root.crt caddy-root.crt
    `PUBLIC_IP` to the server's IPv4 address.
 5. `docker compose up -d --build`, then create accounts as above.
 
-Players open https://play.example.com/ and log in with server
-`play.example.com` and the login port.
+Players open https://play.example.com/ (the website; "Play now" opens the
+client at /play/) and log in with server `play.example.com` and the login
+port.
 
 ### Behind Cloudflare
 
@@ -164,5 +168,5 @@ docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD"
   this setup yet. Publishing them would also require turning off
   `trustForwardedFor`, which this setup relies on to see player addresses
   through the proxy.
-- There is no account registration page yet; Znote AAC (whose database
-  tables are already created) is the usual website for that.
+- The website keeps its own tables (`site_*`), created and updated by the
+  files in `site/migrations` when it starts.

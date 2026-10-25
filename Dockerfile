@@ -21,7 +21,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libboost-filesystem1.83.0 libboost-iostreams1.83.0 libboost-system1.83.0 \
-        libcrypto++8t64 libgmp10 libluajit-5.1-2 libmysqlclient21 libpugixml1v5 \
+        libcrypto++8t64 libgmp10 libluajit-5.1-2 libmysqlclient21 libpugixml1v5 tzdata \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --home /srv/sabrehaven sabrehaven
 

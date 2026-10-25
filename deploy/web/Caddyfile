@@ -5,6 +5,8 @@
 # GAME_CONNECTIONS_PER_MINUTE / LOGINS_PER_MINUTE: new game connections and
 #   login requests one address may open per minute (defaults 30 and 30);
 #   more get "429 Too Many Requests".
+# SITE_POSTS_PER_MINUTE: website forms (logins, account creation) one
+#   address may send per minute (default 30).
 # TRUSTED_PROXIES: proxies in front of Caddy whose client address headers
 #   are believed. Default: none (Caddy is reached directly). Behind
 #   Cloudflare: "cloudflare".
@@ -22,9 +24,9 @@
 	}
 }
 
-# Port 443 serves the web client and the game connection: WebSocket upgrades
-# go to the game server, everything else is the client bundle. (The browser
-# client connects to port 443 for game port 7172.)
+# Port 443 serves the website, the web client (/play/) and the game
+# connection: WebSocket upgrades go to the game server. (The browser client
+# connects to port 443 for game port 7172.)
 {$DOMAIN:localhost} {
 	tls {$TLS:internal}
 
@@ -38,27 +40,48 @@
 			events {$GAME_CONNECTIONS_PER_MINUTE:30}
 			window 1m
 		}
+		zone site_forms {
+			match {
+				method POST
+			}
+			key {client_ip}
+			events {$SITE_POSTS_PER_MINUTE:30}
+			window 1m
+		}
 	}
 	reverse_proxy @game server:7172 {
 		header_up X-Real-IP {client_ip}
 	}
 
-	root * /srv/web
-	header {
-		Cross-Origin-Opener-Policy same-origin
-		Cross-Origin-Embedder-Policy require-corp
-		# Revalidate on every load so players get a new client release right
-		# away; unchanged files only cost a 304.
-		Cache-Control no-cache
+	redir /play /play/ 308
+	handle /play/* {
+		root * /srv/web
+		header {
+			# The client needs these for its threads (SharedArrayBuffer)
+			Cross-Origin-Opener-Policy same-origin
+			Cross-Origin-Embedder-Policy require-corp
+			# Revalidate on every load so players get a new client release
+			# right away; unchanged files only cost a 304.
+			Cache-Control no-cache
+		}
+		# Text files are compressed on the fly; the client bundle and the
+		# game assets have compressed copies (.gz) made when the image is
+		# built. Their type is set here, or Caddy would take it from the
+		# compressed copy.
+		@binary path *.data *.spr *.dat
+		header @binary Content-Type application/octet-stream
+		encode zstd gzip
+		file_server {
+			precompressed gzip
+		}
 	}
-	# Text files are compressed on the fly; the client bundle and the game
-	# assets have compressed copies (.gz) made when the image is built. Their
-	# type is set here, or Caddy would take it from the compressed copy.
-	@binary path *.data *.spr *.dat
-	header @binary Content-Type application/octet-stream
-	encode zstd gzip
-	file_server {
-		precompressed gzip
+
+	# Everything else is the website
+	handle {
+		encode zstd gzip
+		reverse_proxy site:3000 {
+			header_up X-Real-IP {client_ip}
+		}
 	}
 }
 

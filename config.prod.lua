@@ -118,7 +118,7 @@ defaultPriority = "high"
 startupDatabaseOptimization = true
 
 -- Status server information
-ownerName = "Erikas"
-ownerEmail = "e.kontenis@gmail.com"
-url = "https://sabrehaven.com"
-location = "France"
+ownerName = ""
+ownerEmail = ""
+url = ""
+location = ""
