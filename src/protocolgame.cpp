@@ -200,6 +200,13 @@ void ProtocolGame::connect(uint32_t playerId, OperatingSystem_t operatingSystem)
 	player->client = getThis();
 	player->onConnectionRestored();
 	sendAddCreature(player, player->getPosition(), 0, false);
+
+	// The character kept its open containers while it was away: show them
+	// again, so a reconnect does not close the player's backpacks
+	for (const auto& it : player->openContainers) {
+		const Container* container = it.second.container;
+		player->sendContainer(it.first, container, container->hasParent(), it.second.index);
+	}
 	player->lastIP = player->getIP();
 	player->lastLoginSaved = std::max<time_t>(time(nullptr), player->lastLoginSaved + 1);
 	acceptPackets = true;
