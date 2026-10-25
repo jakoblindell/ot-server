@@ -44,6 +44,8 @@ void ProtocolGame::release()
 {
 	//dispatcher thread
 	if (player && player->client == shared_from_this()) {
+		// Closed without a logout (a logout removes the player first)
+		player->onConnectionLost();
 		player->client.reset();
 		player->decrementReferenceCounter();
 		player = nullptr;
@@ -195,6 +197,7 @@ void ProtocolGame::connect(uint32_t playerId, OperatingSystem_t operatingSystem)
 	player->isConnecting = false;
 
 	player->client = getThis();
+	player->onConnectionRestored();
 	sendAddCreature(player, player->getPosition(), 0, false);
 	player->lastIP = player->getIP();
 	player->lastLoginSaved = std::max<time_t>(time(nullptr), player->lastLoginSaved + 1);

@@ -283,6 +283,19 @@ class Player final : public Creature, public Cylinder
 				client->disconnect();
 			}
 		}
+
+		// Disconnect protection: while the connection is down (closed without a
+		// logout, or silent), monsters cannot hurt the player and the player's
+		// conditions are frozen, for a limited time (see config.lua).
+		void onConnectionLost();
+		void onConnectionRestored();
+		void endDisconnectProtection(const char* reason);
+		bool hasDisconnectProtection() const {
+			return disconnectProtectionEnd != 0;
+		}
+		// Damage from this attacker is blocked by the protection (monsters,
+		// fields and conditions without a player behind them)
+		bool isBlockedByDisconnectProtection(const Creature* attacker) const;
 		uint32_t getIP() const;
 
 		void addContainer(uint8_t cid, Container* container);
@@ -1054,6 +1067,10 @@ class Player final : public Creature, public Cylinder
 		int64_t lastFailedFollow = 0;
 		int64_t lastPing;
 		int64_t lastPong;
+		int64_t disconnectProtectionStart = 0;
+		int64_t disconnectProtectionEnd = 0;
+		int64_t disconnectProtectionWindowStart = 0;
+		int64_t disconnectProtectionUsed = 0;
 		int64_t nextAction = 0;
 		int64_t earliestAttackTime = 0;
 		

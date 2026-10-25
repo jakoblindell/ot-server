@@ -1271,9 +1271,28 @@ Condition* Creature::getCondition(ConditionType_t type, ConditionId_t conditionI
 
 void Creature::executeConditions(uint32_t interval)
 {
+	// A player under disconnect protection comes back as they left: their
+	// conditions (regeneration, food, haste, monster poison...) are frozen,
+	// keeping their end time ahead. Damage conditions from players still run.
+	const Player* protectedPlayer = getPlayer();
+	if (protectedPlayer && !protectedPlayer->hasDisconnectProtection()) {
+		protectedPlayer = nullptr;
+	}
+
 	auto it = conditions.begin(), end = conditions.end();
 	while (it != end) {
 		Condition* condition = *it;
+		if (protectedPlayer) {
+			const ConditionDamage* damage = dynamic_cast<const ConditionDamage*>(condition);
+			if (!damage || protectedPlayer->isBlockedByDisconnectProtection(g_game.getCreatureByID(damage->getOwner()))) {
+				if (condition->getTicks() != -1) {
+					condition->setTicks(condition->getTicks());
+				}
+				++it;
+				continue;
+			}
+		}
+
 		if (!condition->executeCondition(this, interval)) {
 			ConditionType_t type = condition->getType();
 

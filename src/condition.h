@@ -273,6 +273,9 @@ class ConditionDamage final : public Condition
 		bool setParam(ConditionParam_t param, int32_t value) final;
 
 		int32_t getTotalDamage() const;
+		uint32_t getOwner() const {
+			return owner;
+		}
 
 		//serialization
 		void serialize(PropWriteStream& propWriteStream) final;

@@ -3458,8 +3458,30 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 	}
 }
 
+// Disconnect protection: monsters cannot hurt a player whose connection is
+// down; a player's attack ends the protection. Returns true to block the hit.
+static bool blockedByDisconnectProtection(Creature* attacker, Creature* target, const CombatDamage& damage)
+{
+	if (damage.value >= 0) {
+		return false;
+	}
+	Player* targetPlayer = target->getPlayer();
+	if (!targetPlayer || !targetPlayer->hasDisconnectProtection()) {
+		return false;
+	}
+	if (targetPlayer->isBlockedByDisconnectProtection(attacker)) {
+		return true;
+	}
+	targetPlayer->endDisconnectProtection("attacked by a player");
+	return false;
+}
+
 bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage& damage)
 {
+	if (blockedByDisconnectProtection(attacker, target, damage)) {
+		return false;
+	}
+
 	const Position& targetPos = target->getPosition();
 	if (damage.value > 0) {
 		if (target->getHealth() <= 0) {
@@ -3634,6 +3656,10 @@ bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage
 
 bool Game::combatChangeMana(Creature* attacker, Creature* target, CombatDamage& damage)
 {
+	if (blockedByDisconnectProtection(attacker, target, damage)) {
+		return false;
+	}
+
 	Player* targetPlayer = target->getPlayer();
 	if (!targetPlayer) {
 		return true;

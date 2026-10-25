@@ -236,7 +236,7 @@ class Bot {
 			schedule();
 		};
 
-		every(20000, 20000, () => this.sendMessage(Buffer.from([0x1E])));
+		every(10000, 10000, () => this.sendMessage(Buffer.from([0x1E])));
 		if (!this.probe) {
 			every(1000, 3000, () => this.sendMessage(Buffer.from([0x65 + Math.floor(Math.random() * 4)])));
 			every(30000, 90000, () => this.sendMessage(Buffer.concat([Buffer.from([0x96, 0x01]), string("hi")])));
