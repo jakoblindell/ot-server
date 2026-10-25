@@ -112,6 +112,10 @@ bool ConfigManager::load()
 	integer[EX_ACTIONS_DELAY_INTERVAL] = getGlobalNumber(L, "timeBetweenExActions", 1000);
 	integer[MAX_MESSAGEBUFFER] = getGlobalNumber(L, "maxMessageBuffer", 4);
 	integer[KICK_AFTER_MINUTES] = getGlobalNumber(L, "kickIdlePlayerAfterMinutes", 15);
+	integer[DISCONNECT_PROTECTION_SECONDS] = getGlobalNumber(L, "disconnectProtectionSeconds", 120);
+	integer[DISCONNECT_PROTECTION_BUDGET_SECONDS] = getGlobalNumber(L, "disconnectProtectionBudgetSeconds", 180);
+	integer[DISCONNECT_PROTECTION_WINDOW_MINUTES] = getGlobalNumber(L, "disconnectProtectionWindowMinutes", 30);
+	integer[CONNECTION_LOST_SECONDS] = getGlobalNumber(L, "connectionLostSeconds", 20);
 	integer[PROTECTION_LEVEL] = getGlobalNumber(L, "protectionLevel", 1);
 	integer[DEATH_LOSE_PERCENT] = getGlobalNumber(L, "deathLosePercent", -1);
 	integer[KNIGHT_CLOSE_ATTACK_DAMAGE_INCREASE_PERCENT] = getGlobalNumber(L, "knightCloseAttackDamageIncreasePercent", -1);

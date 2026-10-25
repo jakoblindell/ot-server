@@ -68,6 +68,15 @@ mysqlSock = ""
 allowChangeOutfit = true
 freePremium = true
 kickIdlePlayerAfterMinutes = 15
+-- Disconnect protection: while a player's connection is down (closed without
+-- a logout, or no answer for connectionLostSeconds), monsters cannot hurt them
+-- and their conditions are frozen, for at most disconnectProtectionSeconds per
+-- drop and disconnectProtectionBudgetSeconds per disconnectProtectionWindowMinutes.
+-- Players can still attack them. A character in a fight stays in the world.
+disconnectProtectionSeconds = 120
+disconnectProtectionBudgetSeconds = 180
+disconnectProtectionWindowMinutes = 30
+connectionLostSeconds = 20
 maxMessageBuffer = 4
 showMonsterLoot = false
 blockHeight = false

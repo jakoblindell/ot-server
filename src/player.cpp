@@ -654,6 +654,23 @@ void Player::sendPing()
 	}
 
 	int64_t noPongTime = timeNow - lastPong;
+	// A connection that stays open but silent (network gone, phone asleep)
+	// counts as lost: close it so the client can reconnect, and protect the
+	// player meanwhile
+	const int64_t connectionLostTime = g_config.getNumber(ConfigManager::CONNECTION_LOST_SECONDS) * 1000;
+	if (client && connectionLostTime > 0 && noPongTime >= connectionLostTime && !isFakePlayer) {
+		std::cout << "> " << getName() << ": no answer from the client for " << noPongTime / 1000 << " s, closing the connection" << std::endl;
+		onConnectionLost();
+		client->disconnect();
+		// Once: the connection is released shortly; the logout timers below
+		// count from here
+		lastPong = timeNow;
+	}
+
+	if (hasDisconnectProtection() && timeNow >= disconnectProtectionEnd) {
+		endDisconnectProtection("time limit reached");
+	}
+
 	if ((hasLostConnection || noPongTime >= 7000) && attackedCreature && attackedCreature->getPlayer()) {
 		setAttackedCreature(nullptr);
 	}
@@ -1183,7 +1200,9 @@ void Player::onThink(uint32_t interval)
 	if (!getTile()->hasFlag(TILESTATE_NOLOGOUT) && !isAccessPlayer()) {
 		idleTime += interval;
 		const int32_t kickAfterMinutes = g_config.getNumber(ConfigManager::KICK_AFTER_MINUTES);
-		if ((!pzLocked && OTSYS_TIME() - lastPong >= 60000) || idleTime > (kickAfterMinutes * 60000) + 60000) {
+		// A character in a fight stays in the world until it may log out, even
+		// without a connection: disconnecting must not end a fight
+		if (((OTSYS_TIME() - lastPong >= 60000) || idleTime > (kickAfterMinutes * 60000) + 60000) && canLogout()) {
 			if (!isFakePlayer) {
 				kickPlayer(true);
 			}
@@ -3350,9 +3369,96 @@ bool Player::canWear(uint32_t lookType, uint8_t addons) const
 	return false;
 }
 
+void Player::onConnectionLost()
+{
+	if (isRemoved() || hasDisconnectProtection() || isFakePlayer) {
+		return;
+	}
+
+	const int64_t now = OTSYS_TIME();
+	const int64_t window = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_WINDOW_MINUTES) * 60000;
+	if (now - disconnectProtectionWindowStart >= window) {
+		disconnectProtectionWindowStart = now;
+		disconnectProtectionUsed = 0;
+	}
+
+	const int64_t maxDuration = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_SECONDS) * 1000;
+	const int64_t budgetLeft = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_BUDGET_SECONDS) * 1000 - disconnectProtectionUsed;
+	const int64_t duration = std::min(maxDuration, budgetLeft);
+	if (duration <= 0) {
+		std::cout << "> " << getName() << " lost the connection; no disconnect protection left in this period" << std::endl;
+		return;
+	}
+
+	disconnectProtectionStart = now;
+	disconnectProtectionEnd = now + duration;
+
+	int32_t monsters = 0;
+	SpectatorVec spectators;
+	g_game.map.getSpectators(spectators, getPosition(), false, false, 7, 7, 5, 5);
+	for (Creature* spectator : spectators) {
+		if (spectator->getMonster()) {
+			++monsters;
+		}
+	}
+	std::cout << "> " << getName() << " lost the connection at " << getPosition() << " with " << monsters
+	          << " monsters around and " << getHealth() << "/" << getMaxHealth() << " HP: protected for "
+	          << duration / 1000 << " s" << std::endl;
+}
+
+void Player::onConnectionRestored()
+{
+	// The silence on the old connection does not count against the new one
+	lastPing = lastPong = OTSYS_TIME();
+	if (hasDisconnectProtection()) {
+		endDisconnectProtection("reconnected");
+	}
+}
+
+void Player::endDisconnectProtection(const char* reason)
+{
+	if (!hasDisconnectProtection()) {
+		return;
+	}
+
+	const int64_t now = OTSYS_TIME();
+	disconnectProtectionUsed += now - disconnectProtectionStart;
+	disconnectProtectionStart = 0;
+	disconnectProtectionEnd = 0;
+
+	// Frozen conditions continue from where they were
+	for (Condition* condition : conditions) {
+		if (condition->getTicks() != -1) {
+			condition->setTicks(condition->getTicks());
+		}
+	}
+
+	std::cout << "> " << getName() << ": disconnect protection ended (" << reason << ") with " << getHealth()
+	          << "/" << getMaxHealth() << " HP, used " << disconnectProtectionUsed / 1000 << " s in this period" << std::endl;
+}
+
+bool Player::isBlockedByDisconnectProtection(const Creature* attacker) const
+{
+	if (!hasDisconnectProtection()) {
+		return false;
+	}
+
+	// Players (and their summons) can still attack
+	if (attacker) {
+		if (attacker->getPlayer()) {
+			return false;
+		}
+		const Creature* master = attacker->getMaster();
+		if (master && master->getPlayer()) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool Player::canLogout()
 {
-	if (isConnecting) {
+	if (isConnecting || hasDisconnectProtection()) {
 		return false;
 	}
 
