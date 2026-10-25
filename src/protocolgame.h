@@ -64,6 +64,9 @@ class ProtocolGame final : public Protocol
 		// Tells the client why it is being disconnected (shown like a login
 		// error); a client that gets this does not reconnect on its own
 		void sendSessionEnd(const std::string& message);
+		// Tells the browser client the character's vocation (7.92 does not
+		// send it); classic clients do not get it
+		void sendVocation();
 
 		uint16_t getVersion() const {
 			return version;
