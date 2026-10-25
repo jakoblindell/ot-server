@@ -39,14 +39,22 @@
 						<td><span class="badge pixel" style:background={character.badge.color}>{character.badge.short}</span> {character.vocation}</td>
 						<td class="pixel">{character.level}</td>
 						<td>
-							{#if character.deletesAt}
+							{#if character.namelocked}
+								<span class="deleting">Needs a new name</span>
+							{:else if character.deletesAt}
 								<span class="deleting">Deleted on {day(character.deletesAt)}</span>
 							{:else}
 								<span class:online={character.online}>{character.online ? 'Online' : 'Offline'}</span>
 							{/if}
 						</td>
 						<td class="right">
-							{#if character.deletesAt}
+							{#if character.namelocked}
+								<form method="POST" action="?/rename" class="rename">
+									<input type="hidden" name="name" value={character.name} />
+									<input name="newName" required minlength="3" maxlength="20" placeholder="New name" aria-label="New name for {character.name}" />
+									<button class="small" type="submit">Rename</button>
+								</form>
+							{:else if character.deletesAt}
 								<form method="POST" action="?/cancelDeletion">
 									<input type="hidden" name="name" value={character.name} />
 									<button class="small" type="submit">Keep</button>
@@ -198,6 +206,23 @@
 	.deleting {
 		color: var(--danger);
 		font-weight: 700;
+	}
+
+	.rename {
+		display: flex;
+		gap: 6px;
+		justify-content: flex-end;
+	}
+
+	.rename input {
+		min-height: 34px;
+		width: 140px;
+		border: 2px solid var(--input-border);
+		border-radius: 4px;
+		background: var(--input-bg);
+		padding: 0 8px;
+		font: inherit;
+		font-size: 14px;
 	}
 
 	.small {

@@ -3,6 +3,7 @@ import { deleteDueCharacters } from '$lib/server/accounts';
 import { migrate } from '$lib/server/migrate';
 import { getSessionAccount, removeExpiredSessions } from '$lib/server/sessions';
 import { getSettings } from '$lib/server/settings';
+import { recordOnlineSample } from '$lib/server/samples';
 import { findTheme, THEME_COOKIE, themeIds } from '$lib/themes';
 
 
@@ -14,6 +15,9 @@ export const init: ServerInit = async () => {
 	};
 	await cleanUp();
 	setInterval(() => cleanUp().catch(console.error), 3600_000).unref();
+	// Players online every 5 minutes, for the admin dashboard
+	recordOnlineSample().catch(console.error);
+	setInterval(() => recordOnlineSample().catch(console.error), 300_000).unref();
 };
 
 export const handle: Handle = async ({ event, resolve }) => {

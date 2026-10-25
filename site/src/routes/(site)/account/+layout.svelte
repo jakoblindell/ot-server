@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let { children } = $props();
+	let { data, children } = $props();
 
 	const links = [
 		{ href: '/account', label: 'Overview' },
@@ -9,6 +9,7 @@
 		{ href: '/account/password', label: 'Password' },
 		{ href: '/account/email', label: 'Email' },
 		{ href: '/account/recovery-key', label: 'Recovery key' },
+		{ href: '/account/two-step', label: 'Two-step login' },
 		{ href: '/account/history', label: 'Login history' }
 	];
 </script>
@@ -18,6 +19,7 @@
 		{#each links as link (link.href)}
 			<a href={link.href} aria-current={page.url.pathname === link.href ? 'page' : undefined}>{link.label}</a>
 		{/each}
+		{#if data.me.staff}<a class="admin" href="/admin">Admin ›</a>{/if}
 		<form method="POST" action="/logout"><button type="submit">Log out</button></form>
 	</nav>
 	<div class="main">
@@ -74,6 +76,11 @@
 		font-weight: 700;
 	}
 
+	nav .admin {
+		color: var(--accent);
+		font-weight: 700;
+	}
+
 	nav form {
 		border-top: 1px solid var(--border);
 		margin-top: 6px;
@@ -95,7 +102,12 @@
 			white-space: nowrap;
 		}
 
-		nav form {
+		nav .admin {
+		color: var(--accent);
+		font-weight: 700;
+	}
+
+	nav form {
 			border-top: 0;
 			margin-top: 0;
 			padding-top: 0;

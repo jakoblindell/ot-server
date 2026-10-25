@@ -1,0 +1,502 @@
+/* The admin pages (Claude Design's admin boards): a dark tool look of its
+   own, the same in every colour scheme. Everything is under .admin. */
+.admin {
+	--a-bg: #0f1115;
+	--a-panel: #14171d;
+	--a-raised: #171a21;
+	--a-hover: #262b36;
+	--a-line: #2a303c;
+	--a-line-soft: #232833;
+	--a-text: #e6e8ec;
+	--a-soft: #c9ced8;
+	--a-muted: #9aa3b2;
+	--a-faint: #6f7887;
+	--a-link: #8ab4ff;
+	--a-link-hover: #b8d0ff;
+	--a-blue: #4f7fd9;
+	--a-warn: #f0b429;
+	--a-warn-soft: #fcd47a;
+	--a-warn-line: #6b5520;
+	--a-ok: #4cc38a;
+	--a-bad: #f87171;
+	--a-bad-soft: #fca5a5;
+	--a-bad-bg: #3a1518;
+	--a-bad-line: #7f2a2f;
+
+	min-height: 100vh;
+	background: var(--a-bg);
+	color: var(--a-text);
+	font-family: 'IBM Plex Sans', system-ui, sans-serif;
+	font-size: 15px;
+	line-height: 1.5;
+	color-scheme: dark;
+}
+
+.admin a {
+	color: var(--a-link);
+}
+
+.admin a:hover {
+	color: var(--a-link-hover);
+}
+
+.admin h1,
+.admin h2,
+.admin h3 {
+	font-family: 'IBM Plex Sans', system-ui, sans-serif;
+	font-weight: 600;
+	margin: 0;
+}
+
+.admin h1 {
+	font-size: 24px;
+}
+
+.admin h2 {
+	font-size: 16px;
+}
+
+.admin .mono {
+	font-family: 'IBM Plex Mono', monospace;
+}
+
+.admin .muted {
+	color: var(--a-muted);
+}
+
+.admin .stripe {
+	height: 6px;
+	background: repeating-linear-gradient(135deg, var(--a-warn) 0 10px, var(--a-bg) 10px 20px);
+}
+
+.admin .top {
+	background: var(--a-panel);
+	border-bottom: 1px solid var(--a-line);
+	padding: 10px 20px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px 24px;
+}
+
+.admin .brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--a-text);
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 16px;
+}
+
+.admin .tag {
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	color: var(--a-bg);
+	background: var(--a-warn);
+	padding: 2px 8px;
+	border-radius: 3px;
+}
+
+.admin .search {
+	flex: 1 1 280px;
+	max-width: 520px;
+}
+
+.admin .search input {
+	width: 100%;
+	height: 36px;
+	background: var(--a-bg);
+	border: 1px solid var(--a-line);
+	border-radius: 6px;
+	color: var(--a-text);
+	font: inherit;
+	padding: 0 10px;
+}
+
+.admin .me {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	font-size: 14px;
+}
+
+.admin .me > a {
+	color: var(--a-muted);
+}
+
+.admin .who {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.admin .avatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--a-line);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 11px;
+}
+
+.admin .body {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	min-height: calc(100vh - 64px);
+}
+
+.admin .side {
+	flex: 1 1 220px;
+	max-width: 100%;
+	background: var(--a-panel);
+	border-right: 1px solid var(--a-line);
+	padding: 16px 12px 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.admin .group {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.admin .heading {
+	padding: 0 10px 4px;
+	font-size: 11px;
+	letter-spacing: 0.1em;
+	color: var(--a-muted);
+}
+
+.admin .side a {
+	display: flex;
+	align-items: center;
+	min-height: 36px;
+	padding: 0 10px;
+	border-radius: 6px;
+	color: var(--a-soft);
+	text-decoration: none;
+}
+
+.admin .side a:hover {
+	background: var(--a-raised);
+}
+
+.admin .side a[aria-current='page'] {
+	background: var(--a-hover);
+	color: #fff;
+	font-weight: 600;
+}
+
+.admin .content {
+	flex: 999 1 640px;
+	min-width: 0;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+@media (max-width: 760px) {
+	.admin .side {
+		flex-direction: row;
+		overflow-x: auto;
+		gap: 4px;
+		border-right: 0;
+		border-bottom: 1px solid var(--a-line);
+		padding: 8px;
+	}
+
+	.admin .group {
+		flex-direction: row;
+	}
+
+	.admin .heading {
+		display: none;
+	}
+
+	.admin .side a {
+		white-space: nowrap;
+	}
+
+	.admin .content {
+		padding: 16px;
+	}
+}
+
+/* Page title row */
+.admin .page-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.admin .page-head p {
+	margin: 4px 0 0;
+	color: var(--a-muted);
+}
+
+/* Panels (also undoing the public site's .panel) */
+.admin .panel {
+	padding: 0;
+	background: var(--a-panel);
+	border: 1px solid var(--a-line);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.admin .panel-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--a-line);
+}
+
+.admin .panel h2 {
+	color: var(--a-text);
+	font-size: 16px;
+}
+
+.admin .panel-body {
+	padding: 16px;
+}
+
+.admin .grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 20px;
+	align-items: start;
+}
+
+/* Stat tiles */
+.admin .tiles {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	gap: 12px;
+}
+
+.admin .tile {
+	background: var(--a-panel);
+	border: 1px solid var(--a-line);
+	border-radius: 8px;
+	padding: 14px 16px;
+}
+
+.admin .tile .label {
+	font-size: 13px;
+	color: var(--a-muted);
+}
+
+.admin .tile .value {
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 24px;
+	margin-top: 2px;
+}
+
+.admin .tile .sub {
+	font-size: 13px;
+	color: var(--a-muted);
+}
+
+/* Tables */
+.admin table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.admin th {
+	text-align: left;
+	font-weight: 500;
+	color: var(--a-muted);
+	font-size: 12px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--a-line);
+}
+
+.admin td {
+	padding: 9px 12px;
+	border-bottom: 1px solid var(--a-line-soft);
+	vertical-align: top;
+}
+
+.admin tr:last-child td {
+	border-bottom: 0;
+}
+
+.admin tr.selected td {
+	background: var(--a-raised);
+}
+
+.admin .scroll {
+	overflow-x: auto;
+}
+
+/* Forms */
+.admin input,
+.admin select,
+.admin textarea {
+	background: var(--a-bg);
+	border: 1px solid var(--a-line);
+	border-radius: 6px;
+	color: var(--a-text);
+	font: inherit;
+	padding: 7px 10px;
+	min-height: 36px;
+}
+
+.admin textarea {
+	width: 100%;
+	min-height: 120px;
+	resize: vertical;
+}
+
+.admin input:focus-visible,
+.admin select:focus-visible,
+.admin textarea:focus-visible,
+.admin button:focus-visible {
+	outline: 2px solid var(--a-link);
+	outline-offset: 1px;
+}
+
+.admin label.stack {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 13px;
+	color: var(--a-muted);
+}
+
+.admin label.stack input,
+.admin label.stack select {
+	color: var(--a-text);
+	font-size: 15px;
+}
+
+.admin .row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.admin .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 36px;
+	padding: 0 14px;
+	border-radius: 6px;
+	border: 1px solid var(--a-line);
+	background: var(--a-hover);
+	color: var(--a-text);
+	font: inherit;
+	font-weight: 500;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.admin .btn:hover {
+	background: #303644;
+	color: var(--a-text);
+}
+
+.admin .btn.primary {
+	background: var(--a-blue);
+	border-color: var(--a-blue);
+	color: #fff;
+}
+
+.admin .btn.danger {
+	background: var(--a-bad-bg);
+	border-color: var(--a-bad-line);
+	color: var(--a-bad-soft);
+}
+
+.admin .btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Badges and messages */
+.admin .pill {
+	display: inline-block;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 12px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	border: 1px solid var(--a-line);
+	color: var(--a-soft);
+	white-space: nowrap;
+}
+
+.admin .pill.ok {
+	color: var(--a-ok);
+	border-color: #24543d;
+}
+
+.admin .pill.warn {
+	color: var(--a-warn-soft);
+	border-color: var(--a-warn-line);
+}
+
+.admin .pill.bad {
+	color: var(--a-bad-soft);
+	border-color: var(--a-bad-line);
+}
+
+.admin .flash {
+	border-radius: 8px;
+	padding: 10px 14px;
+	border: 1px solid #24543d;
+	color: var(--a-ok);
+	background: #0f1f18;
+}
+
+.admin .flash.error {
+	border-color: var(--a-bad-line);
+	color: var(--a-bad-soft);
+	background: var(--a-bad-bg);
+}
+
+.admin .danger-zone {
+	border: 1px solid var(--a-bad-line);
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.admin .danger-zone .mono {
+	color: var(--a-bad);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+}
+
+.admin dl.facts {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 6px 16px;
+	margin: 0;
+}
+
+.admin dl.facts dt {
+	color: var(--a-muted);
+}
+
+.admin dl.facts dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
