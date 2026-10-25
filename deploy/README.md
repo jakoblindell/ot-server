@@ -83,6 +83,13 @@ Every player address is checked twice:
   applies its IP bans and its connection flood check (more than 5
   connections within moments blocks that address for a few seconds).
 
+The game server also disconnects a connection that sends more than
+`MAX_PACKETS_PER_SECOND` packets per second (25 by default, averaged over a
+few seconds). Normal play stays far below that, including fast hotkey use; a
+modified client flooding the server does not. The browser client reconnects
+on its own after such a disconnect, so a false positive costs a player a
+moment, not the session.
+
 Players cannot choose the address that is checked: Caddy ignores address
 headers from anyone but `TRUSTED_PROXIES`, and the game server only reads
 them from the proxy. Tested: a banned address stays banned whatever headers
@@ -96,8 +103,39 @@ docker compose logs -f server                  # server output
 docker compose restart server                  # restart the game server
 git pull && docker compose up -d --build       # update server and client
 docker compose build --no-cache web && docker compose up -d web   # newer client release only
-docker compose exec db sh -c 'mariadb-dump -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' > backup.sql
+docker compose exec backup /backup.sh now   # extra database backup right now
+./restore.sh backups/sabrehaven-YYYYMMDD-HHMMSS.sql.gz   # go back to a backup
 ```
+
+## Backups
+
+The `backup` service dumps the database into `deploy/backups/` every
+`BACKUP_INTERVAL_HOURS` (6) and deletes dumps older than `BACKUP_KEEP_DAYS`
+(14). Each dump is a consistent snapshot taken while the game runs, and it
+only holds what the server has saved: players are saved when they log out
+and at every server save.
+
+`restore.sh` stops the game server, backs up the current state, loads the
+chosen dump and starts the server again.
+
+The dumps are on the same disk as the database, which protects against
+mistakes and corruption but not against losing the machine. Copy
+`deploy/backups/` somewhere else regularly (rsync, rclone or your host's
+snapshots). The dumps contain the accounts' password hashes, so keep the
+copies private.
+
+## Crashes and restarts
+
+- A crash ends the `server` container and Docker starts it again
+  (`restart: unless-stopped`, which also covers a reboot of the machine).
+- A server that hangs without crashing is caught by `run-server.sh`: it asks
+  the server for its status every 30 seconds and kills it after 4 unanswered
+  requests in a row (about 2 minutes), and the container restarts. Progress
+  since the last save is lost in that case, as it is in a crash.
+- `docker compose stop`/`restart`/`down` and machine shutdowns send SIGTERM,
+  which the server handles like `/closeserver`: it saves and logs out
+  every player and exits. Compose waits up to 2 minutes for that
+  (`stop_grace_period`).
 
 The database lives in the `db-data` volume and survives restarts and
 rebuilds. The SQL files under `docker-entrypoint-initdb.d` only run when that

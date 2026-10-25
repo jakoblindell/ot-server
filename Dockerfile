@@ -32,7 +32,8 @@ COPY key.pem config.lua ./
 # config.lua stays as the base; deploy/config.lua layers environment settings on top
 RUN mv config.lua config.base.lua
 COPY deploy/config.lua ./config.lua
+COPY deploy/run-server.sh ./run-server.sh
 
 USER sabrehaven
 EXPOSE 7171 7172
-CMD ["./tfs"]
+CMD ["./run-server.sh"]
