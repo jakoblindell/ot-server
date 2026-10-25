@@ -26,11 +26,11 @@ cd deploy
 cp .env.example .env          # set DB_PASSWORD to something random
 docker compose up -d --build  # first build takes a few minutes
 docker compose logs -f server # wait for "Server Online!"
-./create-account.sh 123456 secret "Your Name" 30
+./create-account.sh myaccount secret "Your Name" 30
 ```
 
 Open https://localhost/ and log in with server `localhost`, port `7171`,
-client version `792`, account `123456` and password `secret`.
+client version `792`, account `myaccount` and password `secret`.
 
 The certificate is self-signed (`TLS=internal`), so the browser warns about
 it. Accept the warning for `https://localhost/`, and also open
@@ -148,6 +148,13 @@ docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD"
 ```
 
 ## Notes
+
+- Accounts have names (letters and digits). The browser client logs in with
+  the name; 7.92 desktop clients can only send numbers, so they can only use
+  accounts whose name is a number. Passwords are stored as salted, iterated
+  SHA-256 (PBKDF2); accounts that still have an old SHA-1 hash get the new
+  one on their next login. On its first start the server widens the
+  `accounts` table's `name` and `password` columns for this.
 
 - Game settings (rates, PvP and so on) come from the repository's
   `config.lua`; `deploy/config.lua` only overrides database, network and

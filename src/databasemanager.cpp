@@ -61,6 +61,20 @@ bool DatabaseManager::tableExists(const std::string& tableName)
 	return db->storeQuery(query.str()).get() != nullptr;
 }
 
+bool DatabaseManager::updateAccountColumns()
+{
+	Database* db = Database::getInstance();
+	std::ostringstream query;
+	query << "SELECT `DATA_TYPE` FROM `information_schema`.`columns` WHERE `TABLE_SCHEMA` = " << db->escapeString(g_config.getString(ConfigManager::MYSQL_DB))
+	      << " AND `TABLE_NAME` = 'accounts' AND `COLUMN_NAME` = 'password' AND `CHARACTER_MAXIMUM_LENGTH` >= 255";
+	if (db->storeQuery(query.str())) {
+		return true;
+	}
+
+	std::cout << "> Updating the accounts table: account names and password hashes" << std::endl;
+	return db->executeQuery("ALTER TABLE `accounts` MODIFY `name` VARCHAR(32) NOT NULL, MODIFY `password` VARCHAR(255) NOT NULL");
+}
+
 bool DatabaseManager::isDatabaseSetup()
 {
 	Database* db = Database::getInstance();

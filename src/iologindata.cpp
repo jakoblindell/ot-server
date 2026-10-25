@@ -20,6 +20,7 @@
 #include "otpch.h"
 
 #include "iologindata.h"
+#include "passwords.h"
 #include "configmanager.h"
 #include "game.h"
 
@@ -38,7 +39,7 @@ Account IOLoginData::loadAccount(uint32_t accno)
 	}
 
 	account.id = result->getNumber<uint32_t>("id");
-	account.name = result->getNumber<uint32_t>("name");
+	account.name = result->getString("name");
 	account.accountType = static_cast<AccountType_t>(result->getNumber<int32_t>("type"));
 	account.premiumDays = result->getNumber<uint16_t>("premdays");
 	account.lastDay = result->getNumber<time_t>("lastday");
@@ -52,30 +53,80 @@ bool IOLoginData::saveAccount(const Account& acc)
 	return Database::getInstance()->executeQuery(query.str());
 }
 
-bool IOLoginData::loginserverAuthentication(uint32_t accountName, const std::string& password, Account& account)
-{
-	Database* db = Database::getInstance();
+namespace {
 
+// Recent successful logins, so the game login that follows the character
+// list (and reconnects) do not pay for the slow password check again. The key
+// covers the stored hash, so a changed password does not match.
+std::mutex recentLoginsLock;
+std::map<std::string, std::pair<uint32_t, int64_t>> recentLogins;
+constexpr int64_t RECENT_LOGIN_TIME = 15 * 60 * 1000;
+
+std::string recentLoginKey(const std::string& accountName, const std::string& password, const std::string& stored)
+{
+	return transformToSHA1(accountName + '\0' + password + '\0' + stored);
+}
+
+}
+
+uint32_t IOLoginData::authenticate(const std::string& accountName, const std::string& password)
+{
+	if (accountName.empty() || accountName.size() > 32 || password.empty()) {
+		return 0;
+	}
+
+	Database* db = Database::getInstance();
 	std::ostringstream query;
-	query << "SELECT `id`, `name`, `password`, `type`, `premdays`, `lastday` FROM `accounts` WHERE `name` = " << accountName;
+	query << "SELECT `id`, `password` FROM `accounts` WHERE `name` = " << db->escapeString(accountName);
 	DBResult_ptr result = db->storeQuery(query.str());
 	if (!result) {
+		return 0;
+	}
+
+	const uint32_t accountId = result->getNumber<uint32_t>("id");
+	const std::string stored = result->getString("password");
+	const std::string key = recentLoginKey(accountName, password, stored);
+	const int64_t now = OTSYS_TIME();
+	{
+		std::lock_guard<std::mutex> lock(recentLoginsLock);
+		auto it = recentLogins.find(key);
+		if (it != recentLogins.end() && it->second.second > now) {
+			return it->second.first;
+		}
+	}
+
+	if (!checkPassword(password, stored)) {
+		return 0;
+	}
+
+	std::string current = stored;
+	if (!isCurrentPasswordHash(stored)) {
+		current = hashPassword(password);
+		query.str(std::string());
+		query << "UPDATE `accounts` SET `password` = " << db->escapeString(current) << " WHERE `id` = " << accountId;
+		if (!db->executeQuery(query.str())) {
+			current = stored;
+		}
+	}
+
+	std::lock_guard<std::mutex> lock(recentLoginsLock);
+	for (auto it = recentLogins.begin(); it != recentLogins.end();) {
+		it = it->second.second <= now ? recentLogins.erase(it) : std::next(it);
+	}
+	recentLogins[recentLoginKey(accountName, password, current)] = {accountId, now + RECENT_LOGIN_TIME};
+	return accountId;
+}
+
+bool IOLoginData::loadAccountWithCharacters(uint32_t accountId, Account& account)
+{
+	account = loadAccount(accountId);
+	if (account.id == 0) {
 		return false;
 	}
 
-	if (transformToSHA1(password) != result->getString("password")) {
-		return false;
-	}
-
-	account.id = result->getNumber<uint32_t>("id");
-	account.name = result->getNumber<uint32_t>("name");
-	account.accountType = static_cast<AccountType_t>(result->getNumber<int32_t>("type"));
-	account.premiumDays = result->getNumber<uint16_t>("premdays");
-	account.lastDay = result->getNumber<time_t>("lastday");
-
-	query.str(std::string());
+	std::ostringstream query;
 	query << "SELECT `name`, `deletion` FROM `players` WHERE `account_id` = " << account.id;
-	result = db->storeQuery(query.str());
+	DBResult_ptr result = Database::getInstance()->storeQuery(query.str());
 	if (result) {
 		do {
 			if (result->getNumber<uint64_t>("deletion") == 0) {
@@ -87,35 +138,17 @@ bool IOLoginData::loginserverAuthentication(uint32_t accountName, const std::str
 	return true;
 }
 
-uint32_t IOLoginData::gameworldAuthentication(uint32_t accountName, const std::string& password, std::string& characterName)
+bool IOLoginData::canUseCharacter(uint32_t accountId, std::string& characterName)
 {
 	Database* db = Database::getInstance();
-
 	std::ostringstream query;
-	query << "SELECT `id`, `password` FROM `accounts` WHERE `name` = " << accountName;
-	DBResult_ptr result = db->storeQuery(query.str());
-	if (!result) {
-		return 0;
-	}
-
-	if (transformToSHA1(password) != result->getString("password")) {
-		return 0;
-	}
-
-	uint32_t accountId = result->getNumber<uint32_t>("id");
-
-	query.str(std::string());
 	query << "SELECT `account_id`, `name`, `deletion` FROM `players` WHERE `name` = " << db->escapeString(characterName);
-	result = db->storeQuery(query.str());
-	if (!result) {
-		return 0;
-	}
-
-	if (result->getNumber<uint32_t>("account_id") != accountId || result->getNumber<uint64_t>("deletion") != 0) {
-		return 0;
+	DBResult_ptr result = db->storeQuery(query.str());
+	if (!result || result->getNumber<uint32_t>("account_id") != accountId || result->getNumber<uint64_t>("deletion") != 0) {
+		return false;
 	}
 	characterName = result->getString("name");
-	return accountId;
+	return true;
 }
 
 AccountType_t IOLoginData::getAccountType(uint32_t accountId)

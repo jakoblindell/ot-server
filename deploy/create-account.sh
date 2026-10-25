@@ -1,11 +1,12 @@
 #!/bin/sh
 # Creates an account with one character in the running compose database.
-#   ./create-account.sh ACCOUNT_NUMBER PASSWORD "Character Name" [premium days]
-# The character starts as a level 8 knight in Thais.
+#   ./create-account.sh ACCOUNT_NAME PASSWORD "Character Name" [premium days]
+# The character starts as a level 8 knight in Thais. The password is stored as
+# SHA-1, which the server replaces with its salted hash on the first login.
 set -eu
 
 if [ $# -lt 3 ]; then
-	echo "usage: $0 ACCOUNT_NUMBER PASSWORD \"Character Name\" [premium days]" >&2
+	echo "usage: $0 ACCOUNT_NAME PASSWORD \"Character Name\" [premium days]" >&2
 	exit 1
 fi
 
@@ -15,7 +16,7 @@ name=$3
 premdays=${4:-0}
 
 case $account in
-	*[!0-9]*|'') echo "account number must be numeric" >&2; exit 1 ;;
+	*[!A-Za-z0-9]*|'') echo "the account name may only contain letters and digits" >&2; exit 1 ;;
 esac
 
 sql_quote() {
@@ -25,7 +26,7 @@ sql_quote() {
 cd "$(dirname "$0")"
 docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD" "$MARIADB_DATABASE"' <<EOF
 INSERT INTO accounts (name, password, type, premdays, creation)
-VALUES ($account, SHA1($(sql_quote "$password")), 1, $premdays, UNIX_TIMESTAMP());
+VALUES ($(sql_quote "$account"), SHA1($(sql_quote "$password")), 1, $premdays, UNIX_TIMESTAMP());
 SET @account_id = LAST_INSERT_ID();
 INSERT INTO znote_accounts (account_id, ip, created, flag)
 VALUES (@account_id, 0, UNIX_TIMESTAMP(), '');

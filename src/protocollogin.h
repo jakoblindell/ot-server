@@ -44,7 +44,7 @@ class ProtocolLogin : public Protocol
 	private:
 		void disconnectClient(const std::string& message, uint16_t version);
 
-		void getCharacterList(uint32_t accountNumber, const std::string& password, uint16_t version);
+		void getCharacterList(uint32_t accountId, uint16_t version);
 };
 
 #endif

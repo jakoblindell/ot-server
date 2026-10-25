@@ -1,4 +1,4 @@
-# Sabrehaven with the browser client. From this directory:
+# Elderwood: the game server with the browser client. From this directory:
 #   cp .env.example .env    # then edit it
 #   docker compose up -d --build
 #   ./create-account.sh 123456 secret "Character Name"

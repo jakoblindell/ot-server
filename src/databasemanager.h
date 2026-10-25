@@ -30,6 +30,8 @@ class DatabaseManager
 		static bool isDatabaseSetup();
 
 		static bool optimizeTables();
+		// Account names as text and room for salted password hashes
+		static bool updateAccountColumns();
 
 		static bool getDatabaseConfig(const std::string& config, int32_t& value);
 		static void registerDatabaseConfig(const std::string& config, int32_t value);
