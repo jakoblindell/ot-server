@@ -24,3 +24,6 @@ vc14/.vs/
 /theforgottenserver.zip
 /SabrehavenOTClient/tibianus.log
 deploy/.env
+
+# Database dumps made by the backup service
+deploy/backups/

@@ -30,6 +30,8 @@ services:
     build:
       context: ..
     restart: unless-stopped
+    # Time to save and kick the players on docker stop before being killed
+    stop_grace_period: 2m
     depends_on:
       db:
         condition: service_healthy
@@ -41,10 +43,30 @@ services:
       PUBLIC_IP: ${PUBLIC_IP:-127.0.0.1}
       SERVER_NAME: ${SERVER_NAME:-}
       MOTD: ${MOTD:-}
+      MAX_PACKETS_PER_SECOND: ${MAX_PACKETS_PER_SECOND:-25}
     # Not published: only the proxy reaches the game ports (see trustForwardedFor)
     expose:
       - "7171"
       - "7172"
+
+  # Database dumps in deploy/backups (see backup.sh)
+  backup:
+    image: mariadb:11.4
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/backup.sh"]
+    environment:
+      DB_HOST: db
+      DB_USER: sabrehaven
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: sabrehaven
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-6}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ./backups:/backups
 
   web:
     build:

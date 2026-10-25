@@ -78,6 +78,26 @@ int main(int argc, char* argv[])
 	sigh.sa_flags = 0;
 	sigemptyset(&sigh.sa_mask);
 	sigaction(SIGPIPE, &sigh, nullptr);
+
+	// SIGTERM (docker stop, systemd) and SIGINT shut the server down like
+	// /closeserver: players are saved and kicked. The signals are blocked
+	// here, before any thread starts, so only the thread below receives them.
+	sigset_t shutdownSignals;
+	sigemptyset(&shutdownSignals);
+	sigaddset(&shutdownSignals, SIGTERM);
+	sigaddset(&shutdownSignals, SIGINT);
+	pthread_sigmask(SIG_BLOCK, &shutdownSignals, nullptr);
+	std::thread([shutdownSignals]() {
+		int signal;
+		sigwait(&shutdownSignals, &signal);
+		std::cout << ">> Received " << (signal == SIGTERM ? "SIGTERM" : "SIGINT") << ", shutting down." << std::endl;
+		g_dispatcher.addTask(createTask([]() {
+			g_game.setGameState(GAME_STATE_SHUTDOWN);
+		}));
+		// A second signal while saving ends the process at once
+		sigwait(&shutdownSignals, &signal);
+		std::_Exit(1);
+	}).detach();
 #endif
 
 	ServiceManager serviceManager;

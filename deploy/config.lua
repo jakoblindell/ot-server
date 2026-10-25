@@ -19,6 +19,11 @@ bindOnlyGlobalAddress = false
 -- so the client address it forwards can be trusted.
 trustForwardedFor = true
 
+-- Packets a connection may send per second (averaged over a few seconds)
+-- before it is disconnected. Normal play, even fast hotkey use, stays far
+-- below 25; a modified client flooding the server does not.
+maxPacketsPerSecond = tonumber(env("MAX_PACKETS_PER_SECOND", "25"))
+
 serverName = env("SERVER_NAME", serverName)
 motd = env("MOTD", motd)
 
