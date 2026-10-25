@@ -17,6 +17,10 @@ export const config = {
 	/** When the daily server save restarts the server, server time */
 	serverSaveTime: env.SERVER_SAVE_TIME || '08:00',
 	timeZone: env.TZ || 'Europe/Stockholm',
+	/** The game server's data directory (read-only): monsters, NPCs, spells */
+	gameData: env.GAME_DATA || '../data',
+	/** Cloudflare Turnstile; without keys the check is skipped (development) */
+	turnstile: { siteKey: env.TURNSTILE_SITE_KEY || '', secret: env.TURNSTILE_SECRET || '' },
 	/** Cookies only over HTTPS (off for plain-HTTP local development) */
 	secureCookies: env.SECURE_COOKIES !== 'false'
 };

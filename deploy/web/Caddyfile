@@ -49,8 +49,12 @@
 			window 1m
 		}
 	}
-	reverse_proxy @game server:7172 {
-		header_up X-Real-IP {client_ip}
+	# (Caddy runs handle blocks before other directives, so the game
+	# connection needs its own, ahead of the website's catch-all one)
+	handle @game {
+		reverse_proxy server:7172 {
+			header_up X-Real-IP {client_ip}
+		}
 	}
 
 	redir /play /play/ 308

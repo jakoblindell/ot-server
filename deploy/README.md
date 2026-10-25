@@ -55,9 +55,11 @@ docker compose cp web:/data/caddy/pki/authorities/local/root.crt caddy-root.crt
 2. Point a DNS name at it, for example `play.example.com`.
 3. Open ports 80, 443 and the login port (7171 by default) in the firewall.
 4. In `deploy/.env` set `DOMAIN=play.example.com`, `TLS=you@example.com`
-   (Caddy then gets a Let's Encrypt certificate), a random `DB_PASSWORD`, and
-   `PUBLIC_IP` to the server's IPv4 address.
-5. `docker compose up -d --build`, then create accounts as above.
+   (Caddy then gets a Let's Encrypt certificate), a random `DB_PASSWORD`,
+   `PUBLIC_IP` to the server's IPv4 address, and the Turnstile keys
+   (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`) so sign-ups need a human.
+5. `docker compose up -d --build`. Players create their accounts on the
+   website; `create-account.sh` still works for test accounts.
 
 Players open https://play.example.com/ (the website; "Play now" opens the
 client at /play/) and log in with server `play.example.com` and the login
