@@ -9,10 +9,11 @@ ADD ${CLIENT_URL} /tmp/otclient-web.zip
 WORKDIR /srv/web
 RUN unzip -q /tmp/otclient-web.zip -d /srv/web \
     && rm /tmp/otclient-web.zip \
-    && sed -i 's|<script async src=otclient.js></script>|<script src=things.js></script><script async src=otclient.js></script>|' otclient.html \
+    && sed -i 's|<script async src=otclient.js></script>|<script src=client-config.js></script><script src=things.js></script><script async src=otclient.js></script>|' otclient.html \
     && grep -q 'src=things.js' otclient.html \
     && ln -s otclient.html index.html
 
 COPY deploy/web/things.js ./things.js
+COPY deploy/web/client-config.js ./client-config.js
 COPY SabrehavenOTClient/data/things/792 ./things/792
 COPY deploy/web/Caddyfile /etc/caddy/Caddyfile
