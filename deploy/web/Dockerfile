@@ -1,6 +1,12 @@
 # Reverse proxy and web client. Built from the repository root (see
 # deploy/docker-compose.yml) so it can pick up the 7.92 client assets.
+# Caddy with rate limiting and Cloudflare's address ranges (for running
+# behind Cloudflare); stock Caddy has neither
+FROM caddy:2.8-builder AS caddy-build
+RUN xcaddy build --with github.com/mholt/caddy-ratelimit --with github.com/WeidiDeng/caddy-cloudflare-ip
+
 FROM caddy:2.8
+COPY --from=caddy-build /usr/bin/caddy /usr/bin/caddy
 
 # Browser build of otclient, published by the ot-client repository's CI
 ARG CLIENT_URL=https://github.com/jakoblindell/ot-client/releases/download/web-client-792-latest/otclient-web.zip

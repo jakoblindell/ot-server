@@ -2,6 +2,25 @@
 # TLS: "internal" for a self-signed certificate (local testing), or an email
 #      address to get a Let's Encrypt certificate for a public DOMAIN.
 # LOGIN_PORT: public port of the login server (default 7171).
+# GAME_CONNECTIONS_PER_MINUTE / LOGINS_PER_MINUTE: new game connections and
+#   login requests one address may open per minute (defaults 30 and 30);
+#   more get "429 Too Many Requests".
+# TRUSTED_PROXIES: proxies in front of Caddy whose client address headers
+#   are believed. Default: none (Caddy is reached directly). Behind
+#   Cloudflare: "cloudflare".
+#
+# The player's address ({client_ip}) is what the limits count, and it goes to
+# the game server as X-Real-IP for its own checks (IP bans, connection
+# floods; see trustForwardedFor in config.lua). Players cannot choose it:
+# address headers are only read from the trusted proxies.
+
+{
+	order rate_limit before reverse_proxy
+	servers {
+		trusted_proxies {$TRUSTED_PROXIES:static 127.0.0.1/32}
+		client_ip_headers CF-Connecting-IP X-Forwarded-For
+	}
+}
 
 # Port 443 serves the web client and the game connection: WebSocket upgrades
 # go to the game server, everything else is the client bundle. (The browser
@@ -10,7 +29,19 @@
 	tls {$TLS:internal}
 
 	@game header Upgrade websocket
-	reverse_proxy @game server:7172
+	rate_limit {
+		zone game_connections {
+			match {
+				header Upgrade websocket
+			}
+			key {client_ip}
+			events {$GAME_CONNECTIONS_PER_MINUTE:30}
+			window 1m
+		}
+	}
+	reverse_proxy @game server:7172 {
+		header_up X-Real-IP {client_ip}
+	}
 
 	root * /srv/web
 	header {
@@ -34,5 +65,14 @@
 # Login server. LOGIN_PORT is the port players enter in the login window.
 {$DOMAIN:localhost}:{$LOGIN_PORT:7171} {
 	tls {$TLS:internal}
-	reverse_proxy server:7171
+	rate_limit {
+		zone logins {
+			key {client_ip}
+			events {$LOGINS_PER_MINUTE:30}
+			window 1m
+		}
+	}
+	reverse_proxy server:7171 {
+		header_up X-Real-IP {client_ip}
+	}
 }

@@ -63,9 +63,31 @@ Players open https://play.example.com/ and log in with server
 
 Cloudflare's proxy forwards WebSockets, but only on some ports. Port 443
 works; 7171 does not, so set `LOGIN_PORT=2053` (or 2083, 2087, 2096, 8443)
-and have players use that port. Use Cloudflare's "Full (strict)" TLS mode;
+and have players use that port. Also set `TRUSTED_PROXIES=cloudflare`:
+Caddy then takes each player's address from Cloudflare. Without it, every
+player looks like one of Cloudflare's servers, and the limits and bans below
+would hit many players at once. Use Cloudflare's "Full (strict)" TLS mode;
 Caddy still needs to obtain its own certificate, so keep ports 80/443
 reachable for that or switch Caddy to a Cloudflare origin certificate.
+
+## Limits and bans
+
+Every player address is checked twice:
+
+- **Caddy** limits new game connections and logins per address
+  (`GAME_CONNECTIONS_PER_MINUTE`, `LOGINS_PER_MINUTE`, 30 each by default;
+  more get "429 Too Many Requests"). The login limit is also what stops
+  password guessing: the game server has no lockout after wrong passwords.
+- **The game server** gets the address from Caddy (`X-Real-IP`, trusted
+  because `trustForwardedFor` is on and the game ports are not published) and
+  applies its IP bans and its connection flood check (more than 5
+  connections within moments blocks that address for a few seconds).
+
+Players cannot choose the address that is checked: Caddy ignores address
+headers from anyone but `TRUSTED_PROXIES`, and the game server only reads
+them from the proxy. Tested: a banned address stays banned whatever headers
+it sends, another player sending a banned address's headers is not
+affected, and through a trusted proxy each player has their own limits.
 
 ## Day to day
 

@@ -59,6 +59,9 @@ services:
       DOMAIN: ${DOMAIN:-localhost}
       TLS: ${TLS:-internal}
       LOGIN_PORT: ${LOGIN_PORT:-7171}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-static 127.0.0.1/32}
+      GAME_CONNECTIONS_PER_MINUTE: ${GAME_CONNECTIONS_PER_MINUTE:-30}
+      LOGINS_PER_MINUTE: ${LOGINS_PER_MINUTE:-30}
     ports:
       - "80:80"
       - "443:443"

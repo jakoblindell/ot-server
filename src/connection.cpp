@@ -542,7 +542,7 @@ void Connection::parseWebSocketHandshake(const boost::system::error_code& error)
 	const size_t headerEnd = request.find("\r\n\r\n");
 	wsInput.consume(headerEnd + 4);
 
-	std::string key, protocols, forwardedFor;
+	std::string key, protocols, forwardedFor, realIP;
 	bool upgrade = false;
 	std::istringstream lines(request.substr(0, headerEnd));
 	std::string line;
@@ -563,6 +563,8 @@ void Connection::parseWebSocketHandshake(const boost::system::error_code& error)
 			protocols = value;
 		} else if (name == "x-forwarded-for") {
 			forwardedFor = value;
+		} else if (name == "x-real-ip") {
+			realIP = value;
 		}
 	}
 
@@ -574,9 +576,15 @@ void Connection::parseWebSocketHandshake(const boost::system::error_code& error)
 	boost::system::error_code endpointError;
 	const auto endpoint = socket.remote_endpoint(endpointError);
 	const uint32_t peerIP = endpointError ? 0 : htonl(endpoint.address().to_v4().to_ulong());
-	if (!forwardedFor.empty() && isTrustedProxy(peerIP)) {
+	if ((!realIP.empty() || !forwardedFor.empty()) && isTrustedProxy(peerIP)) {
 		boost::system::error_code parseError;
-		const auto address = boost::asio::ip::make_address_v4(trim(forwardedFor.substr(0, forwardedFor.find(','))), parseError);
+		// The proxy's X-Real-IP is the player's address; without it, the last
+		// X-Forwarded-For entry (the one the proxy added; earlier ones come
+		// from the client and could be anything)
+		const size_t lastComma = forwardedFor.rfind(',');
+		const std::string forwarded = !realIP.empty() ? realIP
+		                              : lastComma == std::string::npos ? forwardedFor : forwardedFor.substr(lastComma + 1);
+		const auto address = boost::asio::ip::make_address_v4(trim(forwarded), parseError);
 		if (!parseError) {
 			forwardedIP = htonl(address.to_ulong());
 			if (!g_bans.acceptConnection(forwardedIP)) {
