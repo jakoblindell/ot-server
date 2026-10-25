@@ -1,5 +1,9 @@
 <script lang="ts">
+	import Prose from '$lib/components/Prose.svelte';
+
 	let { data } = $props();
+	const day = (time: number) => new Date(time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+	const shortDay = (time: number) => new Date(time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
 	const uptime = $derived.by(() => {
 		const minutes = Math.floor(data.status.uptimeSeconds / 60);
@@ -68,19 +72,42 @@
 
 <main class="wrap columns">
 	<div class="main">
-		<section class="card" aria-labelledby="welcome">
-			<div class="card-head"><h2 id="welcome">Welcome to {data.serverName}</h2></div>
-			<div class="card-body text">
-				<p>
-					{data.serverName} is a classic Tibia 7.92 world. Everyone starts on Rookgaard; there are no shortcuts, just the world
-					as it was.
-				</p>
-				<p>
-					Play right here in your browser, on a computer or a phone, or install it as an app. Create an account, pick your
-					first character and press <strong>Play now</strong>.
-				</p>
-			</div>
-		</section>
+		{#if data.ticker.length}
+			<section class="card" aria-labelledby="ticker-h">
+				<div class="card-head"><h2 id="ticker-h">News ticker</h2></div>
+				<ul class="ticker">
+					{#each data.ticker as item (item.id)}
+						<li><span class="pixel when">{shortDay(item.publishedAt)}</span><span>{item.title || item.body}</span></li>
+					{/each}
+				</ul>
+			</section>
+		{/if}
+
+		{#each data.articles as article (article.id)}
+			<article class="card" aria-labelledby="news-{article.id}">
+				<div class="card-head">
+					<h2 id="news-{article.id}"><a class="title" href="/news/{article.id}">{article.title}</a></h2>
+					<span class="pixel date">{day(article.publishedAt)}</span>
+				</div>
+				<div class="card-body text">
+					<Prose body={article.body} />
+					{#if article.author}<p class="author">— {article.author}</p>{/if}
+				</div>
+			</article>
+		{:else}
+			<section class="card">
+				<div class="card-head"><h2>Welcome to {data.serverName}</h2></div>
+				<div class="card-body text"><p>No news yet.</p></div>
+			</section>
+		{/each}
+
+		{#if data.pages > 1}
+			<nav class="pager" aria-label="News pages">
+				{#if data.page > 1}<a href="?page={data.page - 1}">‹ Newer</a>{/if}
+				<span class="pixel">Page {data.page} of {data.pages}</span>
+				{#if data.page < data.pages}<a href="?page={data.page + 1}">Older ›</a>{/if}
+			</nav>
+		{/if}
 	</div>
 
 	<aside class="side">
@@ -97,6 +124,21 @@
 						<a href="/create-account">Create account</a>
 					</form>
 				</div>
+			</section>
+		{/if}
+		{#if data.top.length}
+			<section class="card" aria-labelledby="top-h">
+				<div class="card-head"><h2 id="top-h">Top players</h2><a href="/highscores">All</a></div>
+				<ol class="top">
+					{#each data.top as player, index (player.name)}
+						<li>
+							<span class="pixel rank">{index + 1}</span>
+							<span class="badge pixel" style:background={player.badge.color}>{player.badge.short}</span>
+							<a href="/characters/{encodeURIComponent(player.name)}">{player.name}</a>
+							<span class="pixel level">{player.level}</span>
+						</li>
+					{/each}
+				</ol>
 			</section>
 		{/if}
 		<section class="card" aria-labelledby="rates">
@@ -219,6 +261,97 @@
 
 	.text p {
 		margin: 0 0 12px;
+	}
+
+	.ticker {
+		list-style: none;
+		margin: 0;
+		padding: 6px 0;
+	}
+
+	.ticker li {
+		display: flex;
+		gap: 16px;
+		padding: 10px 20px;
+		border-bottom: 1px dashed var(--paper-rule);
+	}
+
+	.ticker li:last-child {
+		border-bottom: 0;
+	}
+
+	.when {
+		font-size: 14px;
+		color: var(--paper-muted);
+		white-space: nowrap;
+		padding-top: 2px;
+	}
+
+	.title {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.title:hover {
+		text-decoration: underline;
+	}
+
+	.date {
+		font-size: 14px;
+		color: var(--hero-soft);
+		white-space: nowrap;
+	}
+
+	.author {
+		font-style: italic;
+		color: var(--paper-muted);
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		color: var(--text-muted);
+	}
+
+	.pager a {
+		color: var(--accent);
+	}
+
+	.top {
+		list-style: none;
+		margin: 0;
+		padding: 10px 16px;
+	}
+
+	.top li {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 4px;
+		border-bottom: 1px dashed var(--paper-rule);
+	}
+
+	.top li:last-child {
+		border-bottom: 0;
+	}
+
+	.top a {
+		flex: 1;
+		color: var(--paper-text);
+		font-weight: 700;
+	}
+
+	.rank {
+		width: 1.2em;
+		color: var(--paper-muted);
+	}
+
+	.badge {
+		font-size: 12px;
+		color: #f6ecd4;
+		padding: 2px 6px;
+		border-radius: 3px;
 	}
 
 	.rates {

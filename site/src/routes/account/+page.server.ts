@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { addFreePremiumDay, cancelDeletion, DELETION_DAYS, FREE_PREMIUM_HOURS, scheduleDeletion, siteAccount } from '$lib/server/accounts';
+import { addFreePremiumDay, cancelDeletion, DELETION_DAYS, FREE_PREMIUM_HOURS, scheduleDeletion, setShowCharacters, siteAccount } from '$lib/server/accounts';
 import { query } from '$lib/server/db';
 import { vocationBadge, vocationName } from '$lib/server/game';
 import type { Actions, PageServerLoad } from './$types';
@@ -30,6 +30,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		})),
 		logins: logins.map((login) => ({ at: login.created_at.getTime(), ip: login.ip, success: !!login.success })),
 		hasRecoveryKey: !!site?.recovery_key_created,
+		showCharacters: !!site?.show_characters,
 		freePremiumAt: nextFreePremium > Date.now() ? nextFreePremium : 0,
 		deletionDays: DELETION_DAYS
 	};
@@ -48,6 +49,13 @@ export const actions: Actions = {
 			return fail(400, { message: `${name} cannot be deleted right now (log out of the game first).` });
 		}
 		return { message: `${name} will be deleted in ${DELETION_DAYS} days. You can still cancel that.` };
+	},
+	visibility: async ({ locals, request }) => {
+		const show = (await request.formData()).get('show') === '1';
+		await setShowCharacters(locals.account!.id, show);
+		return {
+			message: show ? 'Your characters now list each other on their pages.' : 'Your characters no longer list each other.'
+		};
 	},
 	cancelDeletion: async ({ locals, request }) => {
 		const name = String((await request.formData()).get('name') ?? '');

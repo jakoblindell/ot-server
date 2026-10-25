@@ -88,6 +88,7 @@ services:
       TZ: ${TZ:-Europe/Stockholm}
       DEFAULT_THEME: ${DEFAULT_THEME:-gold}
       GAME_DATA: /game/data
+      GAME_ASSETS: /game/things
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
       # Behind Caddy: the page's public address and the player's address
@@ -96,6 +97,8 @@ services:
     volumes:
       # Monster, NPC and spell names (reserved for characters)
       - ../data:/game/data:ro
+      # Tibia.dat/Tibia.spr, for outfit pictures
+      - ../SabrehavenOTClient/data/things/792:/game/things:ro
     expose:
       - "3000"
 

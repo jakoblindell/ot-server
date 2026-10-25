@@ -89,7 +89,8 @@ h3 {
 	font-size: 26px;
 }
 
-.card-head a {
+.card-head > a,
+.card-head > span > a {
 	color: var(--hero-soft);
 	font-size: 15px;
 	font-weight: 500;

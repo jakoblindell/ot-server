@@ -74,6 +74,16 @@
 	</div>
 </section>
 
+<form class="visibility" method="POST" action="?/visibility">
+	<input type="hidden" name="show" value={data.showCharacters ? '0' : '1'} />
+	<span>
+		{data.showCharacters
+			? 'Your characters list each other on their public pages.'
+			: 'Your characters do not list each other on their public pages.'}
+	</span>
+	<button class="small" type="submit">{data.showCharacters ? 'Hide them' : 'Show them'}</button>
+</form>
+
 <div class="pair">
 	<section class="card" aria-labelledby="acc-h">
 		<div class="card-head"><h2 id="acc-h">Account</h2></div>
@@ -210,6 +220,20 @@
 	.small:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	.visibility {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+		margin-top: -12px;
+		color: var(--text-soft);
+	}
+
+	.visibility .small {
+		border-color: var(--paper-muted);
+		color: var(--text-bright);
 	}
 
 	.pair {
