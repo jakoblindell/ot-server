@@ -17,3 +17,10 @@ COPY deploy/web/things.js ./things.js
 COPY deploy/web/client-config.js ./client-config.js
 COPY SabrehavenOTClient/data/things/792 ./things/792
 COPY deploy/web/Caddyfile /etc/caddy/Caddyfile
+
+# Compressed copies of the big files, served by Caddy's precompressed file
+# server (its on-the-fly compression skips them: they are not text). About
+# 26 MB instead of 52 MB for a first visit.
+RUN for f in otclient.data otclient.wasm otclient.js things/792/Tibia.spr things/792/Tibia.dat; do \
+        gzip -9 -c "$f" > "$f.gz"; \
+    done
