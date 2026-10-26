@@ -785,6 +785,11 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		void sendCancelMessage(ReturnValue message) const;
+		void sendNpcDialog(const std::string& json) const {
+			if (client) {
+				client->sendNpcDialog(json);
+			}
+		}
 		void sendCorpseMark(const Position& pos, uint16_t clientId, bool opened) const {
 			if (client) {
 				client->sendCorpseMark(pos, clientId, opened);

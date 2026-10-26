@@ -756,6 +756,10 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 			checkAction(action, player, message);
 		}
 
+		if (situation != SITUATION_VANISH && npc->focusCreature == player->getID()) {
+			sendDialog(player, behaviour);
+		}
+
 		break;
 	}
 }
@@ -1546,6 +1550,10 @@ void BehaviourDatabase::idle()
 {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
+	if (Player* customer = g_game.getPlayerByID(npc->focusCreature)) {
+		sendDialogClose(customer);
+	}
+
 	if (queueList.empty()) {
 		if (OTSYS_TIME() - npc->conversationStartTime <= 3000) {
 			npc->staticMovementTime = OTSYS_TIME() + 5000;
@@ -1588,4 +1596,291 @@ bool NpcBehaviourCondition::setCondition(NpcBehaviourType_t _type, int32_t _numb
 	number = _number;
 	string = _string;
 	return false;
+}
+
+// ---------------------------------------------------------------------------
+// Tap-to-talk dialog for our client
+
+namespace {
+
+std::string jsonString(const std::string& text)
+{
+	std::string out = "\"";
+	for (unsigned char c : text) {
+		switch (c) {
+			case '"': out += "\\\""; break;
+			case '\\': out += "\\\\"; break;
+			case '\n': out += "\\n"; break;
+			case '\r': break;
+			case '\t': out += ' '; break;
+			default:
+				if (c < 0x20) {
+					break;
+				}
+				if (c < 0x80) {
+					out += static_cast<char>(c);
+				} else {
+					// Latin-1 to UTF-8
+					out += static_cast<char>(0xC0 | (c >> 6));
+					out += static_cast<char>(0x80 | (c & 0x3F));
+				}
+		}
+	}
+	return out + "\"";
+}
+
+// The word stands on its own in the text ("job" in "my job.", not in "jobless")
+bool mentionsWord(const std::string& text, const std::string& word)
+{
+	for (size_t at = text.find(word); at != std::string::npos; at = text.find(word, at + 1)) {
+		const size_t end = at + word.length();
+		const bool startsWord = at == 0 || !isalpha(static_cast<unsigned char>(text[at - 1]));
+		const bool endsWord = end >= text.length() || !isalpha(static_cast<unsigned char>(text[end]));
+		if (startsWord && endsWord) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool nodeUses(const NpcBehaviourNode* node, NpcBehaviourType_t type)
+{
+	return node && (node->type == type || nodeUses(node->left, type) || nodeUses(node->right, type));
+}
+
+// "bring me to port hope" -> "Port Hope"
+std::string destinationName(const std::string& words)
+{
+	std::string name = words;
+	for (const char* prefix : {"bring me to ", "sail to ", "fly to ", "go to ", "to "}) {
+		if (name.compare(0, strlen(prefix), prefix) == 0) {
+			name = name.substr(strlen(prefix));
+			break;
+		}
+	}
+	bool upper = true;
+	for (char& c : name) {
+		if (upper && c >= 'a' && c <= 'z') {
+			c = static_cast<char>(c - 'a' + 'A');
+		}
+		upper = (c == ' ' || c == '-');
+	}
+	return name;
+}
+
+}
+
+void BehaviourDatabase::analyseDialogRules()
+{
+	dialogRulesAnalysed = true;
+	std::set<std::string> seenOffers, seenKeywords;
+
+	// Topics whose "yes" teleports: "carlin" -> Price=110, Topic=2, and
+	// Topic=2,"yes" -> Teleport(...) make a travel offer
+	std::set<int32_t> travelTopics;
+	for (const NpcBehaviour* behaviour : behaviourEntries) {
+		bool teleports = false;
+		for (const NpcBehaviourAction* action : behaviour->actions) {
+			teleports = teleports || action->type == BEHAVIOUR_TYPE_TELEPORT;
+		}
+		if (!teleports) {
+			continue;
+		}
+		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+			const NpcBehaviourNode* node = condition->expression;
+			if (condition->type == BEHAVIOUR_TYPE_OPERATION && node && node->number == BEHAVIOUR_OPERATOR_EQUALS &&
+			        node->left && node->right && node->left->type == BEHAVIOUR_TYPE_TOPIC && node->right->type == BEHAVIOUR_TYPE_NUMBER) {
+				travelTopics.insert(node->right->number);
+			}
+		}
+	}
+
+	for (const NpcBehaviour* behaviour : behaviourEntries) {
+		if (behaviour->situation != SITUATION_NONE) {
+			continue;
+		}
+
+		std::string words;
+		bool onlyWords = true, takesAmount = false;
+		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+			if (condition->type == BEHAVIOUR_TYPE_STRING) {
+				std::string word = condition->string;
+				if (!word.empty() && word.back() == '$') {
+					word.pop_back();
+				}
+				words += (words.empty() ? "" : " ") + word;
+			} else if (condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT || condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT_NO_LIMIT) {
+				takesAmount = true;
+				onlyWords = false;
+			} else {
+				onlyWords = false;
+			}
+		}
+		if (words.empty()) {
+			continue;
+		}
+
+		int32_t item = 0, setsTopic = 0;
+		bool hasPrice = false, hasTopic = false, teleports = false, speaks = false;
+		for (const NpcBehaviourAction* action : behaviour->actions) {
+			switch (action->type) {
+				case BEHAVIOUR_TYPE_ITEM:
+					if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
+						item = action->expression->number;
+					}
+					break;
+				case BEHAVIOUR_TYPE_PRICE: hasPrice = true; break;
+				case BEHAVIOUR_TYPE_TOPIC:
+					hasTopic = true;
+					if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
+						setsTopic = action->expression->number;
+					}
+					break;
+				case BEHAVIOUR_TYPE_TELEPORT: teleports = true; break;
+				case BEHAVIOUR_TYPE_STRING: speaks = true; break;
+				default: break;
+			}
+		}
+
+		if (takesAmount) {
+			if (item != 0 && hasPrice) {
+				// "%1,1<%1,"torch"" or ""sell",%1,1<%1,"rope"": the offer also takes an amount
+				dialogAmounts.insert(words);
+			}
+			continue;
+		}
+
+		const bool sell = words.compare(0, 5, "sell ") == 0;
+		if (item != 0 && hasPrice && hasTopic && onlyWords) {
+			if (seenOffers.insert(words).second) {
+				dialogOffers.emplace_back(behaviour, words, item, sell, false);
+			}
+		} else if ((teleports && hasPrice) || (item == 0 && hasPrice && travelTopics.count(setsTopic))) {
+			// several rules per destination (premium, discounts): resolved per player
+			if (seenOffers.insert(words).second) {
+				dialogOffers.emplace_back(behaviour, words, 0, false, true);
+			}
+		} else if (onlyWords && speaks && item == 0 && !teleports && words.length() >= 3) {
+			static const std::set<std::string> greetings = {"hello", "hi", "bye", "farewell", "good bye"};
+			if (!greetings.count(words) && seenKeywords.insert(words).second) {
+				dialogKeywords.emplace_back(behaviour, words);
+			}
+		}
+	}
+}
+
+// The behaviour's conditions, without the money checks (the dialog shows
+// offers the player cannot pay for yet; the NPC still checks on "yes")
+bool BehaviourDatabase::dialogConditionsPass(const NpcBehaviour* behaviour, Player* player, const std::string& message)
+{
+	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+		if (condition->type == BEHAVIOUR_TYPE_OPERATION && nodeUses(condition->expression, BEHAVIOUR_TYPE_COUNTMONEY)) {
+			continue;
+		}
+		if (!checkCondition(condition, player, message)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour)
+{
+	if (!dialogRulesAnalysed) {
+		analyseDialogRules();
+	}
+
+	// What the NPC answers (its strings, as the player will see them)
+	std::string text;
+	for (const NpcBehaviourAction* action : behaviour->actions) {
+		if (action->type == BEHAVIOUR_TYPE_STRING) {
+			text += (text.empty() ? "" : " ") + parseResponse(player, action->string);
+		}
+	}
+	const std::string lowerText = asLowerCaseString(text);
+
+	std::ostringstream json;
+	json << "{\"npc\":" << jsonString(npc->getName()) << ",\"id\":" << npc->getID() << ",\"text\":" << jsonString(text);
+	json << ",\"question\":" << (topic != 0 && text.find('?') != std::string::npos ? "true" : "false");
+
+	// Keywords the answer mentions (as with highlighted words in later clients)
+	// and the usual opening topics when the NPC has them
+	json << ",\"keywords\":[";
+	int keywords = 0;
+	std::set<std::string> listed;
+	for (const DialogRule& rule : dialogKeywords) {
+		if (keywords >= 12) {
+			break;
+		}
+		std::istringstream parts(rule.words);
+		std::string word;
+		bool mentioned = true;
+		while (parts >> word) {
+			if (!mentionsWord(lowerText, word)) {
+				mentioned = false;
+				break;
+			}
+		}
+		if (mentioned && listed.insert(rule.words).second) {
+			json << (keywords++ ? "," : "") << jsonString(rule.words);
+		}
+	}
+	for (const DialogRule& rule : dialogKeywords) {
+		if ((rule.words == "job" || rule.words == "name") && listed.insert(rule.words).second) {
+			json << (keywords++ ? "," : "") << jsonString(rule.words);
+		}
+	}
+	json << "]";
+
+	// Offers as this player gets them: the first rule that answers the words
+	// decides (premium, quest discounts, vocation); the current topic is set
+	// aside while looking
+	std::ostringstream buy, sell, travel;
+	const int32_t savedTopic = topic, savedPrice = price, savedAmount = amount, savedType = type, savedData = data;
+	topic = 0;
+	for (const DialogRule& offer : dialogOffers) {
+		for (const NpcBehaviour* candidate : behaviourEntries) {
+			if (candidate->situation != SITUATION_NONE || !dialogConditionsPass(candidate, player, offer.words)) {
+				continue;
+			}
+			int32_t offerPrice = -1;
+			price = 0;
+			for (const NpcBehaviourAction* action : candidate->actions) {
+				if (action->type == BEHAVIOUR_TYPE_PRICE) {
+					offerPrice = evaluate(action->expression, player, offer.words);
+					price = offerPrice;
+				}
+			}
+			if (offerPrice >= 0) {
+				if (offer.travel) {
+					travel << (travel.tellp() > 0 ? "," : "") << "{\"name\":" << jsonString(destinationName(offer.words))
+					       << ",\"price\":" << offerPrice << ",\"words\":" << jsonString(offer.words) << "}";
+				} else {
+					const ItemType& it = Item::items[offer.item];
+					std::ostringstream& list = offer.sell ? sell : buy;
+					list << (list.tellp() > 0 ? "," : "") << "{\"item\":" << (it.disguise ? it.disguiseId : it.id)
+					     << ",\"name\":" << jsonString(it.name) << ",\"price\":" << offerPrice
+					     << ",\"weight\":" << it.weight << ",\"stackable\":" << (it.stackable ? "true" : "false")
+					     << ",\"words\":" << jsonString(offer.words)
+					     << ",\"amounts\":" << (dialogAmounts.count(offer.words) ? "true" : "false") << "}";
+				}
+			}
+			break;
+		}
+	}
+	topic = savedTopic;
+	price = savedPrice;
+	amount = savedAmount;
+	type = savedType;
+	data = savedData;
+
+	json << ",\"buy\":[" << buy.str() << "],\"sell\":[" << sell.str() << "],\"travel\":[" << travel.str() << "]}";
+	player->sendNpcDialog(json.str());
+}
+
+void BehaviourDatabase::sendDialogClose(Player* player)
+{
+	std::ostringstream json;
+	json << "{\"npc\":" << jsonString(npc->getName()) << ",\"id\":" << npc->getID() << ",\"close\":true}";
+	player->sendNpcDialog(json.str());
 }

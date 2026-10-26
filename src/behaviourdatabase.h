@@ -266,6 +266,12 @@ class BehaviourDatabase
 
 		void react(BehaviourSituation_t situation, Player* player, const std::string& message);
 
+		// The tap-to-talk dialog of our client (extended opcode 103): what the
+		// NPC just said, the keywords in it, a pending yes/no question, and
+		// the NPC's shop and travel offers as this player would get them
+		void sendDialog(Player* player, const NpcBehaviour* behaviour);
+		void sendDialogClose(Player* player);
+
 		static bool compareBehaviour(const NpcBehaviour* left, const NpcBehaviour* right) {
 			return left->priority >= right->priority;
 		}
@@ -283,6 +289,24 @@ class BehaviourDatabase
 		bool searchWord(const std::string& pattern, const std::string& message);
 
 		std::string parseResponse(Player* player, const std::string& message);
+
+		// The dialog's view of the rules, worked out once
+		struct DialogRule {
+			DialogRule(const NpcBehaviour* behaviour, std::string words, int32_t item = 0, bool sell = false, bool travel = false) :
+				behaviour(behaviour), words(std::move(words)), item(item), sell(sell), travel(travel) {}
+
+			const NpcBehaviour* behaviour;
+			std::string words; // the keywords, as the player would say them
+			int32_t item; // shop: the item (0: travel or talk)
+			bool sell; // shop: the NPC buys
+			bool travel;
+		};
+		void analyseDialogRules();
+		bool dialogConditionsPass(const NpcBehaviour* behaviour, Player* player, const std::string& message);
+		bool dialogRulesAnalysed = false;
+		std::vector<DialogRule> dialogOffers;
+		std::vector<DialogRule> dialogKeywords;
+		std::set<std::string> dialogAmounts; // offers that also take "<amount> <words>"
 		void attendCustomer(uint32_t playerId);
 		void queueCustomer(uint32_t playerId, const std::string& message);
 		void idle();

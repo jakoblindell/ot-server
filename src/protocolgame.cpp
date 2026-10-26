@@ -410,6 +410,25 @@ void ProtocolGame::sendCorpseMark(const Position& pos, uint16_t clientId, bool o
 	writeToOutputBuffer(msg);
 }
 
+static constexpr uint8_t EXTENDED_OPCODE_NPC_DIALOG = 103;
+
+void ProtocolGame::sendNpcDialog(const std::string& json)
+{
+	const auto connection = getConnection();
+	if (!player || !connection) {
+		return;
+	}
+	if (!connection->isWebSocketConnection() && player->getOperatingSystem() < CLIENTOS_OTCLIENT_LINUX) {
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(EXTENDED_OPCODE_NPC_DIALOG);
+	msg.addString(json);
+	writeToOutputBuffer(msg);
+}
+
 static constexpr uint8_t EXTENDED_OPCODE_MONSTER_HEALTH = 102;
 
 void ProtocolGame::sendMonsterHealth()

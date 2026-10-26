@@ -76,6 +76,8 @@ class ProtocolGame final : public Protocol
 		// Tells our client each monster's maximum health (by name), for the
 		// health numbers in its battle list; 7.92 only sends percentages
 		void sendMonsterHealth();
+		// The NPC dialog of our client (JSON, see BehaviourDatabase::sendDialog)
+		void sendNpcDialog(const std::string& json);
 
 		uint16_t getVersion() const {
 			return version;
