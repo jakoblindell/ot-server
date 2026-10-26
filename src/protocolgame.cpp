@@ -381,6 +381,33 @@ void ProtocolGame::sendVocation()
 	writeToOutputBuffer(msg);
 }
 
+static constexpr uint8_t EXTENDED_OPCODE_CORPSE = 101;
+
+void ProtocolGame::sendCorpseMark(const Position& pos, uint16_t clientId, bool opened)
+{
+	const auto connection = getConnection();
+	if (!player || !connection) {
+		return;
+	}
+	// classic 7.92 clients do not know the extended opcode message
+	if (!connection->isWebSocketConnection() && player->getOperatingSystem() < CLIENTOS_OTCLIENT_LINUX) {
+		return;
+	}
+
+	// "new x y z clientId" or "opened x y z"
+	std::ostringstream text;
+	text << (opened ? "opened " : "new ") << pos.x << ' ' << pos.y << ' ' << static_cast<int>(pos.z);
+	if (!opened) {
+		text << ' ' << clientId;
+	}
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(EXTENDED_OPCODE_CORPSE);
+	msg.addString(text.str());
+	writeToOutputBuffer(msg);
+}
+
 void ProtocolGame::sendSessionEnd(const std::string& message)
 {
 	auto output = OutputMessagePool::getOutputMessage();

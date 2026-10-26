@@ -292,6 +292,11 @@ ReturnValue Actions::internalUseItem(Player* player, const Position& pos, uint8_
 			} else {
 				player->addContainer(index, openContainer);
 				player->onSendContainer(openContainer);
+				// a corpse on the map stops being marked once opened (the
+				// client ignores places it has not marked)
+				if (openContainer->getParent() && openContainer->getParent()->getTile() == openContainer->getParent()) {
+					player->sendCorpseMark(openContainer->getPosition(), 0, true);
+				}
 			}
 
 			return RETURNVALUE_NOERROR;

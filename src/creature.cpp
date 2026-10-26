@@ -733,6 +733,14 @@ bool Creature::dropCorpse(Creature* lastHitCreature, Creature* mostDamageCreatur
 
 	if (corpse) {
 		dropLoot(corpse->getContainer(), lastHitCreature);
+
+		// The owner's client marks the corpse until they open it
+		if (corpse->getContainer() && corpse->getParent() && corpse->getCorpseOwner() != 0) {
+			if (Player* owner = g_game.getPlayerByID(corpse->getCorpseOwner())) {
+				const ItemType& it = Item::items[corpse->getID()];
+				owner->sendCorpseMark(corpse->getPosition(), it.disguise ? it.disguiseId : it.id, false);
+			}
+		}
 	}
 
 	return true;

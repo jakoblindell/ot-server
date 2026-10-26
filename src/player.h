@@ -785,6 +785,11 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		void sendCancelMessage(ReturnValue message) const;
+		void sendCorpseMark(const Position& pos, uint16_t clientId, bool opened) const {
+			if (client) {
+				client->sendCorpseMark(pos, clientId, opened);
+			}
+		}
 		void sendCancelTarget() const {
 			if (client) {
 				client->sendCancelTarget();

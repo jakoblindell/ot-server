@@ -69,6 +69,10 @@ class ProtocolGame final : public Protocol
 		// Tells the browser client the character's vocation (7.92 does not
 		// send it); classic clients do not get it
 		void sendVocation();
+		// Tells our client (browser or OTClient) that a corpse on the map is
+		// the player's and not opened yet, or that the player opened the
+		// container there; the client marks unopened corpses
+		void sendCorpseMark(const Position& pos, uint16_t clientId, bool opened);
 
 		uint16_t getVersion() const {
 			return version;
