@@ -757,10 +757,20 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 		}
 
 		if (situation != SITUATION_VANISH && npc->focusCreature == player->getID()) {
+			lastDialog = behaviour;
 			sendDialog(player, behaviour);
 		}
 
-		break;
+		return;
+	}
+
+	// "hi" to an NPC already talking to the player (their client reconnected,
+	// or the window was lost): the NPC has no answer, so show the dialog again
+	if (situation == SITUATION_NONE && lastDialog && npc->focusCreature == player->getID()) {
+		const std::string greeting = asLowerCaseString(message);
+		if (greeting == "hi" || greeting == "hello") {
+			sendDialog(player, lastDialog);
+		}
 	}
 }
 
@@ -1553,6 +1563,7 @@ void BehaviourDatabase::idle()
 	if (Player* customer = g_game.getPlayerByID(npc->focusCreature)) {
 		sendDialogClose(customer);
 	}
+	lastDialog = nullptr;
 
 	if (queueList.empty()) {
 		if (OTSYS_TIME() - npc->conversationStartTime <= 3000) {

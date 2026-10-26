@@ -304,6 +304,7 @@ class BehaviourDatabase
 		void analyseDialogRules();
 		bool dialogConditionsPass(const NpcBehaviour* behaviour, Player* player, const std::string& message);
 		bool dialogRulesAnalysed = false;
+		const NpcBehaviour* lastDialog = nullptr; // what the current customer last got
 		std::vector<DialogRule> dialogOffers;
 		std::vector<DialogRule> dialogKeywords;
 		std::set<std::string> dialogAmounts; // offers that also take "<amount> <words>"
