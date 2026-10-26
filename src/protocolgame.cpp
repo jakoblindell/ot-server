@@ -35,7 +35,9 @@
 #include "waitlist.h"
 #include "ban.h"
 #include "scheduler.h"
+#include "monsters.h"
 
+extern Monsters g_monsters;
 extern ConfigManager g_config;
 extern Actions actions;
 extern CreatureEvents* g_creatureEvents;
@@ -404,6 +406,47 @@ void ProtocolGame::sendCorpseMark(const Position& pos, uint16_t clientId, bool o
 	NetworkMessage msg;
 	msg.addByte(0x32);
 	msg.addByte(EXTENDED_OPCODE_CORPSE);
+	msg.addString(text.str());
+	writeToOutputBuffer(msg);
+}
+
+static constexpr uint8_t EXTENDED_OPCODE_MONSTER_HEALTH = 102;
+
+void ProtocolGame::sendMonsterHealth()
+{
+	const auto connection = getConnection();
+	if (!player || !connection) {
+		return;
+	}
+	if (!connection->isWebSocketConnection() && player->getOperatingSystem() < CLIENTOS_OTCLIENT_LINUX) {
+		return;
+	}
+
+	// The name the client sees is the monster file's name; types that share
+	// one with different health are left out (the client shows no number)
+	std::map<std::string, int32_t> byName;
+	for (const auto& it : g_monsters.getMonsterTypes()) {
+		std::string name = asLowerCaseString(it.second.name);
+		const int32_t healthMax = it.second.info.healthMax;
+		auto found = byName.find(name);
+		if (found == byName.end()) {
+			byName[name] = healthMax;
+		} else if (found->second != healthMax) {
+			found->second = -1;
+		}
+	}
+
+	// "name:max;name:max;..."
+	std::ostringstream text;
+	for (const auto& it : byName) {
+		if (it.second > 0) {
+			text << it.first << ':' << it.second << ';';
+		}
+	}
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(EXTENDED_OPCODE_MONSTER_HEALTH);
 	msg.addString(text.str());
 	writeToOutputBuffer(msg);
 }
@@ -1761,6 +1804,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 
 	player->sendIcons();
 	sendVocation();
+	sendMonsterHealth();
 }
 
 void ProtocolGame::sendMoveCreature(const Creature* creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)

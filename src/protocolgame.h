@@ -73,6 +73,9 @@ class ProtocolGame final : public Protocol
 		// the player's and not opened yet, or that the player opened the
 		// container there; the client marks unopened corpses
 		void sendCorpseMark(const Position& pos, uint16_t clientId, bool opened);
+		// Tells our client each monster's maximum health (by name), for the
+		// health numbers in its battle list; 7.92 only sends percentages
+		void sendMonsterHealth();
 
 		uint16_t getVersion() const {
 			return version;

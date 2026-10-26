@@ -180,6 +180,9 @@ class Monsters
 		bool reload();
 
 		MonsterType* getMonsterType(const std::string& name);
+		const std::map<std::string, MonsterType>& getMonsterTypes() const {
+			return monsters;
+		}
 
 		static uint32_t getLootRandom();
 
