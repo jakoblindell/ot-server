@@ -20,6 +20,7 @@
 			title: 'Players',
 			links: [
 				{ href: '/admin/players', label: 'Players & accounts', show: data.staff.can.players },
+				{ href: '/admin/reports', label: 'Reports', show: data.staff.can.players, count: data.openReports },
 				{ href: '/admin/bans', label: 'Bans', show: data.staff.can.punish }
 			]
 		},
@@ -58,7 +59,9 @@
 					<div class="group">
 						<span class="mono heading">{section.title.toUpperCase()}</span>
 						{#each section.links.filter((link) => link.show) as link (link.href)}
-							<a href={link.href} aria-current={current(link.href) ? 'page' : undefined}>{link.label}</a>
+							<a href={link.href} aria-current={current(link.href) ? 'page' : undefined}
+								>{link.label}{#if 'count' in link && link.count}<span class="count mono">{link.count}</span>{/if}</a
+							>
 						{/each}
 					</div>
 				{/if}

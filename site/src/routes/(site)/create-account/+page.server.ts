@@ -3,6 +3,7 @@ import { createAccount, emailError, emailTaken, type Sex } from '$lib/server/acc
 import { config } from '$lib/server/config';
 import { accountNameError, accountNameTaken, characterNameError } from '$lib/server/names';
 import { PASSWORD_MAX, PASSWORD_MIN } from '$lib/server/passwords';
+import { sendVerification } from '$lib/server/mail';
 import { createSession } from '$lib/server/sessions';
 import { checkTurnstile, turnstileEnabled } from '$lib/server/turnstile';
 import type { Actions, PageServerLoad } from './$types';
@@ -64,6 +65,7 @@ export const actions: Actions = {
 			}
 			throw error;
 		}
+		await sendVerification(accountId, values.account, values.email).catch((error) => console.error('verification email:', error));
 		await createSession(cookies, accountId, false, ip, request.headers.get('user-agent') ?? '');
 		redirect(303, '/account?welcome=1');
 	}

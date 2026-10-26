@@ -14,7 +14,10 @@
 
 <footer>
 	<div class="wrap row">
-		<span>{serverName} · A fan-run server, not affiliated with CipSoft. · <a href="/rules">Rules</a></span>
+		<span>{serverName} · A fan-run server, not affiliated with CipSoft.</span>
+		<nav class="links" aria-label="Footer">
+			<a href="/rules">Rules</a><a href="/houses">Houses</a><a href="/deaths">Latest deaths</a><a href="/support">Support</a><a href="/privacy">Privacy</a>
+		</nav>
 		<form method="GET" class="themes">
 			<label for="theme">Colours</label>
 			<select id="theme" name="theme" value={theme} onchange={choose}>
@@ -49,6 +52,12 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 18px;
 	}
 
 	a {

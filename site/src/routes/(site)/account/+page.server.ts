@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { addFreePremiumDay, cancelDeletion, DELETION_DAYS, FREE_PREMIUM_HOURS, scheduleDeletion, setShowCharacters, siteAccount } from '$lib/server/accounts';
 import { execute, query, queryOne } from '$lib/server/db';
+import { emailVerified, mailEnabled, sendVerification } from '$lib/server/mail';
 import { characterNameError } from '$lib/server/names';
 import { vocationBadge, vocationName } from '$lib/server/game';
 import type { Actions, PageServerLoad } from './$types';
@@ -33,6 +34,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		})),
 		logins: logins.map((login) => ({ at: login.created_at.getTime(), ip: login.ip, success: !!login.success })),
 		hasRecoveryKey: !!site?.recovery_key_created,
+		mail: mailEnabled(),
+		emailVerified: await emailVerified(account.id),
 		showCharacters: !!site?.show_characters,
 		freePremiumAt: nextFreePremium > Date.now() ? nextFreePremium : 0,
 		deletionDays: DELETION_DAYS
@@ -52,6 +55,31 @@ export const actions: Actions = {
 			return fail(400, { message: `${name} cannot be deleted right now (log out of the game first).` });
 		}
 		return { message: `${name} will be deleted in ${DELETION_DAYS} days. You can still cancel that.` };
+	},
+	verify: async ({ locals }) => {
+		const account = locals.account!;
+		if (!account.email) return fail(400, { message: 'Add an email address first.' });
+		const sent = await sendVerification(account.id, account.name, account.email).catch(() => false);
+		return { message: sent ? `We sent a confirmation link to ${account.email}.` : 'Email is not available on this server.' };
+	},
+	comment: async ({ locals, request }) => {
+		const form = await request.formData();
+		const name = String(form.get('name') ?? '');
+		const comment = String(form.get('comment') ?? '').replace(/\s+/g, ' ').trim().slice(0, 255);
+		const player = await queryOne<{ id: number }>('SELECT id FROM players WHERE name = :name AND account_id = :account', {
+			name,
+			account: locals.account!.id
+		});
+		if (!player) return fail(400, { message: 'Pick one of your characters.' });
+		// znote_players has no unique key on player_id: update, or add the row
+		const updated = await execute('UPDATE znote_players SET comment = :comment WHERE player_id = :id', { id: player.id, comment });
+		if (!updated.affectedRows) {
+			await execute("INSERT INTO znote_players (player_id, created, hide_char, comment) VALUES (:id, UNIX_TIMESTAMP(), 0, :comment)", {
+				id: player.id,
+				comment
+			});
+		}
+		return { message: comment ? `Comment of ${name} saved.` : `Comment of ${name} removed.` };
 	},
 	visibility: async ({ locals, request }) => {
 		const show = (await request.formData()).get('show') === '1';

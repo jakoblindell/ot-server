@@ -92,6 +92,9 @@
 				<div class="card-body text">
 					<Prose body={article.body} />
 					{#if article.author}<p class="author">— {article.author}</p>{/if}
+					<p class="comments-link">
+						<a href="/news/{article.id}#comments">{article.comments ? `${article.comments} comment${article.comments === 1 ? '' : 's'}` : 'Comment on this news'} ›</a>
+					</p>
 				</div>
 			</article>
 		{:else}
@@ -139,6 +142,13 @@
 						</li>
 					{/each}
 				</ol>
+			</section>
+		{/if}
+		{#if data.discordUrl}
+			<section class="panel tavern">
+				<h2>Join the tavern</h2>
+				<p>Trade, find a hunting party, and hear about events first on our Discord.</p>
+				<a class="button" href={data.discordUrl} rel="noopener">Open Discord</a>
 			</section>
 		{/if}
 		<section class="card" aria-labelledby="rates">
@@ -305,6 +315,27 @@
 	.author {
 		font-style: italic;
 		color: var(--paper-muted);
+	}
+
+	.comments-link {
+		margin: 0 !important;
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	.tavern {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		color: var(--text-soft);
+	}
+
+	.tavern p {
+		margin: 0;
+	}
+
+	.tavern .button {
+		align-self: flex-start;
 	}
 
 	.pager {

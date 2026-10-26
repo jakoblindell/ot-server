@@ -3,6 +3,8 @@ import { env } from '$env/dynamic/private';
 // Settings from the environment (see deploy/docker-compose.yml)
 export const config = {
 	serverName: env.SERVER_NAME || 'Elderwood',
+	/** Which data/items<version> and data/world<version> the server loads */
+	clientVersion: Number(env.CLIENT_VERSION || 792),
 	db: {
 		host: env.DB_HOST || 'localhost',
 		port: Number(env.DB_PORT || 3306),
@@ -25,8 +27,25 @@ export const config = {
 	gameFiles: env.GAME_FILES || '/srv/game-files',
 	/** Database dumps of the backup service (read-only), for the dashboard */
 	backupsDir: env.BACKUPS_DIR || '../deploy/backups',
+	/** Level a character needs to found a guild */
+	guildMinLevel: Number(env.GUILD_MIN_LEVEL || 8),
+	/** Level a character needs to comment on news */
+	commentMinLevel: Number(env.COMMENT_MIN_LEVEL || 8),
 	/** Cloudflare Turnstile; without keys the check is skipped (development) */
 	turnstile: { siteKey: env.TURNSTILE_SITE_KEY || '', secret: env.TURNSTILE_SECRET || '' },
+	/** The site's public address (links in emails) */
+	origin: env.ORIGIN || 'https://localhost',
+	/** Outgoing email; without SMTP_HOST no email is sent */
+	smtp: {
+		host: env.SMTP_HOST || '',
+		port: Number(env.SMTP_PORT || 587),
+		user: env.SMTP_USER || '',
+		password: env.SMTP_PASSWORD || '',
+		from: env.SMTP_FROM || ''
+	},
+	/** Shown on the support page */
+	discordUrl: env.DISCORD_URL || '',
+	supportEmail: env.SUPPORT_EMAIL || '',
 	/** Cookies only over HTTPS (off for plain-HTTP local development) */
 	secureCookies: env.SECURE_COOKIES !== 'false'
 };

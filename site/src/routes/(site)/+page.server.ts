@@ -21,6 +21,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	return {
 		status,
 		serverSave: { time: config.serverSaveTime, timeZone: config.timeZone },
+		discordUrl: config.discordUrl,
 		articles,
 		ticker,
 		page,

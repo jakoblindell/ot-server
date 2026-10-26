@@ -13,10 +13,11 @@
 		{ href: '/', label: 'News' },
 		{ href: '/highscores', label: 'Highscores' },
 		{ href: '/characters', label: 'Characters' },
-		{ href: '/online', label: 'Online' },
+		{ href: '/library', label: 'Library' },
 		{ href: '/guilds', label: 'Guilds' },
-		{ href: '/download', label: 'Download' },
-		{ href: '/rules', label: 'Rules' }
+		{ href: '/online', label: 'Online' },
+		{ href: '/download', label: 'Play' },
+		{ href: '/support', label: 'Support' }
 	];
 </script>
 

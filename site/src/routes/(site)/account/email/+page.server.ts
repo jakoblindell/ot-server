@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { emailError, emailTaken, setEmail } from '$lib/server/accounts';
 import { queryOne } from '$lib/server/db';
+import { clearVerified, mailEnabled, sendVerification } from '$lib/server/mail';
 import { checkPassword } from '$lib/server/passwords';
 import type { Actions } from './$types';
 
@@ -17,6 +18,8 @@ export const actions: Actions = {
 		if (error) return fail(400, { email, error });
 		if (await emailTaken(email, account.id)) return fail(400, { email, error: 'This email address is used by another account.' });
 		await setEmail(account.id, email);
-		return { email, done: true };
+		await clearVerified(account.id);
+		const sent = await sendVerification(account.id, account.name, email).catch(() => false);
+		return { email, done: true, sent, mail: mailEnabled() };
 	}
 };

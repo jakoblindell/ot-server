@@ -92,6 +92,16 @@
 	<button class="small" type="submit">{data.showCharacters ? 'Hide them' : 'Show them'}</button>
 </form>
 
+{#if data.characters.length}
+	<form class="comment-form" method="POST" action="?/comment">
+		<label>Character comment
+			<select name="name">{#each data.characters as character (character.name)}<option>{character.name}</option>{/each}</select>
+		</label>
+		<input name="comment" maxlength="255" placeholder="Shown on the character's page" aria-label="Comment" />
+		<button class="small" type="submit">Save</button>
+	</form>
+{/if}
+
 <div class="pair">
 	<section class="card" aria-labelledby="acc-h">
 		<div class="card-head"><h2 id="acc-h">Account</h2></div>
@@ -100,7 +110,14 @@
 				<dt>Account name</dt>
 				<dd>{data.me.name}</dd>
 				<dt>Email</dt>
-				<dd>{data.me.email || '–'} <a href="/account/email">Change</a></dd>
+				<dd>
+					{data.me.email || '–'} <a href="/account/email">Change</a>
+					{#if data.mail && data.me.email}
+						{#if data.emailVerified}<span class="ok">✓ confirmed</span>{:else}
+							<form method="POST" action="?/verify" class="inline"><span class="warn">not confirmed</span> <button class="link-button">Send the link again</button></form>
+						{/if}
+					{/if}
+				</dd>
 				<dt>Password</dt>
 				<dd><a href="/account/password">Change</a></dd>
 				<dt>Recovery key</dt>
@@ -245,6 +262,63 @@
 	.small:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
+	}
+
+	.comment-form {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		color: var(--text-soft);
+		margin-top: -12px;
+	}
+
+	.comment-form select,
+	.comment-form input {
+		min-height: 36px;
+		border-radius: 4px;
+		border: 1px solid var(--border-strong);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		padding: 0 8px;
+		margin-left: 6px;
+	}
+
+	.comment-form input {
+		flex: 1 1 240px;
+	}
+
+	.comment-form .small {
+		border-color: var(--paper-muted);
+		color: var(--text-bright);
+	}
+
+	.inline {
+		display: inline;
+	}
+
+	.ok {
+		color: var(--head);
+		font-weight: 700;
+		font-size: 14px;
+	}
+
+	.warn {
+		color: var(--danger);
+		font-weight: 700;
+		font-size: 14px;
+	}
+
+	.link-button {
+		background: none;
+		border: 0;
+		padding: 0;
+		font: inherit;
+		font-size: 14px;
+		color: var(--danger);
+		text-decoration: underline;
+		cursor: pointer;
 	}
 
 	.visibility {

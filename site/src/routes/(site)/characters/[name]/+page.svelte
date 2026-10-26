@@ -1,7 +1,8 @@
 <script lang="ts">
 	import CharacterSearch from '../CharacterSearch.svelte';
 
-	let { data } = $props();
+	let { data, form } = $props();
+	let reporting = $state(false);
 	const c = $derived(data.character);
 	const when = (time: number) =>
 		new Date(time).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -92,6 +93,24 @@
 			</div>
 		</section>
 		<CharacterSearch />
+		{#if data.loggedIn}
+			<section class="card">
+				<div class="card-head"><h2>Report</h2></div>
+				<div class="card-body">
+					{#if form?.message}<p class="notice" role="status">{form.message}</p>
+					{:else if reporting}
+						<form method="POST" action="?/report" class="form">
+							{#if form?.error}<p class="notice error">{form.error}</p>{/if}
+							<label class="field">Reason <select name="reason">{#each data.reasons as reason (reason)}<option>{reason}</option>{/each}</select></label>
+							<label class="field">What happened <textarea name="text" rows="3" maxlength="1000"></textarea></label>
+							<div><button class="button">Send to staff</button></div>
+						</form>
+					{:else}
+						<button class="button ghost" type="button" onclick={() => (reporting = true)}>Report {c.name}</button>
+					{/if}
+				</div>
+			</section>
+		{/if}
 	</aside>
 </main>
 

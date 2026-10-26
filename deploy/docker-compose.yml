@@ -90,17 +90,25 @@ services:
       SERVER_NAME: ${SERVER_NAME:-Elderwood}
       TZ: ${TZ:-Europe/Stockholm}
       DEFAULT_THEME: ${DEFAULT_THEME:-gold}
-      GAME_DATA: /game/data
+      # The server's files as it runs them (Library, reserved names)
+      GAME_DATA: /srv/game-files/live/data
       GAME_ASSETS: /game/things
       BACKUPS_DIR: /backups
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      DISCORD_URL: ${DISCORD_URL:-}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
+      GUILD_MIN_LEVEL: ${GUILD_MIN_LEVEL:-8}
+      COMMENT_MIN_LEVEL: ${COMMENT_MIN_LEVEL:-8}
       # Behind Caddy: the page's public address and the player's address
       ORIGIN: https://${DOMAIN:-localhost}
       ADDRESS_HEADER: X-Real-IP
     volumes:
-      # Monster, NPC and spell names (reserved for characters)
-      - ../data:/game/data:ro
       # Tibia.dat/Tibia.spr, for outfit pictures
       - ../SabrehavenOTClient/data/things/792:/game/things:ro
       # The game server's files (admin pages) and the backups (admin pages)

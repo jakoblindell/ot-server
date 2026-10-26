@@ -14,7 +14,7 @@
 			<span class="count pixel">{data.guilds.length} {data.guilds.length === 1 ? 'guild' : 'guilds'}</span>
 		</div>
 		<div class="card-body">
-			<p class="intro">Guilds are founded in the game. Sorted by members online.</p>
+			<p class="intro">Sorted by members online. <a href="/guilds/create">Found a guild ›</a></p>
 			{#if data.guilds.length}
 				<ul class="guilds">
 					{#each data.guilds as guild, index (guild.name)}

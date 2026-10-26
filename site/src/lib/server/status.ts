@@ -73,3 +73,14 @@ function requestStatus(): Promise<ServerStatus> {
 		});
 	});
 }
+
+/** The rates, defaulting to 1 when the server cannot be asked */
+export async function getStatusRates() {
+	const status = await getServerStatus();
+	return {
+		experience: status.rates.experience || 1,
+		skill: status.rates.skill || 1,
+		loot: status.rates.loot || 1,
+		magic: status.rates.magic || 1
+	};
+}

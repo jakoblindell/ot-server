@@ -1,8 +1,8 @@
 import { query, queryOne } from './db';
 
-export type NewsItem = { id: number; kind: 'article' | 'ticker'; title: string; body: string; author: string; publishedAt: number };
+export type NewsItem = { id: number; kind: 'article' | 'ticker'; title: string; body: string; author: string; publishedAt: number; comments: number };
 
-type NewsRow = { id: number; kind: 'article' | 'ticker'; title: string; body: string; author: string; published_at: Date };
+type NewsRow = { id: number; kind: 'article' | 'ticker'; title: string; body: string; author: string; published_at: Date; comments?: number };
 
 const toItem = (row: NewsRow): NewsItem => ({
 	id: row.id,
@@ -10,15 +10,17 @@ const toItem = (row: NewsRow): NewsItem => ({
 	title: row.title,
 	body: row.body,
 	author: row.author,
-	publishedAt: row.published_at.getTime()
+	publishedAt: row.published_at.getTime(),
+	comments: Number(row.comments ?? 0)
 });
 
 const PUBLISHED = 'published_at IS NOT NULL AND published_at <= UTC_TIMESTAMP()';
 
 export async function latestNews(kind: 'article' | 'ticker', limit: number, offset = 0) {
 	const rows = await query<NewsRow>(
-		`SELECT id, kind, title, body, author, published_at FROM site_news
-		 WHERE kind = :kind AND ${PUBLISHED} ORDER BY published_at DESC, id DESC LIMIT :limit OFFSET :offset`,
+		`SELECT id, kind, title, body, author, published_at,
+			(SELECT COUNT(*) FROM site_news_comments c WHERE c.news_id = site_news.id AND c.hidden_by IS NULL) AS comments
+		 FROM site_news WHERE kind = :kind AND ${PUBLISHED} ORDER BY published_at DESC, id DESC LIMIT :limit OFFSET :offset`,
 		{ kind, limit, offset }
 	);
 	return rows.map(toItem);

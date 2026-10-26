@@ -10,7 +10,7 @@
 	<div class="card-head"><h1 id="em-h">Change email</h1></div>
 	<form class="form card-body narrow" method="POST">
 		{#if form?.error}<p class="notice error" role="alert">{form.error}</p>{/if}
-		{#if form?.done}<p class="notice" role="status">Your email address was changed.</p>{/if}
+		{#if form?.done}<p class="notice" role="status">Your email address was changed.{form.sent ? ' We sent a link to confirm it.' : ''}</p>{/if}
 		<p>Current address: <strong>{form?.done ? form.email : data.me.email || 'none'}</strong></p>
 		<label class="field">New email <input name="email" type="email" autocomplete="email" required value={form?.email ?? ''} /></label>
 		<label class="field">Password <input name="current" type="password" autocomplete="current-password" required /></label>

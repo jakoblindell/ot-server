@@ -1,8 +1,9 @@
-import { error } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { report, REPORT_REASONS } from '$lib/server/reports';
 import { premiumDaysLeft } from '$lib/server/accounts';
 import { query, queryOne } from '$lib/server/db';
 import { towns, vocationBadge, vocationName } from '$lib/server/game';
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 
 type CharacterRow = {
 	id: number;
@@ -35,7 +36,7 @@ type CharacterRow = {
 	show_characters: number | null;
 };
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const character = await queryOne<CharacterRow>(
 		`SELECT p.*, a.premdays, a.lastday, (o.player_id IS NOT NULL) AS online, z.created, z.comment, s.show_characters
 		 FROM players p JOIN accounts a ON a.id = p.account_id
@@ -108,6 +109,26 @@ export const load: PageServerLoad = async ({ params }) => {
 					? { name: death.mostdamage_by, player: !!death.mostdamage_is_player }
 					: null
 		})),
+		loggedIn: !!locals.account,
+		reasons: REPORT_REASONS,
 		others: others.map((other) => ({ name: other.name, level: other.level, badge: vocationBadge(other.vocation), online: !!other.online }))
 	};
+};
+
+export const actions: Actions = {
+	report: async ({ params, locals, request, url }) => {
+		if (!locals.account) redirect(303, `/login?next=${encodeURIComponent(url.pathname)}`);
+		const form = await request.formData();
+		const reason = String(form.get('reason') ?? '');
+		if (!REPORT_REASONS.includes(reason)) return fail(400, { error: 'Pick a reason.' });
+		const sent = await report({
+			kind: 'character',
+			targetPlayer: params.name,
+			reason,
+			text: String(form.get('text') ?? ''),
+			accountId: locals.account.id,
+			reporter: locals.account.name
+		});
+		return { message: sent ? 'Thank you, staff will look at it.' : 'You already reported this character; staff will look at it.' };
+	}
 };

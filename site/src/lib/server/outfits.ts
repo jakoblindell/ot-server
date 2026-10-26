@@ -8,7 +8,7 @@ import { config } from './config';
 
 type Thing = { width: number; height: number; layers: number; patternX: number; sprites: Uint16Array };
 
-let assets: Promise<{ outfits: Map<number, Thing>; spr: Buffer }> | undefined;
+let assets: Promise<{ outfits: Map<number, Thing>; items: Map<number, Thing>; spr: Buffer }> | undefined;
 const cache = new Map<string, Buffer>();
 const CACHE_LIMIT = 2000;
 
@@ -20,11 +20,12 @@ async function loadAssets() {
 		readFile(path.join(config.gameAssets, 'Tibia.dat')),
 		readFile(path.join(config.gameAssets, 'Tibia.spr'))
 	]);
-	const items = dat.readUInt16LE(4);
+	const itemCount = dat.readUInt16LE(4);
 	const outfitCount = dat.readUInt16LE(6);
 	const outfits = new Map<number, Thing>();
+	const items = new Map<number, Thing>();
 	let pos = 12;
-	for (let id = 100; id <= items + outfitCount; id++) {
+	for (let id = 100; id <= itemCount + outfitCount; id++) {
 		for (;;) {
 			const flag = dat[pos++];
 			if (flag === 0xff) break;
@@ -40,9 +41,10 @@ async function loadAssets() {
 		const sprites = new Uint16Array(count);
 		for (let i = 0; i < count; i++) sprites[i] = dat.readUInt16LE(pos + i * 2);
 		pos += count * 2;
-		if (id > items) outfits.set(id - items, { width, height, layers, patternX, sprites });
+		if (id > itemCount) outfits.set(id - itemCount, { width, height, layers, patternX, sprites });
+		else items.set(id, { width, height, layers, patternX, sprites });
 	}
-	return { outfits, spr };
+	return { outfits, items, spr };
 }
 
 /** The game's outfit palette (port of otclient's Outfit::getColor) */
@@ -186,11 +188,19 @@ export async function outfitPng(looktype: number, colors: [number, number, numbe
 		}
 	}
 
-	// Cropped to the figure and centred in a square with a small margin
-	let [left, top, right, bottom] = [size.w, size.h, -1, -1];
-	for (let y = 0; y < size.h; y++) {
-		for (let x = 0; x < size.w; x++) {
-			if (!base[(y * size.w + x) * 4 + 3]) continue;
+	const image = cropped(base, size.w, size.h);
+	if (!image) return null;
+	if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
+	cache.set(key, image);
+	return image;
+}
+
+/** PNG of the opaque part of an image, centred in a square with a small margin */
+function cropped(rgba: Uint8Array, width: number, height: number) {
+	let [left, top, right, bottom] = [width, height, -1, -1];
+	for (let y = 0; y < height; y++) {
+		for (let x = 0; x < width; x++) {
+			if (!rgba[(y * width + x) * 4 + 3]) continue;
 			left = Math.min(left, x);
 			right = Math.max(right, x);
 			top = Math.min(top, y);
@@ -203,11 +213,42 @@ export async function outfitPng(looktype: number, colors: [number, number, numbe
 	const offsetX = Math.floor((side - (right - left + 1)) / 2);
 	const offsetY = Math.floor((side - (bottom - top + 1)) / 2);
 	for (let y = top; y <= bottom; y++) {
-		const from = (y * size.w + left) * 4;
-		square.set(base.subarray(from, from + (right - left + 1) * 4), ((offsetY + y - top) * side + offsetX) * 4);
+		const from = (y * width + left) * 4;
+		square.set(rgba.subarray(from, from + (right - left + 1) * 4), ((offsetY + y - top) * side + offsetX) * 4);
 	}
+	return png(side, side, square);
+}
 
-	const image = png(side, side, square);
+/** PNG of an item (its first look), or null for an unknown id */
+export async function itemPng(id: number): Promise<Buffer | null> {
+	const key = `item-${id}`;
+	const hit = cache.get(key);
+	if (hit) return hit;
+	assets ??= loadAssets();
+	const { items, spr } = await assets;
+	const thing = items.get(id);
+	if (!thing) return null;
+	const width = thing.width * 32;
+	const height = thing.height * 32;
+	const out = new Uint8Array(width * height * 4);
+	for (let layer = 0; layer < thing.layers; layer++) {
+		for (let h = 0; h < thing.height; h++) {
+			for (let w = 0; w < thing.width; w++) {
+				const pixels = sprite(spr, thing.sprites[(layer * thing.height + h) * thing.width + w]);
+				const left = (thing.width - w - 1) * 32;
+				const top = (thing.height - h - 1) * 32;
+				for (let y = 0; y < 32; y++) {
+					for (let x = 0; x < 32; x++) {
+						const from = (y * 32 + x) * 4;
+						if (!pixels[from + 3]) continue;
+						out.set(pixels.subarray(from, from + 4), ((top + y) * width + left + x) * 4);
+					}
+				}
+			}
+		}
+	}
+	const image = cropped(out, width, height);
+	if (!image) return null;
 	if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
 	cache.set(key, image);
 	return image;
