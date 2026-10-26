@@ -16,7 +16,7 @@
 			<div>
 				{#if data.item.description}<p class="description">{data.item.description}</p>{/if}
 				<dl>
-					{#each data.item.attributes as attribute (attribute.label)}<dt>{attribute.label}</dt><dd class="pixel">{attribute.value}</dd>{/each}
+					{#each data.item.attributes as attribute, i (i)}<dt>{attribute.label}</dt><dd class="pixel">{attribute.value}</dd>{/each}
 				</dl>
 				{#if data.spell}
 					<p>{data.spell.kind === 'rune' ? 'Rune of' : 'Made with'} <a href="/library/spells#{encodeURIComponent(data.spell.name)}">{data.spell.name}</a>{data.spell.words ? ` (${data.spell.words})` : ''}.</p>

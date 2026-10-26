@@ -103,6 +103,7 @@
 						<label class="stack grow">What changed (for the history) <input name="message" maxlength="200" /></label>
 						{#if data.reload}
 							<label class="check"><input type="checkbox" name="reload" /> Apply now (reload {data.reload})</label>
+							{#if data.reload === 'monsters'}<span class="muted small">Creatures already on the map keep their old values until they respawn.</span>{/if}
 						{:else}
 							<span class="muted small">Goes live at the next server save (needs a restart).</span>
 						{/if}

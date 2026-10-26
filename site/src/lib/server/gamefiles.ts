@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import luaparse from 'luaparse';
-import { XMLValidator } from 'fast-xml-parser';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import { config } from './config';
 
 // The game server's editable files: a git repository in the game-files
@@ -111,8 +111,30 @@ export function checkContent(file: string, content: string): string | null {
 	} else if (file.endsWith('.xml')) {
 		const result = XMLValidator.validate(content);
 		if (result !== true) return `XML, line ${result.err.line}: ${result.err.msg}`;
+		const text = strayText(content);
+		if (text) return `XML: text outside the tags ("${text.slice(0, 40)}"); the game's XML files keep everything in tags and attributes`;
 	}
 	return null;
+}
+
+// The game's XML files have no text between tags, so text there is a typo
+// (valid XML, but the server would ignore it silently)
+const textFinder = new XMLParser({ preserveOrder: true, ignoreAttributes: true, ignoreDeclaration: true, commentPropName: '#comment' });
+type OrderedNode = Record<string, OrderedNode[] | string>;
+function strayText(content: string): string | null {
+	const walk = (nodes: OrderedNode[]): string | null => {
+		for (const node of nodes) {
+			for (const [key, value] of Object.entries(node)) {
+				if (key === '#text' && String(value).trim()) return String(value).trim();
+				if (key !== '#comment' && Array.isArray(value)) {
+					const found = walk(value);
+					if (found) return found;
+				}
+			}
+		}
+		return null;
+	};
+	return walk(textFinder.parse(content) as OrderedNode[]);
 }
 
 export async function saveStaged(file: string, content: string, by: string, message: string) {

@@ -15,7 +15,7 @@
 				<div>
 					<h2>{group.town}</h2>
 					<ul>
-						{#each group.npcs as npc (npc.slug)}
+						{#each group.npcs as npc, i (i)}
 							<li id={npc.slug}>{npc.name}{#if npc.floor !== null && npc.floor !== 0}<span class="muted"> · {npc.floor > 0 ? `floor +${npc.floor}` : `underground ${-npc.floor}`}</span>{/if}</li>
 						{/each}
 					</ul>

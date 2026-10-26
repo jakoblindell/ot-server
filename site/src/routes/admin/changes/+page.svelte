@@ -32,7 +32,7 @@
 			<div class="panel-head"><h2>Last server start</h2><span class="mono muted">{data.start.started}</span></div>
 			<div class="panel-body">
 				{#if data.start.notes.length}
-					<ul class="notes">{#each data.start.notes as note (note)}<li class:bad={note.startsWith('CONFLICT')}>{note}</li>{/each}</ul>
+					<ul class="notes">{#each data.start.notes as note, index (index)}<li class:bad={note.startsWith('CONFLICT')}>{note}</li>{/each}</ul>
 				{:else}
 					<p class="muted">Nothing to apply.</p>
 				{/if}
@@ -61,6 +61,7 @@
 							<button class="btn small-btn" type="button" onclick={() => (open[file.path] = !open[file.path])}>{open[file.path] ? 'Hide' : 'Show'} diff</button>
 							{#if file.reload}
 								<form method="POST" action="?/apply"><input type="hidden" name="file" value={file.path} /><button class="btn small-btn primary">Apply now (reload {file.reload})</button></form>
+								{#if file.reload === 'monsters'}<span class="muted small">Creatures already on the map keep their old values until they respawn.</span>{/if}
 							{:else}
 								<span class="muted small">needs a restart</span>
 							{/if}

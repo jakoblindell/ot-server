@@ -31,7 +31,7 @@
 					<table class="table">
 						<thead><tr><th>Name</th><th>Words</th><th class="num">Magic level</th><th class="num">Mana</th><th>Vocations</th><th>Premium</th></tr></thead>
 						<tbody>
-							{#each group.spells as spell (spell.kind + spell.name)}
+							{#each group.spells as spell, i (i)}
 								<tr id={encodeURIComponent(spell.name)}>
 									<td>
 										{#if spell.runeId}<img class="rune" src="/item/{spell.runeId}.png" alt="" loading="lazy" />{/if}

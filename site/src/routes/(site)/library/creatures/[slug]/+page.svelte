@@ -49,7 +49,7 @@
 				{#if c.loot.length}
 					<table class="table loot">
 						<tbody>
-							{#each c.loot as item (item.id)}
+							{#each c.loot as item, i (i)}
 								{@const r = rarity(item.percent)}
 								<tr>
 									<td class="icon"><img src="/item/{item.id}.png" alt="" loading="lazy" /></td>
@@ -75,13 +75,13 @@
 			<div class="card-head"><h2>Abilities</h2></div>
 			<div class="card-body list">
 				<ul>
-					{#each c.attacks as attack (attack)}<li>{attack}</li>{/each}
-					{#each c.defenses as defense (defense)}<li>{defense} <span class="muted">(defence)</span></li>{/each}
+					{#each c.attacks as attack, i (i)}<li>{attack}</li>{/each}
+					{#each c.defenses as defense, i (i)}<li>{defense} <span class="muted">(defence)</span></li>{/each}
 					{#if c.summons.length}<li>Summons {c.summons.join(', ')}</li>{/if}
 				</ul>
 				{#if c.immunities.length}
 					<h3>Immune to</h3>
-					<p class="tags">{#each c.immunities as immunity (immunity)}<span class="tag">{title(immunity)}</span>{/each}</p>
+					<p class="tags">{#each c.immunities as immunity, i (i)}<span class="tag">{title(immunity)}</span>{/each}</p>
 				{/if}
 			</div>
 		</section>

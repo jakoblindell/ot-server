@@ -297,7 +297,10 @@ async function loadLibrary(): Promise<Library> {
 	for (const creature of creatures.values()) {
 		for (const loot of creature.loot) {
 			const list = droppedBy.get(loot.id) ?? [];
-			list.push({ creature: creature.name, slug: creature.slug, percent: loot.percent });
+			// A creature can list an item more than once (several stacks): once here
+			const same = list.find((drop) => drop.slug === creature.slug);
+			if (same) same.percent = Math.max(same.percent, loot.percent);
+			else list.push({ creature: creature.name, slug: creature.slug, percent: loot.percent });
 			droppedBy.set(loot.id, list);
 		}
 	}

@@ -41,7 +41,7 @@
 			{#if data.query.length >= 2}
 				{#if data.results.length}
 					<ul class="results">
-						{#each data.results as result (result.kind + result.href + result.name)}
+						{#each data.results as result, i (i)}
 							<li>
 								<span class="icon">{#if result.image}<img src={result.image} alt="" loading="lazy" />{/if}</span>
 								<span class="text"><a href={result.href}>{result.name}</a><span class="detail">{result.detail}</span></span>
