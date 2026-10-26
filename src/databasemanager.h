@@ -32,6 +32,9 @@ class DatabaseManager
 		static bool optimizeTables();
 		// Account names as text and room for salted password hashes
 		static bool updateAccountColumns();
+		// Znote's power gamers columns (data/globalevents/scripts/powergamers.lua),
+		// for databases created before deploy/db/04-powergamers.sql
+		static bool updatePowerGamerColumns();
 
 		static bool getDatabaseConfig(const std::string& config, int32_t& value);
 		static void registerDatabaseConfig(const std::string& config, int32_t value);

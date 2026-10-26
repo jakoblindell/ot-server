@@ -236,6 +236,10 @@ void mainLoader(int, char*[], ServiceManager* services)
 		startupErrorMessage("Unable to update the accounts table.");
 		return;
 	}
+	if (!DatabaseManager::updatePowerGamerColumns()) {
+		startupErrorMessage("Unable to update the znote_players table.");
+		return;
+	}
 	g_databaseTasks.start();
 
 	if (g_config.getBoolean(ConfigManager::OPTIMIZE_DATABASE) && !DatabaseManager::optimizeTables()) {

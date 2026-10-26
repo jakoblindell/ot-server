@@ -75,6 +75,34 @@ bool DatabaseManager::updateAccountColumns()
 	return db->executeQuery("ALTER TABLE `accounts` MODIFY `name` VARCHAR(32) NOT NULL, MODIFY `password` VARCHAR(255) NOT NULL");
 }
 
+bool DatabaseManager::updatePowerGamerColumns()
+{
+	if (!tableExists("znote_players")) {
+		return true;
+	}
+
+	Database* db = Database::getInstance();
+	std::ostringstream query;
+	query << "SELECT `COLUMN_NAME` FROM `information_schema`.`columns` WHERE `TABLE_SCHEMA` = " << db->escapeString(g_config.getString(ConfigManager::MYSQL_DB))
+	      << " AND `TABLE_NAME` = 'znote_players' AND `COLUMN_NAME` = 'onlinetimeall'";
+	if (db->storeQuery(query.str())) {
+		return true;
+	}
+
+	std::cout << "> Updating the znote_players table: power gamers columns" << std::endl;
+	std::ostringstream alter;
+	alter << "ALTER TABLE `znote_players` ADD COLUMN IF NOT EXISTS `exphist_lastexp` BIGINT NOT NULL DEFAULT 0";
+	for (int day = 1; day <= 7; ++day) {
+		alter << ", ADD COLUMN IF NOT EXISTS `exphist" << day << "` BIGINT NOT NULL DEFAULT 0";
+	}
+	alter << ", ADD COLUMN IF NOT EXISTS `onlinetimetoday` INT UNSIGNED NOT NULL DEFAULT 0";
+	for (int day = 1; day <= 7; ++day) {
+		alter << ", ADD COLUMN IF NOT EXISTS `onlinetime" << day << "` INT UNSIGNED NOT NULL DEFAULT 0";
+	}
+	alter << ", ADD COLUMN IF NOT EXISTS `onlinetimeall` INT UNSIGNED NOT NULL DEFAULT 0";
+	return db->executeQuery(alter.str());
+}
+
 bool DatabaseManager::isDatabaseSetup()
 {
 	Database* db = Database::getInstance();
