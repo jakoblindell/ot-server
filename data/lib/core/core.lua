@@ -11,3 +11,5 @@ dofile('data/lib/core/teleport.lua')
 dofile('data/lib/core/tile.lua')
 dofile('data/lib/core/vocation.lua')
 dofile('data/lib/core/guildwars.lua')
+dofile('data/lib/core/commands.lua')
+

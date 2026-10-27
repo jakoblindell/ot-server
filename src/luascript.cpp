@@ -2076,6 +2076,7 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "showTextDialog", LuaScriptInterface::luaPlayerShowTextDialog);
 
 	registerMethod("Player", "sendTextMessage", LuaScriptInterface::luaPlayerSendTextMessage);
+	registerMethod("Player", "sendExtendedOpcode", LuaScriptInterface::luaPlayerSendExtendedOpcode);
 	registerMethod("Player", "sendPrivateMessage", LuaScriptInterface::luaPlayerSendPrivateMessage);
 	registerMethod("Player", "channelSay", LuaScriptInterface::luaPlayerChannelSay);
 	registerMethod("Player", "openChannel", LuaScriptInterface::luaPlayerOpenChannel);
@@ -8338,6 +8339,22 @@ int LuaScriptInterface::luaPlayerShowTextDialog(lua_State* L)
 	item->setParent(player);
 	player->setWriteItem(item, length);
 	player->sendTextWindow(item, length, canWrite);
+	pushBoolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerSendExtendedOpcode(lua_State* L)
+{
+	// player:sendExtendedOpcode(opcode, buffer)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+
+	uint8_t opcode = getNumber<uint8_t>(L, 2);
+	const std::string& buffer = getString(L, 3);
+	player->sendExtendedOpcode(opcode, buffer);
 	pushBoolean(L, true);
 	return 1;
 }

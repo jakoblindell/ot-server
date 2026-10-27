@@ -36,6 +36,7 @@
 #include "ban.h"
 #include "scheduler.h"
 #include "monsters.h"
+#include "luascript.h"
 
 extern Monsters g_monsters;
 extern ConfigManager g_config;
@@ -427,6 +428,57 @@ void ProtocolGame::sendNpcDialog(const std::string& json)
 	msg.addByte(EXTENDED_OPCODE_NPC_DIALOG);
 	msg.addString(json);
 	writeToOutputBuffer(msg);
+}
+
+// Any extended opcode, for Lua scripts (Player:sendExtendedOpcode); only our
+// clients (OTClient, the browser client) understand them
+void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string& buffer)
+{
+	const auto connection = getConnection();
+	if (!player || !connection) {
+		return;
+	}
+	if (!connection->isWebSocketConnection() && player->getOperatingSystem() < CLIENTOS_OTCLIENT_LINUX) {
+		return;
+	}
+
+	NetworkMessage msg;
+	msg.addByte(0x32);
+	msg.addByte(opcode);
+	msg.addString(buffer);
+	writeToOutputBuffer(msg);
+}
+
+extern LuaEnvironment g_luaEnvironment;
+
+static constexpr uint8_t EXTENDED_OPCODE_CHAT_COMMANDS = 104;
+
+// The chat commands this character may use, for our client's / and !
+// suggestions (ot-client#24): built by chatCommandsJson in
+// data/lib/core/commands.lua. Sent on entering the game, so a reconnect gets
+// it too.
+void ProtocolGame::sendChatCommands()
+{
+	if (!player) {
+		return;
+	}
+	lua_State* L = g_luaEnvironment.getLuaState();
+	lua_getglobal(L, "chatCommandsJson");
+	if (!lua_isfunction(L, -1)) {
+		lua_pop(L, 1);
+		return;
+	}
+	LuaScriptInterface::pushUserdata<Player>(L, player);
+	LuaScriptInterface::setMetatable(L, -1, "Player");
+	if (lua_pcall(L, 1, 1, 0) != 0) {
+		std::cout << "[Error - sendChatCommands] " << lua_tostring(L, -1) << std::endl;
+		lua_pop(L, 1);
+		return;
+	}
+	if (lua_isstring(L, -1)) {
+		sendExtendedOpcode(EXTENDED_OPCODE_CHAT_COMMANDS, lua_tostring(L, -1));
+	}
+	lua_pop(L, 1);
 }
 
 static constexpr uint8_t EXTENDED_OPCODE_MONSTER_HEALTH = 102;
@@ -1824,6 +1876,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	player->sendIcons();
 	sendVocation();
 	sendMonsterHealth();
+	sendChatCommands();
 }
 
 void ProtocolGame::sendMoveCreature(const Creature* creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)

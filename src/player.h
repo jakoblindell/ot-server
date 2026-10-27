@@ -790,6 +790,11 @@ class Player final : public Creature, public Cylinder
 				client->sendNpcDialog(json);
 			}
 		}
+		void sendExtendedOpcode(uint8_t opcode, const std::string& buffer) const {
+			if (client) {
+				client->sendExtendedOpcode(opcode, buffer);
+			}
+		}
 		void sendCorpseMark(const Position& pos, uint16_t clientId, bool opened) const {
 			if (client) {
 				client->sendCorpseMark(pos, clientId, opened);

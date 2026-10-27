@@ -893,6 +893,7 @@ class LuaScriptInterface
 		static int luaPlayerShowTextDialog(lua_State* L);
 
 		static int luaPlayerSendTextMessage(lua_State* L);
+		static int luaPlayerSendExtendedOpcode(lua_State* L);
 		static int luaPlayerSendPrivateMessage(lua_State* L);
 
 		static int luaPlayerChannelSay(lua_State* L);

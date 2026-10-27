@@ -78,6 +78,8 @@ class ProtocolGame final : public Protocol
 		void sendMonsterHealth();
 		// The NPC dialog of our client (JSON, see BehaviourDatabase::sendDialog)
 		void sendNpcDialog(const std::string& json);
+		void sendExtendedOpcode(uint8_t opcode, const std::string& buffer);
+		void sendChatCommands();
 
 		uint16_t getVersion() const {
 			return version;
