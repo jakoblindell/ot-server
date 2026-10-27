@@ -1812,6 +1812,7 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 
 	std::ostringstream json;
 	json << "{\"npc\":" << jsonString(npc->getName()) << ",\"id\":" << npc->getID() << ",\"text\":" << jsonString(text);
+	json << ",\"money\":" << player->getMoney();
 	json << ",\"question\":" << (topic != 0 && text.find('?') != std::string::npos ? "true" : "false");
 
 	// Keywords the answer mentions (as with highlighted words in later clients)
