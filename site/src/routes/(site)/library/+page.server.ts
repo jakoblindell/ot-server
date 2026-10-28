@@ -1,3 +1,5 @@
+import { publicCreature } from '$lib/server/creaturepublic';
+import { getCatalog } from '$lib/server/itemcatalog';
 import { creatureImage, getLibrary } from '$lib/server/library';
 import type { PageServerLoad } from './$types';
 
@@ -7,11 +9,13 @@ export const load: PageServerLoad = async ({ url }) => {
 	const library = await getLibrary();
 	const query = (url.searchParams.get('q') ?? '').trim().toLowerCase().slice(0, 40);
 	const kind = url.searchParams.get('kind') ?? 'all';
+	const catalog = await getCatalog();
+	const listedItems = [...library.items.values()].filter((item) => catalog.categoryOf.has(item.id));
 	const creatures = [...library.creatures.values()];
 	const counts = {
 		creature: creatures.length,
 		spell: library.spells.length,
-		item: library.items.size,
+		item: listedItems.length,
 		npc: library.npcs.length
 	};
 	let results: Result[] = [];
@@ -24,7 +28,7 @@ export const load: PageServerLoad = async ({ url }) => {
 					.map((creature) => ({
 						kind: 'creature' as const,
 						name: creature.name,
-						detail: `HP ${creature.health} · Exp ${creature.experience}`,
+						detail: `${publicCreature(creature).health} · ${publicCreature(creature).experience.toLowerCase()} experience`,
 						href: `/library/creatures/${creature.slug}`,
 						image: creatureImage(creature.look)
 					}))
@@ -45,7 +49,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		}
 		if (kind === 'all' || kind === 'item') {
 			results.push(
-				...[...library.items.values()]
+				...listedItems
 					.filter((item) => match(item.name))
 					.slice(0, 80)
 					.map((item) => ({

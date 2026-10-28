@@ -12,6 +12,7 @@
 				{ href: '/admin/log', label: 'Console', show: data.staff.can.server },
 				{ href: '/admin/files', label: 'Server files', show: data.staff.can.files },
 				{ href: '/admin/monsters', label: 'Monsters', show: data.staff.can.files },
+				{ href: '/admin/library', label: 'Library', show: data.staff.can.files },
 				{ href: '/admin/changes', label: 'Pending changes', show: data.staff.can.files },
 				{ href: '/admin/config', label: 'Config & rates', show: data.staff.can.files },
 				{ href: '/admin/backups', label: 'Backups', show: data.staff.can.server }

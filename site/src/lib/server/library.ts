@@ -22,8 +22,9 @@ export type Creature = {
 	summonCost: number | null;
 	convinceCost: number | null;
 	look: { type: number; head: number; body: number; legs: number; feet: number; item: number };
-	attacks: string[];
-	defenses: string[];
+	/** strongest hit of each (absolute); players only see a strength (creaturepublic.ts) */
+	attacks: { name: string; max: number }[];
+	defenses: { name: string; max: number }[];
 	immunities: string[];
 	summons: string[];
 	voices: string[];
@@ -158,9 +159,8 @@ async function loadItems() {
 }
 
 function describeAttack(attack: Record<string, string>) {
-	const range = attack.min || attack.max ? ` ${Math.abs(num(attack.min))}–${Math.abs(num(attack.max))}` : '';
 	const name = attack.name === 'melee' ? 'Melee' : attack.name.replace(/^\w/, (c) => c.toUpperCase());
-	return `${name}${range}`;
+	return { name, max: Math.max(Math.abs(num(attack.min)), Math.abs(num(attack.max))) };
 }
 
 async function loadCreatures(items: Map<number, Item>) {

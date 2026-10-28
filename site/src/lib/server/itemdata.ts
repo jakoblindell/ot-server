@@ -3,7 +3,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { config } from './config';
+import { getHiddenItems } from './itemcatalog';
 import { getLibrary } from './library';
+import { readNpcTrades } from './npctrades';
 import { RARITIES, isHidden, lootShownUpTo, rarityTier } from './rarity';
 import { getStatusRates } from './status';
 
@@ -71,47 +73,15 @@ const WEAPON_TYPES: Record<string, string> = {
 	SWORD: 'sword', AXE: 'axe', CLUB: 'club', DISTANCE: 'distance', WAND: 'wand', SHIELD: 'shield', AMMO: 'ammunition'
 };
 
-type NpcTrades = { name: string; sell: Map<string, number>; buy: Map<string, number> };
-
-/** What each NPC pays and asks: its trade lines ("sell" lines are what it buys) */
-async function readNpcTrades(): Promise<NpcTrades[]> {
-	const dir = path.join(config.gameData, 'npc');
-	const npcs: NpcTrades[] = [];
-	for (const file of (await readdir(dir)).sort()) {
-		if (!file.endsWith('.npc')) continue;
-		const text = await readFile(path.join(dir, file), 'latin1');
-		const name = text.match(/^Name\s*=\s*"([^"]+)"/m)?.[1];
-		if (!name) continue;
-		const npc: NpcTrades = { name, sell: new Map(), buy: new Map() };
-		for (const line of text.split('\n')) {
-			// (lines for an amount, %1, repeat the one-item price; "11*20" is a
-			// backpack of them)
-			if (line.includes('%1') || /Price=\d+\*/.test(line)) continue;
-			const id = line.match(/Type=(\d+)/)?.[1];
-			const amount = Number(line.match(/Amount=(\d+)/)?.[1]);
-			const price = Number(line.match(/Price=(\d+)/)?.[1]);
-			if (!id || !amount || Number.isNaN(price)) continue;
-			const data = line.match(/Data=(\d+)/)?.[1];
-			const key = data && data !== '0' ? `${id}:${data}` : id;
-			const each = Math.floor(price / amount);
-			if (/^\s*"sell"/.test(line)) {
-				npc.sell.set(key, Math.max(npc.sell.get(key) ?? 0, each));
-			} else if (each > 0) {
-				npc.buy.set(key, Math.min(npc.buy.get(key) ?? Infinity, each));
-			}
-		}
-		if (npc.sell.size || npc.buy.size) npcs.push(npc);
-	}
-	return npcs;
-}
-
 async function build(): Promise<Built> {
 	const library = await getLibrary();
 	const npcTrades = await readNpcTrades();
 	const data: Omit<ItemData, 'version'> = { npcs: [], creatures: [], items: {}, fluids: {} };
 
+	// items staff keep hidden are left out entirely
+	const hiddenItems = await getHiddenItems();
 	for (const item of library.items.values()) {
-		if (!item.flags.includes('Take')) continue;
+		if (!item.flags.includes('Take') || hiddenItems.has(item.id)) continue;
 		const a = item.attributes;
 		const entry: ItemEntry = { n: item.name.replace(ARTICLE, '') };
 		if (a.Weight) entry.w = Number(a.Weight) / 100;

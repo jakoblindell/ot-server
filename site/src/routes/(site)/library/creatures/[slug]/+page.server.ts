@@ -1,6 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { query } from '$lib/server/db';
 import { getStatusRates } from '$lib/server/status';
+import { getCatalog } from '$lib/server/itemcatalog';
+import { lootAmount, publicCreature } from '$lib/server/creaturepublic';
 import { creatureImage, getLibrary } from '$lib/server/library';
 import { byRarity, isHidden, lootShownUpTo, rarity, rarityTier } from '$lib/server/rarity';
 import type { PageServerLoad } from './$types';
@@ -20,21 +22,25 @@ export const load: PageServerLoad = async ({ params }) => {
 	const lootRate = (await getStatusRates()).loot;
 	// hidden drops: one "Unknown" line at the end, nothing about them
 	const shownUpTo = await lootShownUpTo();
+	const { hidden: hiddenItems } = await getCatalog();
 	let unknown = false;
 	const loot = creature.loot
 		.flatMap((item) => {
 			const chance = Math.min(100, item.percent * lootRate);
 			const tier = rarityTier(chance);
-			if (isHidden(item, tier, shownUpTo)) {
+			if (isHidden(item, tier, shownUpTo) || hiddenItems.has(item.id)) {
 				unknown = true;
 				return [];
 			}
-			return [{ id: item.id, name: item.name, countMax: item.countMax, tier, rarity: rarity(chance) as string }];
+			return [{ id: item.id, name: item.name, amount: lootAmount(item.countMax), tier, rarity: rarity(chance) as string }];
 		})
-		.sort(byRarity);
-	if (unknown) loot.push({ id: 0, name: 'Unknown', countMax: 0, tier: 99, rarity: 'Unknown' });
+		.sort(byRarity)
+		// several stacks of one item (gold): once, at its commonest
+		.filter((item, index, all) => all.findIndex((other) => other.id === item.id) === index);
+	if (unknown) loot.push({ id: 0, name: 'Unknown', amount: '', tier: 99, rarity: 'Unknown' });
 	return {
-		creature: { ...creature, loot },
+		// words, not numbers (lib/server/creaturepublic.ts)
+		creature: { ...publicCreature(creature), loot },
 		image: creatureImage(creature.look),
 		killsThisWeek: Number(kills?.count ?? 0)
 	};

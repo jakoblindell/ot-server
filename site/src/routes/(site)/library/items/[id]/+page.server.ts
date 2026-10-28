@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { getCatalog } from '$lib/server/itemcatalog';
 import { getLibrary } from '$lib/server/library';
 import { byRarity, isHidden, lootShownUpTo, rarity, rarityTier } from '$lib/server/rarity';
 import { getStatusRates } from '$lib/server/status';
@@ -21,7 +22,8 @@ const SHOWN: Record<string, string> = {
 export const load: PageServerLoad = async ({ params }) => {
 	const library = await getLibrary();
 	const item = /^\d+$/.test(params.id) ? library.items.get(Number(params.id)) : undefined;
-	if (!item) error(404, 'No such item');
+	// (not listed: rubbish, corpses, or kept hidden by staff)
+	if (!item || !(await getCatalog()).categoryOf.has(item.id)) error(404, 'No such item');
 	const attributes = Object.entries(item.attributes)
 		.filter(([key]) => key in SHOWN)
 		.map(([key, value]) => ({ label: SHOWN[key], value: key === 'Weight' ? (Number(value) / 100).toFixed(2) : value }));

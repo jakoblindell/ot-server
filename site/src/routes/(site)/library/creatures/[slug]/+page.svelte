@@ -22,14 +22,14 @@
 					{#if c.voices.length}<p class="voice">“{c.voices[0]}”</p>{/if}
 					<p class="tags">
 						{#if c.race}<span class="tag">{title(c.race)}</span>{/if}
-						<span class="tag">Summonable: {c.summonCost !== null ? `${c.summonCost} mana` : 'No'}</span>
-						<span class="tag">Convinceable: {c.convinceCost !== null ? `${c.convinceCost} mana` : 'No'}</span>
+						<span class="tag">Summonable: {c.summonable ? 'Yes' : 'No'}</span>
+						<span class="tag">Convinceable: {c.convinceable ? 'Yes' : 'No'}</span>
 					</p>
 					<div class="stats">
-						<div><span class="label">Hit points</span><span class="pixel value">{c.health}</span></div>
-						<div><span class="label">Experience</span><span class="pixel value">{c.experience}</span></div>
-						<div><span class="label">Armor</span><span class="pixel value">{c.armor}</span></div>
-						<div><span class="label">Speed</span><span class="pixel value">{c.speed}</span></div>
+						<div><span class="label">Toughness</span><span class="value">{c.health}</span></div>
+						<div><span class="label">Experience</span><span class="value">{c.experience}</span></div>
+						<div><span class="label">Armor</span><span class="value">{c.armor}</span></div>
+						<div><span class="label">Speed</span><span class="value">{c.speed}</span></div>
 					</div>
 				</div>
 			</div>
@@ -46,7 +46,7 @@
 									{#if item.id}
 										<td class="icon"><img src="/item/{item.id}.png" alt="" loading="lazy" /></td>
 										<td><a href="/library/items/{item.id}">{item.name}</a></td>
-										<td class="pixel">{item.countMax > 1 ? `1–${item.countMax}` : '1'}</td>
+										<td>{item.amount}</td>
 										<td class="rarity">
 											<span class="bars">{#each [1, 2, 3, 4, 5] as bar (bar)}<span class:on={bars(item.tier) >= bar}></span>{/each}</span>
 											{item.rarity}
@@ -71,8 +71,8 @@
 			<div class="card-head"><h2>Abilities</h2></div>
 			<div class="card-body list">
 				<ul>
-					{#each c.attacks as attack, i (i)}<li>{attack}</li>{/each}
-					{#each c.defenses as defense, i (i)}<li>{defense} <span class="muted">(defence)</span></li>{/each}
+					{#each c.attacks as attack, i (i)}<li>{attack.name}{#if attack.strength}{' '}<span class="muted">({attack.strength})</span>{/if}</li>{/each}
+					{#each c.defenses as defense, i (i)}<li>{defense.name} <span class="muted">(defence{defense.strength ? `, ${defense.strength}` : ''})</span></li>{/each}
 					{#if c.summons.length}<li>Summons {c.summons.join(', ')}</li>{/if}
 				</ul>
 				{#if c.immunities.length}
@@ -85,7 +85,7 @@
 			<div class="card-head"><h2>Found</h2></div>
 			<div class="card-body list">
 				{#if c.spawns.length}
-					<ul>{#each c.spawns as spawn (spawn.town)}<li>Around {spawn.town} <span class="muted">({spawn.count})</span></li>{/each}</ul>
+					<ul>{#each c.spawns as town (town)}<li>Around {town}</li>{/each}</ul>
 				{:else}
 					<p class="none">Not on the map (summoned or raids only).</p>
 				{/if}

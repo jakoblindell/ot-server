@@ -10,7 +10,8 @@
 	const labels: Record<string, string> = { creature: 'Creature', item: 'Item', spell: 'Spell', npc: 'NPC' };
 	const colors: Record<string, string> = { creature: '#7a2418', item: '#6b4a1a', spell: '#2b3f6b', npc: '#2f4a2a' };
 	const topics = [
-		{ href: '/library/creatures', title: 'Creatures', text: 'Every creature: hit points, experience, loot and where it lives.' },
+		{ href: '/library/creatures', title: 'Creatures', text: 'Every creature: how tough it is, what it carries and where it lives.' },
+		{ href: '/library/items', title: 'Items', text: 'Weapons, armor and everything else, by category.' },
 		{ href: '/library/spells', title: 'Spells & runes', text: 'Words, levels, mana and who can cast them.' },
 		{ href: '/library/npcs', title: 'NPCs', text: 'Who is where, from Rookgaard to Port Hope.' },
 		{ href: '/houses', title: 'Houses', text: 'Every house, its rent and its owner.' }

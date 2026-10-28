@@ -21,9 +21,8 @@
 					<tr>
 						<th></th>
 						<th><a href="?sort=name">Name</a></th>
-						<th class="num"><a href="?sort=health">Hit points</a></th>
+						<th class="num"><a href="?sort=health">Toughness</a></th>
 						<th class="num"><a href="?sort=experience">Experience</a></th>
-						<th class="num">Spawns</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -31,9 +30,8 @@
 						<tr>
 							<td class="icon">{#if creature.image}<img src={creature.image} alt="" loading="lazy" />{/if}</td>
 							<td><a href="/library/creatures/{creature.slug}">{creature.name}</a></td>
-							<td class="num pixel">{creature.health}</td>
-							<td class="num pixel">{creature.experience}</td>
-							<td class="num pixel">{creature.spawns || '–'}</td>
+							<td class="num">{creature.health}</td>
+							<td class="num">{creature.experience}</td>
 						</tr>
 					{/each}
 				</tbody>
