@@ -30,7 +30,7 @@
 			{#if data.droppedBy.length}
 				<ul class="drops">
 					{#each data.droppedBy as drop (drop.slug)}
-						<li><a href="/library/creatures/{drop.slug}">{drop.creature}</a> <span class="muted">{drop.percent < 1 ? drop.percent.toFixed(2) : drop.percent}%</span></li>
+						<li><a href="/library/creatures/{drop.slug}">{drop.creature}</a> <span class="muted">{drop.rarity}</span></li>
 					{/each}
 				</ul>
 			{:else}

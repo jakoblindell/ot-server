@@ -4,6 +4,8 @@ import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { config } from './config';
 import { getLibrary } from './library';
+import { RARITIES, isHidden, lootShownUpTo, rarityTier } from './rarity';
+import { getStatusRates } from './status';
 
 // The game data file for our client (ot-client#31): every item that can be
 // picked up, with its stats, which NPCs buy and sell it and which creatures
@@ -12,10 +14,11 @@ import { getLibrary } from './library';
 //
 // {"version":"…","npcs":["Rashid",…],"creatures":["Rat",…],
 //  "items":{"3297":{"n":"serpent sword","w":41,"t":"sword","atk":26,"def":15,
-//    "sell":[[npc,price]],"buy":[[npc,price]],"drop":[[creature,percent]]}},
+//    "sell":[[npc,price]],"buy":[[npc,price]],"drop":[[creature,rarity]]}},
 //  "fluids":{"2874:10":{"sell":[…],"buy":[…]}}}
 // sell: NPCs that pay this for one (you sell to them); buy: NPCs that ask
-// this for one (you buy from them). npc/creature are indexes into the lists.
+// this for one (you buy from them). npc/creature/rarity are indexes into the
+// lists ("rarities": Always, Common, ...); drop chances never leave the server.
 
 type Trade = [number, number];
 type ItemEntry = {
@@ -36,6 +39,7 @@ type ItemData = {
 	version: string;
 	npcs: string[];
 	creatures: string[];
+	rarities?: string[];
 	items: Record<string, ItemEntry>;
 	fluids: Record<string, { sell?: Trade[]; buy?: Trade[] }>;
 };
@@ -43,6 +47,11 @@ type Built = { version: string; json: string; gzip: Buffer };
 
 const TTL = 10 * 60_000;
 let cached: { at: number; built: Promise<Built> } | undefined;
+
+/** Built again on the next request (loot visibility changed) */
+export function resetItemData() {
+	cached = undefined;
+}
 
 /** The current data file, built once and kept for ten minutes */
 export function getItemData(): Promise<Built> {
@@ -142,11 +151,22 @@ async function build(): Promise<Built> {
 		target.buy?.sort((x, y) => x[1] - y[1]);
 	}
 
+	// a rarity tier (an index into "rarities"), never the drop chance; by
+	// tier and name, so the order says nothing either (lib/server/rarity.ts)
+	const lootRate = (await getStatusRates()).loot;
+	const shownUpTo = await lootShownUpTo();
 	for (const [id, drops] of library.droppedBy) {
 		const entry = data.items[id];
 		if (!entry) continue;
-		entry.drop = drops.map((drop) => [index(data.creatures, drop.creature), drop.percent] as Trade);
+		const visible = drops
+			.map((drop) => ({ name: drop.creature, hidden: drop.hidden, tier: rarityTier(Math.min(100, drop.percent * lootRate)) }))
+			.filter((drop) => !isHidden(drop, drop.tier, shownUpTo));
+		if (!visible.length) continue;
+		entry.drop = visible
+			.sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name))
+			.map((drop) => [index(data.creatures, drop.name), drop.tier] as Trade);
 	}
+	data.rarities = [...RARITIES];
 
 	const body = JSON.stringify(data);
 	const version = createHash('sha256').update(body).digest('hex').slice(0, 12);

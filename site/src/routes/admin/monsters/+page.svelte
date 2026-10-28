@@ -30,6 +30,20 @@
 {#if !data.available}
 	<p class="flash error">The game files are not set up yet: the server creates them on its first start.</p>
 {:else}
+	<form method="post" action="?/lootVisibility" class="panel loot-visibility">
+		<div class="panel-body">
+			<label>
+				Players see loot up to
+				<select name="tier">
+					{#each data.rarities as name, tier (name)}
+						<option value={tier} selected={tier === data.lootShownUpTo}>{tier === data.rarities.length - 1 ? `${name} (all)` : name}</option>
+					{/each}
+				</select>
+			</label>
+			<button class="btn small-btn">Save</button>
+			<span class="muted">Rarer drops, and drops ticked under "Players see", show as Unknown on the website and in the client. Exact chances are never shown to players.</span>
+		</div>
+	</form>
 	<datalist id="item-names">
 		{#each data.items as [id, name] (id)}<option value={id}>{name}</option>{/each}
 	</datalist>

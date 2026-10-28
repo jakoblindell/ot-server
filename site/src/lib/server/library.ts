@@ -7,7 +7,8 @@ import { config } from './config';
 // own data files, so it always matches the game. Read once and kept for ten
 // minutes (staff edits to the files show up after that).
 
-export type Loot = { id: number; name: string; countMax: number; percent: number };
+/** hidden: staff marked it (hidden="1" on its loot line): players see "Unknown" */
+export type Loot = { id: number; name: string; countMax: number; percent: number; hidden: boolean };
 export type Creature = {
 	slug: string;
 	name: string;
@@ -58,7 +59,7 @@ type Library = {
 	spells: Spell[];
 	items: Map<number, Item>;
 	npcs: Npc[];
-	droppedBy: Map<number, { creature: string; slug: string; percent: number }[]>;
+	droppedBy: Map<number, { creature: string; slug: string; percent: number; hidden: boolean }[]>;
 };
 
 const TTL = 10 * 60_000;
@@ -238,7 +239,8 @@ async function loadCreatures(items: Map<number, Item>) {
 					id: num(item.id),
 					name: items.get(num(item.id))?.name ?? `item ${item.id}`,
 					countMax: num(item.countmax, 1),
-					percent: Math.min(100, num(item.chance, 1000) / 10)
+					percent: Math.min(100, num(item.chance, 1000) / 10),
+					hidden: item.hidden === '1'
 				}))
 				.sort((a, b) => b.percent - a.percent),
 			spawns: [...byTown.entries()].map(([town, count]) => ({ town, count })).sort((a, b) => b.count - a.count),
@@ -293,14 +295,16 @@ async function loadNpcs() {
 async function loadLibrary(): Promise<Library> {
 	const items = await loadItems();
 	const [creatures, spells, npcs] = await Promise.all([loadCreatures(items), loadSpells(), loadNpcs()]);
-	const droppedBy = new Map<number, { creature: string; slug: string; percent: number }[]>();
+	const droppedBy = new Map<number, { creature: string; slug: string; percent: number; hidden: boolean }[]>();
 	for (const creature of creatures.values()) {
 		for (const loot of creature.loot) {
 			const list = droppedBy.get(loot.id) ?? [];
 			// A creature can list an item more than once (several stacks): once here
 			const same = list.find((drop) => drop.slug === creature.slug);
-			if (same) same.percent = Math.max(same.percent, loot.percent);
-			else list.push({ creature: creature.name, slug: creature.slug, percent: loot.percent });
+			if (same) {
+				same.percent = Math.max(same.percent, loot.percent);
+				same.hidden = same.hidden && loot.hidden;
+			} else list.push({ creature: creature.name, slug: creature.slug, percent: loot.percent, hidden: loot.hidden });
 			droppedBy.set(loot.id, list);
 		}
 	}

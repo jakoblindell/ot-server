@@ -51,7 +51,7 @@ export const load: PageServerLoad = async ({ url }) => {
 					.map((item) => ({
 						kind: 'item' as const,
 						name: item.name,
-						detail: library.droppedBy.get(item.id)?.length ? `dropped by ${library.droppedBy.get(item.id)!.length} creatures` : `item ${item.id}`,
+						detail: library.droppedBy.get(item.id)?.some((drop) => !drop.hidden) ? 'dropped by creatures' : `item ${item.id}`,
 						href: `/library/items/${item.id}`,
 						image: `/item/${item.id}.png`
 					}))

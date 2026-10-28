@@ -2,7 +2,9 @@ import { fail } from '@sveltejs/kit';
 import { commandResult, sendCommand } from '$lib/server/commands';
 import { applyNow, available, checkContent, readStaged, safePath, saveStaged } from '$lib/server/gamefiles';
 import { getLibrary } from '$lib/server/library';
+import { resetItemData } from '$lib/server/itemdata';
 import { cleanNode, listMonsters, parseMonster, writeMonster } from '$lib/server/monsters';
+import { RARITIES, lootShownUpTo, setLootShownUpTo } from '$lib/server/rarity';
 import { audit, requireStaff } from '$lib/server/staff';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -31,6 +33,8 @@ export const load: PageServerLoad = async (event) => {
 	const { items } = await getLibrary();
 	return {
 		available: true as const,
+		lootShownUpTo: await lootShownUpTo(),
+		rarities: [...RARITIES],
 		monsters,
 		editor,
 		items: editor ? [...items.values()].map((item) => [item.id, item.name] as [number, string]) : []
@@ -38,6 +42,17 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
+	// Players see drops up to this rarity; rarer ones are "Unknown"
+	lootVisibility: async (event) => {
+		await requireStaff(event, 'files');
+		const form = await event.request.formData();
+		const tier = Number(form.get('tier'));
+		if (!Number.isInteger(tier) || tier < 0 || tier >= RARITIES.length) return fail(400, { error: 'Pick a rarity.' });
+		await setLootShownUpTo(tier);
+		resetItemData();
+		await audit(event, 'settings.loot', `Players see loot up to ${RARITIES[tier]}`);
+		return { message: tier === RARITIES.length - 1 ? 'Players see all loot (except drops marked hidden).' : `Drops rarer than ${RARITIES[tier]} show as Unknown.` };
+	},
 	save: async (event) => {
 		const staff = await requireStaff(event, 'files');
 		const form = await event.request.formData();

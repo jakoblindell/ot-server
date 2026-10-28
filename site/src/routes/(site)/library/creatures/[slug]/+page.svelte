@@ -1,16 +1,8 @@
 <script lang="ts">
 	let { data } = $props();
 	const c = $derived(data.creature);
-	// Rarity by the chance with the server's loot rate
-	const rarity = (percent: number) => {
-		const chance = Math.min(100, percent * data.lootRate);
-		if (chance >= 100) return { label: 'Always', bars: 5 };
-		if (chance >= 25) return { label: 'Common', bars: 4 };
-		if (chance >= 5) return { label: 'Uncommon', bars: 3 };
-		if (chance >= 1) return { label: 'Semi-rare', bars: 2 };
-		return { label: 'Rare', bars: 1 };
-	};
-	const percent = (value: number) => `${Math.min(100, value * data.lootRate).toFixed(value * data.lootRate < 1 ? 2 : 1).replace(/\.0+$/, '')}%`;
+	// More bars for commoner loot (the page only gets the rarity)
+	const bars = (tier: number) => Math.max(1, 5 - tier);
 	const title = (text: string) => text.replace(/^\w/, (letter) => letter.toUpperCase());
 </script>
 
@@ -44,21 +36,25 @@
 		</section>
 
 		<section class="card" aria-labelledby="l-h">
-			<div class="card-head"><h2 id="l-h">Loot</h2>{#if data.lootRate !== 1}<span class="note">with the server's loot rate ×{data.lootRate}</span>{/if}</div>
+			<div class="card-head"><h2 id="l-h">Loot</h2></div>
 			<div class="card-body">
 				{#if c.loot.length}
 					<table class="table loot">
 						<tbody>
 							{#each c.loot as item, i (i)}
-								{@const r = rarity(item.percent)}
 								<tr>
-									<td class="icon"><img src="/item/{item.id}.png" alt="" loading="lazy" /></td>
-									<td><a href="/library/items/{item.id}">{item.name}</a></td>
-									<td class="pixel">{item.countMax > 1 ? `1–${item.countMax}` : '1'}</td>
-									<td class="rarity" title={percent(item.percent)}>
-										<span class="bars">{#each [1, 2, 3, 4, 5] as bar (bar)}<span class:on={r.bars >= bar}></span>{/each}</span>
-										{r.label} <span class="muted">{percent(item.percent)}</span>
-									</td>
+									{#if item.id}
+										<td class="icon"><img src="/item/{item.id}.png" alt="" loading="lazy" /></td>
+										<td><a href="/library/items/{item.id}">{item.name}</a></td>
+										<td class="pixel">{item.countMax > 1 ? `1–${item.countMax}` : '1'}</td>
+										<td class="rarity">
+											<span class="bars">{#each [1, 2, 3, 4, 5] as bar (bar)}<span class:on={bars(item.tier) >= bar}></span>{/each}</span>
+											{item.rarity}
+										</td>
+									{:else}
+										<td class="icon unknown" aria-hidden="true">?</td>
+										<td colspan="3" class="muted"><em>Unknown</em>: some of what it carries is still a mystery.</td>
+									{/if}
 								</tr>
 							{/each}
 						</tbody>
@@ -103,6 +99,11 @@
 </main>
 
 <style>
+	.unknown {
+		text-align: center;
+		font-weight: bold;
+		color: var(--muted, #888);
+	}
 	.columns {
 		width: 100%;
 		padding-top: 28px;

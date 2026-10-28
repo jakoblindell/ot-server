@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { MonsterNode } from '$lib/monster';
 	import LootList from './LootList.svelte';
+	import { rarity } from '$lib/rarity';
 
 	// <loot> (or a container's <inside>): one row per <item>, with its picture
 	// and name. The comment after an item names it, as in the files; it is
@@ -32,11 +33,18 @@
 		const value = Number(chance);
 		return Number.isFinite(value) && chance !== '' ? `${Math.min(100, value / 10).toFixed(value < 10 ? 1 : 0)}%` : '';
 	};
+	// what players see instead of the chance (before the loot rate)
+	const tier = (chance: string) => (chance !== '' && Number.isFinite(Number(chance)) ? rarity(Math.min(100, Number(chance) / 10)) : '');
+	// hidden="1": players see "Unknown" (the game server ignores the attribute)
+	const setHidden = (item: MonsterNode, hidden: boolean) => {
+		if (hidden) set(item, 'hidden', '1');
+		else item.attrs = item.attrs.filter(([name]) => name !== 'hidden');
+	};
 </script>
 
 <table class="loot">
 	<thead>
-		<tr><th></th><th>Item</th><th>Id</th><th>Max count</th><th>Chance (of 1000)</th><th></th></tr>
+		<tr><th></th><th>Item</th><th>Id</th><th>Max count</th><th>Chance (of 1000)</th><th>Players see</th><th></th></tr>
 	</thead>
 	<tbody>
 		{#each rows as row (row.index)}
@@ -53,12 +61,18 @@
 					<input class="num" value={get(item, 'chance')} oninput={(event) => set(item, 'chance', event.currentTarget.value)} />
 					<span class="muted">{percent(get(item, 'chance'))}</span>
 				</td>
+				<td>
+					<label class="seen" title="Hidden: players see Unknown on the website and in the client">
+						<input type="checkbox" checked={get(item, 'hidden') === '1'} onchange={(event) => setHidden(item, event.currentTarget.checked)} />
+						{get(item, 'hidden') === '1' ? 'Unknown' : tier(get(item, 'chance'))}
+					</label>
+				</td>
 				<td><button type="button" class="btn small-btn danger" onclick={() => remove(row.index)}>Remove</button></td>
 			</tr>
 			{#if inside}
 				<tr class="inside">
 					<td></td>
-					<td colspan="5">
+					<td colspan="6">
 						<span class="muted">Inside:</span>
 						<LootList bind:node={item.children[item.children.indexOf(inside)]} {names} />
 					</td>
@@ -81,6 +95,9 @@
 	}
 	.num {
 		width: 80px;
+	}
+	.seen {
+		white-space: nowrap;
 	}
 	.inside td {
 		padding-top: 0;
