@@ -452,18 +452,17 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string& buffer)
 extern LuaEnvironment g_luaEnvironment;
 
 static constexpr uint8_t EXTENDED_OPCODE_CHAT_COMMANDS = 104;
+static constexpr uint8_t EXTENDED_OPCODE_ITEM_PRICES = 105;
 
-// The chat commands this character may use, for our client's / and !
-// suggestions (ot-client#24): built by chatCommandsJson in
-// data/lib/core/commands.lua. Sent on entering the game, so a reconnect gets
-// it too.
-void ProtocolGame::sendChatCommands()
+// Sends what the Lua function `name` returns for this player (a JSON string,
+// or a list of them) as extended opcodes for our client
+void ProtocolGame::sendLuaJson(uint8_t opcode, const char* name)
 {
 	if (!player) {
 		return;
 	}
 	lua_State* L = g_luaEnvironment.getLuaState();
-	lua_getglobal(L, "chatCommandsJson");
+	lua_getglobal(L, name);
 	if (!lua_isfunction(L, -1)) {
 		lua_pop(L, 1);
 		return;
@@ -471,14 +470,39 @@ void ProtocolGame::sendChatCommands()
 	LuaScriptInterface::pushUserdata<Player>(L, player);
 	LuaScriptInterface::setMetatable(L, -1, "Player");
 	if (lua_pcall(L, 1, 1, 0) != 0) {
-		std::cout << "[Error - sendChatCommands] " << lua_tostring(L, -1) << std::endl;
+		std::cout << "[Error - " << name << "] " << lua_tostring(L, -1) << std::endl;
 		lua_pop(L, 1);
 		return;
 	}
 	if (lua_isstring(L, -1)) {
-		sendExtendedOpcode(EXTENDED_OPCODE_CHAT_COMMANDS, lua_tostring(L, -1));
+		sendExtendedOpcode(opcode, lua_tostring(L, -1));
+	} else if (lua_istable(L, -1)) {
+		// several parts (a string is at most 8 KB)
+		for (size_t i = 1, n = lua_objlen(L, -1); i <= n; ++i) {
+			lua_rawgeti(L, -1, i);
+			if (lua_isstring(L, -1)) {
+				sendExtendedOpcode(opcode, lua_tostring(L, -1));
+			}
+			lua_pop(L, 1);
+		}
 	}
 	lua_pop(L, 1);
+}
+
+// The chat commands this character may use, for our client's / and !
+// suggestions (ot-client#24): built by chatCommandsJson in
+// data/lib/core/commands.lua. Sent on entering the game, so a reconnect gets
+// it too.
+void ProtocolGame::sendChatCommands()
+{
+	sendLuaJson(EXTENDED_OPCODE_CHAT_COMMANDS, "chatCommandsJson");
+}
+
+// What NPCs pay and ask for items, for our client's hunt analyzer
+// (ot-client#29): itemPricesJson in data/lib/core/prices.lua
+void ProtocolGame::sendItemPrices()
+{
+	sendLuaJson(EXTENDED_OPCODE_ITEM_PRICES, "itemPricesJson");
 }
 
 static constexpr uint8_t EXTENDED_OPCODE_MONSTER_HEALTH = 102;
@@ -1877,6 +1901,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	sendVocation();
 	sendMonsterHealth();
 	sendChatCommands();
+	sendItemPrices();
 }
 
 void ProtocolGame::sendMoveCreature(const Creature* creature, const Position& newPos, int32_t newStackPos, const Position& oldPos, int32_t oldStackPos, bool teleport)

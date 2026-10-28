@@ -80,6 +80,8 @@ class ProtocolGame final : public Protocol
 		void sendNpcDialog(const std::string& json);
 		void sendExtendedOpcode(uint8_t opcode, const std::string& buffer);
 		void sendChatCommands();
+		void sendItemPrices();
+		void sendLuaJson(uint8_t opcode, const char* name);
 
 		uint16_t getVersion() const {
 			return version;
