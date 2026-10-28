@@ -29,6 +29,8 @@ type ItemEntry = {
 	sell?: Trade[];
 	buy?: Trade[];
 	drop?: Trade[];
+	/** a fixed value (coins) */
+	v?: number;
 };
 type ItemData = {
 	version: string;
@@ -128,6 +130,11 @@ async function build(): Promise<Built> {
 				else if (data.items[key]) addTrade(data.items[key], kind, npcIndex, price);
 			}
 		}
+	}
+	// coins are worth their value (no NPC trades them)
+	for (const [id, value] of [[3031, 1], [3035, 100], [3043, 10000]] as const) {
+		const coin = data.items[id];
+		if (coin) coin.v = value;
 	}
 	// best offers first
 	for (const target of [...Object.values(data.items), ...Object.values(data.fluids)]) {
