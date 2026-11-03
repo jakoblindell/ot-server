@@ -358,6 +358,12 @@ function DailyHunts.addKill(player, hunts)
 	end
 	kills = kills + 1
 	player:setStorageValue(S.kills, kills)
+	addEvent(function(cid)
+		local target = Player(cid)
+		if target then
+			DailyHunts.sendStatus(target)
+		end
+	end, 0, player:getId())
 	local hunt = huntsById[id]
 	if kills >= required then
 		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, 'Daily hunt done: ' .. kills .. ' ' .. hunt.name .. '. Return to a taskmaster for your reward.')
@@ -488,18 +494,22 @@ function DailyHunts.talk(npc, player, what)
 		return nil
 	end
 	local now = os.time()
+	local answer
 	if DailyHunts.checkExpired(player, now) then
-		local lines = { 'You did not finish your hunt in time. It has failed and your streak is lost.' }
+		answer = { 'You did not finish your hunt in time. It has failed and your streak is lost.' }
 		if what == 'task' then
-			table.insert(lines, notAvailable(player, now))
+			table.insert(answer, notAvailable(player, now))
 		end
-		return lines
+	else
+		answer = handler(npc, player, now)
 	end
-	return handler(npc, player, now)
+	DailyHunts.sendStatus(player)
+	return answer
 end
 
 -- Login: tell about a hunt that failed while away, or how one is going
 function DailyHunts.onLogin(player)
+	player:registerEvent('DailyHuntOpcode')
 	if DailyHunts.checkExpired(player) then
 		player:sendTextMessage(MESSAGE_STATUS_CONSOLE_ORANGE, 'Your daily hunt ran out of time and failed. Your streak is lost.')
 		return
@@ -512,3 +522,67 @@ function DailyHunts.onLogin(player)
 end
 
 NpcScripts.dailyhunt = DailyHunts.talk
+
+-- Status for !dailyhunt and the client's Tasks page --------------------------
+
+DailyHunts.OPCODE = 106 -- (105: hunt analyzer prices, ot-client#29)
+
+-- state: locked (below the level) | available | active | done (hand in) |
+-- waiting (had today's)
+function DailyHunts.status(player)
+	local now = os.time()
+	DailyHunts.checkExpired(player, now)
+	local day = DailyHunts.gameDay(now)
+	local status = {
+		minLevel = config.minLevel,
+		streak = DailyHunts.currentStreak(player, day),
+		streakMax = #config.streak,
+		multiplier = config.streak,
+		expiry = config.expiry,
+	}
+	local id = get(player, S.hunt)
+	local hunt = huntsById[id]
+	if player:getLevel() < config.minLevel then
+		status.state = 'locked'
+	elseif hunt then
+		status.kills = get(player, S.kills)
+		status.required = get(player, S.required)
+		status.state = status.kills >= status.required and 'done' or 'active'
+		status.timeLeft = math.max(0, get(player, S.pickedAt) + config.expiry - now)
+		status.hunt = { name = hunt.name, monsters = hunt.monsters, group = DailyHunts.levelGroup(hunt.level[1]) }
+	else
+		local at = DailyHunts.availableAt(player, now)
+		status.state = at > now and 'waiting' or 'available'
+		status.availableIn = math.max(0, at - now)
+	end
+	return status
+end
+
+-- The status in words (!dailyhunt)
+function DailyHunts.statusText(player)
+	local s = DailyHunts.status(player)
+	local lines = {}
+	if s.state == 'locked' then
+		lines[1] = 'Daily hunts start at level ' .. s.minLevel .. '.'
+	elseif s.state == 'available' then
+		lines[1] = 'Your daily hunt is ready. Ask a taskmaster for a task.'
+	elseif s.state == 'waiting' then
+		lines[1] = 'You have had your daily hunt. The next one is ready in ' .. DailyHunts.duration(s.availableIn) .. '.'
+	elseif s.state == 'done' then
+		lines[1] = 'Daily hunt done: ' .. s.kills .. ' ' .. s.hunt.name .. '. Return to a taskmaster for your reward (' ..
+			DailyHunts.duration(s.timeLeft) .. ' left).'
+	else
+		lines[1] = 'Daily hunt: ' .. s.kills .. ' of ' .. s.required .. ' ' .. s.hunt.name .. ', ' ..
+			DailyHunts.duration(s.timeLeft) .. ' left.'
+	end
+	if s.streak > 0 then
+		lines[#lines + 1] = 'Streak: ' .. s.streak .. (s.streak == 1 and ' day' or ' days') .. ' (' ..
+			config.streak[math.min(s.streak + 1, #config.streak)] .. 'x experience on your next hunt).'
+	end
+	return table.concat(lines, '\n')
+end
+
+-- Our client's Tasks page: {"daily":{...}}
+function DailyHunts.sendStatus(player)
+	player:sendExtendedOpcode(DailyHunts.OPCODE, json.encode({ daily = DailyHunts.status(player) }))
+end

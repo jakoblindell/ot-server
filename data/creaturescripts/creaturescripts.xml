@@ -11,6 +11,7 @@
 	<!-- Daily hunts (ot-server#21): monsters="all" registers it on every monster -->
 	<event type="death" name="DailyHuntKill" monsters="all" script="daily_hunts.lua" />
 	<event type="login" name="DailyHuntLogin" script="daily_hunts_login.lua" />
+	<event type="extendedopcode" name="DailyHuntOpcode" script="daily_hunts_opcode.lua" />
 
 	<!-- Killing In The Name Of Quest -->
 	<event type="death" name="KillingInTheNameOf" script="killing_in_the_name_of.lua" />

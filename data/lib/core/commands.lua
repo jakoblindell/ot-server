@@ -65,6 +65,7 @@ ChatCommands = {
 
 	-- Everyone
 	{words = "!serverinfo", params = {}, need = "player", text = "Show the experience, skill, magic and loot rates."},
+	{words = "!dailyhunt", params = {}, need = "player", text = "Your daily hunt: progress, time left and streak."},
 	{words = "!uptime", params = {}, need = "player", text = "How long the server has been running."},
 	{words = "!deathlist", params = {"player name"}, need = "player", text = "Show a player's recent deaths."},
 	{words = "!kills", params = {}, need = "player", text = "Show your unjustified kills."},
