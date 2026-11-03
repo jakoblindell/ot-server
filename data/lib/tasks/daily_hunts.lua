@@ -42,6 +42,47 @@ local function index()
 end
 index()
 
+-- Spawns on the map per monster name (data/world792/spawns.xml), read once
+local spawnCounts
+local function readSpawns()
+	spawnCounts = {}
+	local mapName = configManager and configKeys and configManager.getString(configKeys.MAP_NAME) or 'map'
+	local file = io.open('data/world792/spawns.xml', 'r') or io.open('data/world792/' .. mapName .. '-spawn.xml', 'r')
+	if not file then
+		return
+	end
+	for name in file:read('*a'):gmatch('<monster name="([^"]+)"') do
+		name = name:lower()
+		spawnCounts[name] = (spawnCounts[name] or 0) + 1
+	end
+	file:close()
+end
+
+function DailyHunts.spawns(hunt)
+	if not spawnCounts then
+		readSpawns()
+	end
+	if not next(spawnCounts) then
+		return nil -- no spawn file: no limits
+	end
+	local total = 0
+	for _, name in ipairs(hunt.monsters) do
+		total = total + (spawnCounts[name:lower()] or 0)
+	end
+	return total
+end
+
+-- Enough of its monsters on the map for a hunt
+function DailyHunts.onMap(hunt)
+	local spawns = DailyHunts.spawns(hunt)
+	return spawns == nil or spawns >= config.minSpawns
+end
+
+function DailyHunts.spawnCap(hunt)
+	local spawns = DailyHunts.spawns(hunt)
+	return spawns and math.max(1, math.floor(spawns * config.killsPerSpawn)) or nil
+end
+
 function DailyHunts.getHunt(id)
 	return huntsById[id]
 end
@@ -183,7 +224,7 @@ end
 function DailyHunts.eligible(level)
 	local list = {}
 	for _, hunt in ipairs(DailyHunts.hunts) do
-		if level >= hunt.level[1] and level <= hunt.level[2] then
+		if level >= hunt.level[1] and level <= hunt.level[2] and DailyHunts.onMap(hunt) then
 			table.insert(list, hunt)
 		end
 	end
@@ -223,13 +264,30 @@ local function pickHunt(player)
 	return list[#list]
 end
 
-local function rollKills(hunt)
+-- How many to kill: rises from kills[1] at the hunt's lowest level to
+-- kills[2] at its `full` level, +-variance, never more than the map's
+-- spawns allow, rounded to 5 when that large
+function DailyHunts.killCount(hunt, level, roll)
+	roll = roll or math.random()
 	local low, high = hunt.kills[1], hunt.kills[2]
-	local count = math.random(low, high)
-	if high - low >= 10 then
+	local from = hunt.level[1]
+	local full = hunt.full or (hunt.level[2] >= 999 and from + config.openEndedSpan or hunt.level[2])
+	local along = full > from and math.max(0, math.min(1, (level - from) / (full - from))) or 0
+	local count = (low + (high - low) * along) * (1 + config.variance * (roll * 2 - 1))
+	local cap = DailyHunts.spawnCap(hunt)
+	if cap then
+		count = math.min(count, cap)
+	end
+	if count >= 20 then
 		count = math.floor(count / 5 + 0.5) * 5
+	else
+		count = math.floor(count + 0.5)
 	end
 	return math.max(1, count)
+end
+
+local function rollKills(hunt, level)
+	return DailyHunts.killCount(hunt, level)
 end
 
 -- Rewards --------------------------------------------------------------------
@@ -406,7 +464,7 @@ function handlers.task(npc, player, now)
 		return 'I have no hunt for someone of your strength right now.'
 	end
 	local day = DailyHunts.gameDay(now)
-	local required = rollKills(hunt)
+	local required = rollKills(hunt, player:getLevel())
 	player:setStorageValue(S.hunt, hunt.id)
 	player:setStorageValue(S.kills, 0)
 	player:setStorageValue(S.required, required)
