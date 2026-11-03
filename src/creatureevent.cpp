@@ -38,6 +38,8 @@ CreatureEvents::~CreatureEvents()
 
 void CreatureEvents::clear()
 {
+	monsterEvents.clear();
+
 	//clear creature events
 	for (const auto& it : creatureEvents) {
 		it.second->clearEvent();
@@ -65,12 +67,21 @@ Event* CreatureEvents::getEvent(const std::string& nodeName)
 	return new CreatureEvent(&scriptInterface);
 }
 
-bool CreatureEvents::registerEvent(Event* event, const pugi::xml_node&)
+bool CreatureEvents::registerEvent(Event* event, const pugi::xml_node& node)
 {
 	CreatureEvent* creatureEvent = static_cast<CreatureEvent*>(event); //event is guaranteed to be a CreatureEvent
 	if (creatureEvent->getEventType() == CREATURE_EVENT_NONE) {
 		std::cout << "Error: [CreatureEvents::registerEvent] Trying to register event without type!" << std::endl;
 		return false;
+	}
+
+	// monsters="all": every monster gets this event (e.g. kill credit for tasks)
+	pugi::xml_attribute monstersAttribute = node.attribute("monsters");
+	if (monstersAttribute && asLowerCaseString(monstersAttribute.as_string()) == "all") {
+		const std::string& name = creatureEvent->getName();
+		if (std::find(monsterEvents.begin(), monsterEvents.end(), name) == monsterEvents.end()) {
+			monsterEvents.push_back(name);
+		}
 	}
 
 	CreatureEvent* oldEvent = getEventByName(creatureEvent->getName(), false);

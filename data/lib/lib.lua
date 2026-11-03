@@ -3,3 +3,6 @@ dofile('data/lib/core/core.lua')
 
 -- Compatibility library for our old Lua API
 dofile('data/lib/compat/compat.lua')
+
+-- Daily hunts and hunting tasks (ot-server#21)
+dofile('data/lib/tasks/daily_hunts.lua')

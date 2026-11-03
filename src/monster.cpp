@@ -23,10 +23,12 @@
 #include "game.h"
 #include "spells.h"
 #include "configmanager.h"
+#include "creatureevent.h"
 
 extern ConfigManager g_config;
 extern Game g_game;
 extern Monsters g_monsters;
+extern CreatureEvents* g_creatureEvents;
 
 int32_t Monster::despawnRange;
 int32_t Monster::despawnRadius;
@@ -61,6 +63,9 @@ Monster::Monster(MonsterType* mtype) :
 		if (!registerCreatureEvent(scriptName)) {
 			std::cout << "[Warning - Monster::Monster] Unknown event name: " << scriptName << std::endl;
 		}
+	}
+	for (const std::string& scriptName : g_creatureEvents->getMonsterEvents()) {
+		registerCreatureEvent(scriptName);
 	}
 }
 

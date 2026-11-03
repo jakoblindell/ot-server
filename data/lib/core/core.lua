@@ -13,3 +13,5 @@ dofile('data/lib/core/vocation.lua')
 dofile('data/lib/core/guildwars.lua')
 dofile('data/lib/core/commands.lua')
 
+dofile('data/lib/core/json.lua')
+dofile('data/lib/core/npcscripts.lua')

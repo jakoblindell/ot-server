@@ -159,6 +159,8 @@
 	<action itemid="3481" script="misc/closed_trap.lua" />
 	<action itemid="3482" script="misc/open_trap.lua" />
 	<action itemid="3218" script="misc/present.lua" />
+	<!-- Daily hunt presents (ot-server#21): the present with action id 47101-47107 -->
+	<action fromaid="47101" toaid="47107" script="misc/surprise_box.lua" />
 	<action itemid="2977" script="misc/pumpkin_head.lua" />
 	<action itemid="2916" script="misc/used_lamp.lua" />
 	<action itemid="3229" script="misc/helmet_of_the_ancients.lua" />

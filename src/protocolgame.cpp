@@ -277,7 +277,10 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	enableXTEAEncryption();
 	setXTEAKey(key);
 
-	if (operatingSystem >= CLIENTOS_OTCLIENT_LINUX) {
+	// lets our clients send extended opcodes too (the browser client comes
+	// over a WebSocket and may report any operating system)
+	const auto handshakeConnection = getConnection();
+	if (operatingSystem >= CLIENTOS_OTCLIENT_LINUX || (handshakeConnection && handshakeConnection->isWebSocketConnection())) {
 		NetworkMessage opcodeMessage;
 		opcodeMessage.addByte(0x32);
 		opcodeMessage.addByte(0x00);
