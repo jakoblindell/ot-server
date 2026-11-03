@@ -14,6 +14,7 @@
 		{ href: '/library/items', title: 'Items', text: 'Weapons, armor and everything else, by category.' },
 		{ href: '/library/spells', title: 'Spells & runes', text: 'Words, levels, mana and who can cast them.' },
 		{ href: '/library/npcs', title: 'NPCs', text: 'Who is where, from Rookgaard to Port Hope.' },
+		{ href: '/library/daily-hunts', title: 'Daily hunts', text: 'A hunt a day at the taskmaster: how it works, streaks and surprise boxes.' },
 		{ href: '/houses', title: 'Houses', text: 'Every house, its rent and its owner.' }
 	];
 </script>

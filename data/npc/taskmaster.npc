@@ -1,0 +1,35 @@
+# GIMUD - Graphical Interface Multi User Dungeon
+# taskmaster.npc: daily hunts (ot-server#21). The answers come from Lua:
+# data/lib/tasks/daily_hunts.lua (Script("dailyhunt.<what>")).
+
+Name = "Taskmaster"
+Outfit = (129,95-116-121-115-0)
+Home = [32369,32241,7]
+Radius = 2
+
+Behaviour = {
+ADDRESS,"hello$",!       -> "Greetings, hunter %N. Looking for a task? I keep track of your progress, hand out your reward, and let you cancel if you must."
+ADDRESS,"hi$",!          -> *
+ADDRESS,!                -> Idle
+BUSY,"hello$",!          -> "One moment, %N.", Queue
+BUSY,"hi$",!             -> *
+BUSY,!                   -> NOP
+VANISH,!                 -> "Good hunting."
+
+"bye"                    -> "Good hunting, %N!", Idle
+"farewell"               -> *
+"job"                    -> "I am the taskmaster. Every day I have a hunt for those who seek one: ask for a task."
+"name"                   -> "Names are for those who stay put. Call me taskmaster."
+"daily"                  -> "Every day I have a hunt for you that fits your strength. Kill what I ask, come back and say reward. Do it day after day and the rewards grow."
+"streak"                 -> "Finish a hunt every day and your streak grows, up to seven days. The longer the streak, the more experience and the better the present. Miss a day, give up or run out of time and it starts over."
+"present"                -> "Every present holds gold, and with luck something more. Harder hunts, more experience and a long streak bring better presents."
+
+"task"                   -> Script("dailyhunt.task")
+"hunt"                   -> *
+"progress"               -> Script("dailyhunt.progress")
+"reward"                 -> Script("dailyhunt.reward")
+"cancel"                 -> Script("dailyhunt.cancel"), Topic=1
+
+Topic=1,"yes"            -> Script("dailyhunt.cancelconfirm")
+Topic=1                  -> "Good. Keep hunting."
+}

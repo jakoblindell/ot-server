@@ -27,10 +27,12 @@
 #include "spells.h"
 #include "monster.h"
 #include "scheduler.h"
+#include "luascript.h"
 
 extern Game g_game;
 extern Monsters g_monsters;
 extern Spells* g_spells;
+extern LuaEnvironment g_luaEnvironment;
 
 BehaviourDatabase::BehaviourDatabase(Npc * _npc) : npc(_npc) {
 	topic = 0;
@@ -364,6 +366,9 @@ bool BehaviourDatabase::loadActions(ScriptReader& script, NpcBehaviour* behaviou
 			} else if (identifier == "teleport") {
 				action->type = BEHAVIOUR_TYPE_TELEPORT;
 				searchType = BEHAVIOUR_PARAMETER_THREE;
+			} else if (identifier == "script") {
+				action->type = BEHAVIOUR_TYPE_SCRIPT;
+				searchType = BEHAVIOUR_PARAMETER_ONE;
 			} else if (identifier == "createcontainer") {
 				action->type = BEHAVIOUR_TYPE_CREATECONTAINER;
 				searchType = BEHAVIOUR_PARAMETER_THREE;
@@ -752,6 +757,7 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 			idle();
 		}
 
+		scriptText.clear();
 		for (const NpcBehaviourAction* action : behaviour->actions) {
 			checkAction(action, player, message);
 		}
@@ -873,6 +879,65 @@ bool BehaviourDatabase::checkCondition(const NpcBehaviourCondition* condition, P
 	}
 
 	return true;
+}
+
+// Script("name"): the NPC's answer comes from Lua (data/lib: onNpcScript).
+// It returns nothing, a line, or a list of lines; each is said like a "..."
+// answer (with %N etc.).
+void BehaviourDatabase::callScript(const std::string& name, Player* player, const std::string& message)
+{
+	lua_State* L = g_luaEnvironment.getLuaState();
+	if (!L) {
+		return;
+	}
+
+	if (!LuaScriptInterface::reserveScriptEnv()) {
+		std::cout << "[Error - BehaviourDatabase::callScript] Call stack overflow" << std::endl;
+		return;
+	}
+
+	ScriptEnvironment* env = LuaScriptInterface::getScriptEnv();
+	env->setScriptId(-1, &g_luaEnvironment);
+
+	std::vector<std::string> replies;
+	lua_getglobal(L, "onNpcScript");
+	if (lua_isfunction(L, -1)) {
+		LuaScriptInterface::pushUserdata<Npc>(L, npc);
+		LuaScriptInterface::setMetatable(L, -1, "Npc");
+		LuaScriptInterface::pushUserdata<Player>(L, player);
+		LuaScriptInterface::setMetatable(L, -1, "Player");
+		LuaScriptInterface::pushString(L, name);
+		LuaScriptInterface::pushString(L, message);
+		if (LuaScriptInterface::protectedCall(L, 4, 1) != 0) {
+			LuaScriptInterface::reportError(nullptr, LuaScriptInterface::popString(L));
+		} else {
+			if (lua_isstring(L, -1)) {
+				replies.push_back(lua_tostring(L, -1));
+			} else if (lua_istable(L, -1)) {
+				size_t length = lua_objlen(L, -1);
+				for (size_t i = 1; i <= length; ++i) {
+					lua_rawgeti(L, -1, i);
+					if (lua_isstring(L, -1)) {
+						replies.push_back(lua_tostring(L, -1));
+					}
+					lua_pop(L, 1);
+				}
+			}
+			lua_pop(L, 1);
+		}
+	} else {
+		lua_pop(L, 1);
+		std::cout << "[Warning - BehaviourDatabase::callScript] onNpcScript is not defined (Script(\"" << name << "\"))" << std::endl;
+	}
+
+	LuaScriptInterface::resetScriptEnv();
+
+	for (const std::string& reply : replies) {
+		const std::string said = parseResponse(player, reply);
+		scriptText += (scriptText.empty() ? "" : " ") + said;
+		delayedEvents.push_back(g_scheduler.addEvent(createSchedulerTask(delay, std::bind(&Npc::doSay, npc, said))));
+		delay += 100 * (message.length() / 5) + 10000;
+	}
 }
 
 void BehaviourDatabase::checkAction(const NpcBehaviourAction* action, Player* player, const std::string& message)
@@ -1047,6 +1112,12 @@ void BehaviourDatabase::checkAction(const NpcBehaviourAction* action, Player* pl
 		int32_t lookType = evaluate(action->expression, player, message);
 
 		player->addOutfit(lookType, 0);
+		break;
+	}
+	case BEHAVIOUR_TYPE_SCRIPT: {
+		if (action->expression && action->expression->type == BEHAVIOUR_TYPE_STRING) {
+			callScript(action->expression->string, player, message);
+		}
 		break;
 	}
 	case BEHAVIOUR_TYPE_TELEPORT: {
@@ -1748,7 +1819,8 @@ void BehaviourDatabase::analyseDialogRules()
 					}
 					break;
 				case BEHAVIOUR_TYPE_TELEPORT: teleports = true; break;
-				case BEHAVIOUR_TYPE_STRING: speaks = true; break;
+				case BEHAVIOUR_TYPE_STRING:
+				case BEHAVIOUR_TYPE_SCRIPT: speaks = true; break;
 				default: break;
 			}
 		}
@@ -1806,6 +1878,8 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 	for (const NpcBehaviourAction* action : behaviour->actions) {
 		if (action->type == BEHAVIOUR_TYPE_STRING) {
 			text += (text.empty() ? "" : " ") + parseResponse(player, action->string);
+		} else if (action->type == BEHAVIOUR_TYPE_SCRIPT && !scriptText.empty()) {
+			text += (text.empty() ? "" : " ") + scriptText;
 		}
 	}
 	const std::string lowerText = asLowerCaseString(text);

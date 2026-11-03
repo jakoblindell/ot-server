@@ -57,6 +57,11 @@ class CreatureEvents final : public BaseEvents
 
 		CreatureEvent* getEventByName(const std::string& name, bool forceLoaded = true);
 
+		// events with monsters="all": registered on every monster when it is created
+		const std::vector<std::string>& getMonsterEvents() const {
+			return monsterEvents;
+		}
+
 	protected:
 		LuaScriptInterface& getScriptInterface() final;
 		std::string getScriptBaseName() const final;
@@ -67,6 +72,7 @@ class CreatureEvents final : public BaseEvents
 		//creature events
 		typedef std::map<std::string, CreatureEvent*> CreatureEventList;
 		CreatureEventList creatureEvents;
+		std::vector<std::string> monsterEvents;
 
 		LuaScriptInterface scriptInterface;
 };

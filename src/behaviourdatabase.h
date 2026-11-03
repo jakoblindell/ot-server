@@ -101,6 +101,7 @@ enum NpcBehaviourType_t
 	BEHAVIOUR_TYPE_SLOTITEM, // get slot item
 	BEHAVIOUR_TYPE_PZFREE, // is player pz not locked
 	BEHAVIOUR_TYPE_CLIENTVERSION, // get client version
+	BEHAVIOUR_TYPE_SCRIPT, // Script("name"): calls the Lua onNpcScript(npc, player, name, message), says what it returns
 };
 
 enum NpcBehaviourOperator_t
@@ -289,6 +290,7 @@ class BehaviourDatabase
 		bool searchWord(const std::string& pattern, const std::string& message);
 
 		std::string parseResponse(Player* player, const std::string& message);
+		void callScript(const std::string& name, Player* player, const std::string& message);
 
 		// The dialog's view of the rules, worked out once
 		struct DialogRule {
@@ -328,6 +330,7 @@ class BehaviourDatabase
 
 		std::list<NpcQueueEntry> queueList;
 		std::vector<uint32_t> delayedEvents;
+		std::string scriptText; // what Script() answered last (for the dialog's keywords)
 		std::list<NpcBehaviour*> behaviourEntries;
 		std::recursive_mutex mutex;
 
