@@ -74,7 +74,7 @@ DailyHunts.boxes = {
 	{ name = 'pink surprise box', weight = 60, gold = 3000, itemChance = 70, items = {
 		{ 3381, 1, 10 }, { 3419, 1, 10 }, { 3380, 1, 10 }, { 3280, 1, 10 }, { 3281, 1, 10 }, { 3079, 1, 5 } } },
 	{ name = 'purple surprise box', weight = 4, gold = 25000, itemChance = 100, items = {
-		{ 3360, 1, 35 }, { 3392, 1, 35 }, { 3079, 1, 30 } } },
+		{ 3079, 1, 10 }, { 3420, 1, 10 }, { 3554, 1, 5 }, { 3360, 1, 10 }, { 3392, 1, 10 } } },
 }
 
 -- The hunts. Each has its own level window and a kill range: kills[1] for
