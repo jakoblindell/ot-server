@@ -642,5 +642,9 @@ end
 
 -- Our client's Tasks page: {"daily":{...}}
 function DailyHunts.sendStatus(player)
-	player:sendExtendedOpcode(DailyHunts.OPCODE, json.encode({ daily = DailyHunts.status(player) }))
+	local payload = { daily = DailyHunts.status(player) }
+	if HuntingTasks and HuntingTasks.status then
+		payload.hunting = HuntingTasks.status(player)
+	end
+	player:sendExtendedOpcode(DailyHunts.OPCODE, json.encode(payload))
 end
