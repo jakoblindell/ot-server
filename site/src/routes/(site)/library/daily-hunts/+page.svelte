@@ -35,6 +35,7 @@
 				<li>A new hunt comes with each server save, and at least {guide.cooldownHours} hours after your last one ended. Finish at 08:00 with the save at 09:00, and the next one is ready at {(8 + guide.cooldownHours).toString().padStart(2, '0')}:00.</li>
 				<li>Once you pick a hunt up you have <strong>{guide.expiryHours} hours</strong> to hand it in. After that it fails and your streak ends.</li>
 				<li>A hunt like “orcs” counts every kind of orc.</li>
+				<li>Free accounts only get hunts they can reach without premium; hunts marked <span class="prem">Premium</span> are for premium accounts.</li>
 			</ul>
 
 			<h2>Streak</h2>
@@ -70,6 +71,7 @@
 							<div class="hunt-head">
 								<strong>{title(hunt.name)}</strong>
 								<span class="lv">Levels {levels(hunt.from, hunt.to)}</span>
+								{#if hunt.premium}<span class="prem" title="Only for premium accounts: its creatures live in premium areas">Premium</span>{/if}
 								<span class="stars" title="Difficulty: harder hunts give better presents" aria-label="Difficulty {hunt.difficulty} of 5">{stars(hunt.difficulty)}</span>
 							</div>
 							<div class="monsters">
@@ -175,6 +177,14 @@
 	.lv {
 		font-size: 15px;
 		color: var(--paper-muted);
+	}
+	.prem {
+		font-size: 13px;
+		font-weight: 700;
+		padding: 0 6px;
+		border-radius: 3px;
+		background: var(--head);
+		color: var(--head-text);
 	}
 	.stars {
 		margin-left: auto;

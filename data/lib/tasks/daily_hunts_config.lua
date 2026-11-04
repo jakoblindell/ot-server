@@ -46,6 +46,22 @@ DailyHunts.config = {
 	variance = 0.15,
 }
 
+-- Areas for daily hunts (ot-server#24). Premium areas are only reachable
+-- with premium (all boat travel is premium); a free account only gets hunts
+-- with at least minSpawns spawns outside them, and its kill count is capped
+-- by those spawns. Excluded areas (Rookgaard) never count. Everything else
+-- is free. Rectangles of {x, y}, all floors; the first match wins.
+-- A hunt can also say `premium = true` (never for free accounts) or
+-- `premium = false` (always), which overrides the areas.
+DailyHunts.areas = {
+	{ name = 'Rookgaard', kind = 'excluded', from = { 31900, 32050 }, to = { 32160, 32300 } },
+	{ name = 'Edron and Cormaya', kind = 'premium', from = { 33020, 31550 }, to = { 33450, 32020 } },
+	{ name = 'Darama (Darashia, Ankrahmun)', kind = 'premium', from = { 32900, 32250 }, to = { 33500, 33100 } },
+	{ name = 'Tiquanda (Port Hope)', kind = 'premium', from = { 32550, 32350 }, to = { 32950, 33100 } },
+	{ name = 'Liberty Bay, Goroma, Nargor', kind = 'premium', from = { 31800, 32500 }, to = { 32550, 33100 } },
+	{ name = 'Ice islands', kind = 'premium', from = { 31800, 31500 }, to = { 32150, 31790 } },
+}
+
 -- Level groups: names for the guide and the NPC, nothing else
 DailyHunts.groups = {
 	{ name = 'Beginner', from = 8 },

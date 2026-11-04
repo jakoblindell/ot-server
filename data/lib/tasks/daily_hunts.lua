@@ -42,44 +42,83 @@ local function index()
 end
 index()
 
--- Spawns on the map per monster name (data/world792/spawns.xml), read once
-local spawnCounts
+-- Which area a position is in (DailyHunts.areas in the config): 'premium',
+-- 'excluded' (Rookgaard) or 'free' (everywhere else)
+function DailyHunts.areaAt(x, y)
+	for _, area in ipairs(DailyHunts.areas or {}) do
+		if x >= area.from[1] and x <= area.to[1] and y >= area.from[2] and y <= area.to[2] then
+			return area.kind, area.name
+		end
+	end
+	return 'free'
+end
+
+-- Spawns on the map per monster name (data/world792/spawns.xml), read once:
+-- all of them (outside excluded areas) and those in free areas
+local spawnCounts, freeCounts
 local function readSpawns()
-	spawnCounts = {}
+	spawnCounts, freeCounts = {}, {}
 	local mapName = configManager and configKeys and configManager.getString(configKeys.MAP_NAME) or 'map'
 	local file = io.open('data/world792/spawns.xml', 'r') or io.open('data/world792/' .. mapName .. '-spawn.xml', 'r')
 	if not file then
 		return
 	end
-	for name in file:read('*a'):gmatch('<monster name="([^"]+)"') do
-		name = name:lower()
-		spawnCounts[name] = (spawnCounts[name] or 0) + 1
-	end
+	local xml = file:read('*a')
 	file:close()
+	for cx, cy, block in xml:gmatch('<spawn centerx="(%d+)" centery="(%d+)"[^>]*>(.-)</spawn>') do
+		local area = DailyHunts.areaAt(tonumber(cx), tonumber(cy))
+		if area ~= 'excluded' then
+			for name in block:gmatch('<monster name="([^"]+)"') do
+				name = name:lower()
+				spawnCounts[name] = (spawnCounts[name] or 0) + 1
+				if area == 'free' then
+					freeCounts[name] = (freeCounts[name] or 0) + 1
+				end
+			end
+		end
+	end
 end
 
-function DailyHunts.spawns(hunt)
+-- The hunt's spawns: everywhere a premium account can go, or only free
+-- areas (freeOnly). nil when there is no spawn file (no limits).
+function DailyHunts.spawns(hunt, freeOnly)
 	if not spawnCounts then
 		readSpawns()
 	end
 	if not next(spawnCounts) then
-		return nil -- no spawn file: no limits
+		return nil
 	end
+	local counts = freeOnly and freeCounts or spawnCounts
 	local total = 0
 	for _, name in ipairs(hunt.monsters) do
-		total = total + (spawnCounts[name:lower()] or 0)
+		total = total + (counts[name:lower()] or 0)
 	end
 	return total
 end
 
--- Enough of its monsters on the map for a hunt
-function DailyHunts.onMap(hunt)
+-- Can a free account do this hunt? `premium = true/false` on the hunt
+-- decides; otherwise it needs minSpawns spawns in free areas
+function DailyHunts.freeAccounts(hunt)
+	if hunt.premium ~= nil then
+		return not hunt.premium
+	end
+	local spawns = DailyHunts.spawns(hunt, true)
+	return spawns == nil or spawns >= config.minSpawns
+end
+
+-- Enough of its monsters on the map (that this account can reach)
+function DailyHunts.onMap(hunt, premium)
+	if premium == false and not DailyHunts.freeAccounts(hunt) then
+		return false
+	end
 	local spawns = DailyHunts.spawns(hunt)
 	return spawns == nil or spawns >= config.minSpawns
 end
 
-function DailyHunts.spawnCap(hunt)
-	local spawns = DailyHunts.spawns(hunt)
+-- At most killsPerSpawn per spawn the account can reach (free accounts:
+-- only spawns in free areas, unless the hunt says otherwise)
+function DailyHunts.spawnCap(hunt, premium)
+	local spawns = DailyHunts.spawns(hunt, premium == false and hunt.premium == nil)
 	return spawns and math.max(1, math.floor(spawns * config.killsPerSpawn)) or nil
 end
 
@@ -221,10 +260,11 @@ function DailyHunts.levelGroup(level)
 	return name
 end
 
-function DailyHunts.eligible(level)
+-- The hunts for this level; premium = false: only hunts free accounts can reach
+function DailyHunts.eligible(level, premium)
 	local list = {}
 	for _, hunt in ipairs(DailyHunts.hunts) do
-		if level >= hunt.level[1] and level <= hunt.level[2] and DailyHunts.onMap(hunt) then
+		if level >= hunt.level[1] and level <= hunt.level[2] and DailyHunts.onMap(hunt, premium) then
 			table.insert(list, hunt)
 		end
 	end
@@ -232,7 +272,7 @@ function DailyHunts.eligible(level)
 end
 
 local function pickHunt(player)
-	local list = DailyHunts.eligible(player:getLevel())
+	local list = DailyHunts.eligible(player:getLevel(), player:isPremium())
 	if #list == 0 then
 		return nil
 	end
@@ -267,14 +307,14 @@ end
 -- How many to kill: rises from kills[1] at the hunt's lowest level to
 -- kills[2] at its `full` level, +-variance, never more than the map's
 -- spawns allow, rounded to 5 when that large
-function DailyHunts.killCount(hunt, level, roll)
+function DailyHunts.killCount(hunt, level, roll, premium)
 	roll = roll or math.random()
 	local low, high = hunt.kills[1], hunt.kills[2]
 	local from = hunt.level[1]
 	local full = hunt.full or (hunt.level[2] >= 999 and from + config.openEndedSpan or hunt.level[2])
 	local along = full > from and math.max(0, math.min(1, (level - from) / (full - from))) or 0
 	local count = (low + (high - low) * along) * (1 + config.variance * (roll * 2 - 1))
-	local cap = DailyHunts.spawnCap(hunt)
+	local cap = DailyHunts.spawnCap(hunt, premium)
 	if cap then
 		count = math.min(count, cap)
 	end
@@ -286,8 +326,8 @@ function DailyHunts.killCount(hunt, level, roll)
 	return math.max(1, count)
 end
 
-local function rollKills(hunt, level)
-	return DailyHunts.killCount(hunt, level)
+local function rollKills(hunt, player)
+	return DailyHunts.killCount(hunt, player:getLevel(), nil, player:isPremium())
 end
 
 -- Rewards --------------------------------------------------------------------
@@ -464,7 +504,7 @@ function handlers.task(npc, player, now)
 		return 'I have no hunt for someone of your strength right now.'
 	end
 	local day = DailyHunts.gameDay(now)
-	local required = rollKills(hunt, player:getLevel())
+	local required = rollKills(hunt, player)
 	player:setStorageValue(S.hunt, hunt.id)
 	player:setStorageValue(S.kills, 0)
 	player:setStorageValue(S.required, required)

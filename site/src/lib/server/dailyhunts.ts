@@ -9,7 +9,7 @@ import { getLibrary, slugify, creatureImage } from './library';
 // windows and the box names. Box chances and kill counts stay server-side.
 
 export type GuideMonster = { name: string; slug: string | null; image: string | null };
-export type GuideHunt = { name: string; from: number; to: number; difficulty: number; monsters: GuideMonster[] };
+export type GuideHunt = { name: string; from: number; to: number; difficulty: number; premium: boolean; monsters: GuideMonster[] };
 export type GuideGroup = { name: string; from: number; to: number | null; hunts: GuideHunt[] };
 export type GuideBox = { name: string; gold: number; rarity: string };
 export type DailyHuntGuide = {
@@ -46,8 +46,37 @@ const hours = (lua: string, key: string, fallback: number) => {
 	return Math.round(seconds / 3600);
 };
 
+type Area = { kind: string; x0: number; y0: number; x1: number; y1: number };
+
+/** Spawns per monster in free areas (as daily_hunts.lua counts them, ot-server#24) */
+async function freeSpawns(lua: string): Promise<Map<string, number> | null> {
+	const areas: Area[] = [];
+	for (const m of lua.matchAll(/kind\s*=\s*'(\w+)',\s*from\s*=\s*\{\s*(\d+),\s*(\d+)\s*\},\s*to\s*=\s*\{\s*(\d+),\s*(\d+)\s*\}/g)) {
+		areas.push({ kind: m[1], x0: Number(m[2]), y0: Number(m[3]), x1: Number(m[4]), y1: Number(m[5]) });
+	}
+	let xml: string;
+	try {
+		xml = await readFile(path.join(config.gameData, `world${config.clientVersion}/spawns.xml`), 'latin1');
+	} catch {
+		return null;
+	}
+	const counts = new Map<string, number>();
+	for (const m of xml.matchAll(/<spawn centerx="(\d+)" centery="(\d+)"[^>]*>([\s\S]*?)<\/spawn>/g)) {
+		const x = Number(m[1]);
+		const y = Number(m[2]);
+		const area = areas.find((a) => x >= a.x0 && x <= a.x1 && y >= a.y0 && y <= a.y1);
+		if (area) continue; // premium or excluded
+		for (const [, name] of m[3].matchAll(/<monster name="([^"]+)"/g)) {
+			counts.set(name.toLowerCase(), (counts.get(name.toLowerCase()) ?? 0) + 1);
+		}
+	}
+	return counts;
+}
+
 async function load(): Promise<DailyHuntGuide> {
 	const lua = await readFile(path.join(config.gameData, 'lib/tasks/daily_hunts_config.lua'), 'utf8');
+	const free = await freeSpawns(lua);
+	const minSpawns = Number(lua.match(/minSpawns\s*=\s*(\d+)/)?.[1] ?? 8);
 	const library = await getLibrary();
 	const creatures = new Map([...library.creatures.values()].map((creature) => [creature.name.toLowerCase(), creature]));
 
@@ -69,7 +98,14 @@ async function load(): Promise<DailyHuntGuide> {
 				image: creature ? creatureImage(creature.look) : null
 			};
 		});
-		const hunt = { name: match[1], from: Number(match[3]), to: Number(match[4]), difficulty: Number(match[5]), monsters };
+		// premium: `premium = true/false` on the hunt, or too few spawns in free areas
+		const start = match.index ?? 0;
+		const end = lua.indexOf('\n', start);
+		const line = lua.slice(start, end < 0 ? undefined : end);
+		const flag = line.match(/premium\s*=\s*(true|false)/)?.[1];
+		const freeCount = [...match[2].matchAll(/'([^']+)'/g)].reduce((total, [, name]) => total + (free?.get(name.toLowerCase()) ?? 0), 0);
+		const premium = flag ? flag === 'true' : free !== null && freeCount < minSpawns;
+		const hunt = { name: match[1], from: Number(match[3]), to: Number(match[4]), difficulty: Number(match[5]), premium, monsters };
 		// listed where the hunt starts
 		const group = [...groups].reverse().find((candidate) => hunt.from >= candidate.from) ?? groups[0];
 		group?.hunts.push(hunt);
