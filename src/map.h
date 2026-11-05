@@ -262,6 +262,16 @@ class Map
 		Spawns spawns;
 		Towns towns;
 		Houses houses;
+
+		// Quest chests found when the map was loaded (ot-server#44): where,
+		// the quest number (a storage key) and the reward inside
+		struct QuestChest {
+			Position position;
+			uint16_t questNumber;
+			uint16_t rewardId;
+			uint16_t rewardCount;
+		};
+		std::vector<QuestChest> questChests;
 	protected:
 		SpectatorCache spectatorCache;
 		SpectatorCache playersSpectatorCache;

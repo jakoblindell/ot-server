@@ -349,6 +349,20 @@ bool IOMap::loadMap(Map* map, const std::string& identifier)
 							item->setItemCount(1);
 						}
 
+						// quest chests, for the Journal (ot-server#44)
+						const int64_t questNumber = item->getIntAttr(ITEM_ATTRIBUTE_CHESTQUESTNUMBER);
+						if (questNumber > 0) {
+							Map::QuestChest chest{ Position(x, y, z), static_cast<uint16_t>(questNumber), 0, 0 };
+							Container* container = item->getContainer();
+							if (container && container->size() > 0) {
+								if (Item* reward = container->getItemByIndex(0)) {
+									chest.rewardId = reward->getID();
+									chest.rewardCount = reward->getItemCount();
+								}
+							}
+							map->questChests.push_back(chest);
+						}
+
 						if (tile) {
 							tile->internalAddThing(item);
 							item->startDecaying();

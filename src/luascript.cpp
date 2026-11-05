@@ -1710,6 +1710,7 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Game", "getSpectators", LuaScriptInterface::luaGameGetSpectators);
 	registerMethod("Game", "getPlayers", LuaScriptInterface::luaGameGetPlayers);
+	registerMethod("Game", "getQuestChests", LuaScriptInterface::luaGameGetQuestChests);
 	registerMethod("Game", "loadMap", LuaScriptInterface::luaGameLoadMap);
 
 	registerMethod("Game", "getExperienceStage", LuaScriptInterface::luaGameGetExperienceStage);
@@ -4013,6 +4014,24 @@ int LuaScriptInterface::luaGameGetPlayers(lua_State* L)
 	for (const auto& playerEntry : g_game.getPlayers()) {
 		pushUserdata<Player>(L, playerEntry.second);
 		setMetatable(L, -1, "Player");
+		lua_rawseti(L, -2, ++index);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaGameGetQuestChests(lua_State* L)
+{
+	// Game.getQuestChests(): { {position, questNumber, rewardId, rewardCount}, ... }
+	const auto& chests = g_game.map.questChests;
+	lua_createtable(L, chests.size(), 0);
+	int index = 0;
+	for (const auto& chest : chests) {
+		lua_createtable(L, 0, 4);
+		pushPosition(L, chest.position);
+		lua_setfield(L, -2, "position");
+		setField(L, "questNumber", chest.questNumber);
+		setField(L, "rewardId", chest.rewardId);
+		setField(L, "rewardCount", chest.rewardCount);
 		lua_rawseti(L, -2, ++index);
 	}
 	return 1;
