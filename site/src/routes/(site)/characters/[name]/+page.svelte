@@ -61,6 +61,27 @@
 			</div>
 		</section>
 
+		<section class="card" aria-labelledby="achievements-h">
+			<div class="card-head">
+				<h2 id="achievements-h">Achievements</h2>
+				<span class="note">{data.achievements.list.length} of {data.achievements.total} · {data.achievements.points} points</span>
+			</div>
+			<div class="card-body">
+				{#if data.achievements.list.length}
+					<ul class="achievements">
+						{#each data.achievements.list as achievement (achievement.name)}
+							<li>
+								<span class="pixel when">{when(achievement.at)}</span>
+								<span><strong>{achievement.name}</strong> <span class="points">{achievement.points} {achievement.points === 1 ? 'point' : 'points'}</span><br />{achievement.text}</span>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="empty">No achievements yet.</p>
+				{/if}
+			</div>
+		</section>
+
 		{#if data.others.length}
 			<section class="card" aria-labelledby="others-h">
 				<div class="card-head"><h2 id="others-h">Other characters</h2></div>
@@ -216,6 +237,28 @@
 	}
 
 	dd a,
+	.achievements {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.achievements li {
+		display: flex;
+		gap: 12px;
+		padding: 6px 0;
+		border-bottom: 1px dashed var(--paper-rule);
+	}
+	.achievements li:last-child {
+		border-bottom: none;
+	}
+	.points {
+		font-size: 14px;
+		color: var(--paper-muted);
+	}
+	.card-head .note {
+		color: var(--hero-soft);
+		font-size: 15px;
+	}
 	.deaths a,
 	.others a {
 		color: var(--paper-text);
