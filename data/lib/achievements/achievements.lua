@@ -246,21 +246,23 @@ function Achievements.status(player)
 	local list, unlocked, points, total = {}, 0, 0, 0
 	for _, achievement in ipairs(Achievements.list) do
 		local at = Achievements.unlockedAt(player, achievement)
-		local entry = { id = achievement.id, category = achievement.category, points = achievement.points }
+		local entry = { category = achievement.category, points = achievement.points }
 		if at then
 			unlocked = unlocked + 1
 			points = points + achievement.points
 			entry.unlockedAt = at
 		end
 		if at or not achievement.hidden then
+			entry.id = achievement.id
 			entry.name = achievement.name
 			entry.text = achievement.text
+			if not at and target(achievement) > 1 then
+				entry.progress = Achievements.progress(player, achievement)
+				entry.target = target(achievement)
+			end
 		else
+			-- a hidden one gives nothing away: no name, text, id or progress
 			entry.hidden = true
-		end
-		if not at and target(achievement) > 1 then
-			entry.progress = Achievements.progress(player, achievement)
-			entry.target = target(achievement)
 		end
 		total = total + achievement.points
 		table.insert(list, entry)
