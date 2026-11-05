@@ -13,6 +13,11 @@
 	<event type="login" name="DailyHuntLogin" script="daily_hunts_login.lua" />
 	<event type="extendedopcode" name="DailyHuntOpcode" script="daily_hunts_opcode.lua" />
 
+	<!-- Achievements (ot-server#30) -->
+	<event type="login" name="AchievementLogin" script="achievements.lua" />
+	<event type="advance" name="AchievementAdvance" script="achievements.lua" />
+	<event type="death" name="AchievementDeath" script="achievements.lua" />
+
 	<!-- Killing In The Name Of Quest -->
 	<event type="death" name="KillingInTheNameOf" script="killing_in_the_name_of.lua" />
 </creaturescripts>

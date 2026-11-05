@@ -292,6 +292,10 @@ function handlers.report(npc, player, message)
 	player:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE or 12)
 	local lines = { 'Well done, %N! Your reward: ' .. rewardText(reward) .. '.' }
 	local newRank, rank = HuntingTasks.rank(player)
+	if Achievements then
+		Achievements.trigger(player, 'task')
+		Achievements.trigger(player, 'rank', newRank)
+	end
 	if newRank > oldRank then
 		lines[#lines + 1] = 'You are now a ' .. rank.name .. '! New tasks are open to you, and my rewards grow.'
 		player:sendTextMessage(MESSAGE_EVENT_ADVANCE, 'You advanced to ' .. rank.name .. '.')
@@ -366,6 +370,14 @@ function HuntingTasks.status(player)
 			table.insert(status.available, { name = entry.name, kills = entry.kills, monsters = entry.monsters })
 		end
 		status.locked = #locked
+	end
+	-- the tasks done so far, for the Journal
+	status.finished = {}
+	for _, entry in ipairs(HuntingTasks.tasks) do
+		local times = HuntingTasks.timesFinished(player, entry)
+		if times > 0 then
+			table.insert(status.finished, { name = entry.name, times = times, points = (entry.points or 0) * times })
+		end
 	end
 	return status
 end
