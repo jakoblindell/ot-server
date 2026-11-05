@@ -407,6 +407,9 @@ function DailyHunts.openBox(player, item, tier)
 	local got = { gold .. ' gold coins' }
 	local position = player:getPosition()
 	item:remove()
+	if Achievements then
+		Achievements.trigger(player, 'box', tier)
+	end
 	player:addMoney(gold)
 	if #box.items > 0 and math.random(100) <= box.itemChance then
 		local entry = pickWeighted(box.items)
@@ -555,6 +558,10 @@ function handlers.reward(npc, player, now)
 	end
 	local box = DailyHunts.createBox(player, tier)
 	player:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE or 12)
+	if Achievements then
+		Achievements.trigger(player, 'dailyhunt')
+		Achievements.trigger(player, 'streak', streak)
+	end
 	local lines = { 'Well hunted, %N! Here are ' .. experience .. ' experience points' ..
 		(box and ' and a ' .. DailyHunts.boxes[tier].name or '') .. '.' }
 	if not box then
@@ -680,11 +687,14 @@ function DailyHunts.statusText(player)
 	return table.concat(lines, '\n')
 end
 
--- Our client's Tasks page: {"daily":{...}}
+-- Our client's Daily page and Journal: {"daily":{...},"hunting":{...},"achievements":{...}}
 function DailyHunts.sendStatus(player)
 	local payload = { daily = DailyHunts.status(player) }
 	if HuntingTasks and HuntingTasks.status then
 		payload.hunting = HuntingTasks.status(player)
+	end
+	if Achievements and Achievements.status then
+		payload.achievements = Achievements.status(player)
 	end
 	player:sendExtendedOpcode(DailyHunts.OPCODE, json.encode(payload))
 end

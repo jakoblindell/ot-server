@@ -65,6 +65,7 @@ ChatCommands = {
 
 	-- Everyone
 	{words = "!serverinfo", params = {}, need = "player", text = "Show the experience, skill, magic and loot rates."},
+	{words = "!achievements", params = {}, need = "player", text = "How many achievements you have and their points."},
 	{words = "!tasks", params = {}, need = "player", text = "Your daily hunt, hunting task and hunter rank."},
 	{words = "!dailyhunt", params = {}, need = "player", text = "Your daily hunt: progress, time left and streak."},
 	{words = "!uptime", params = {}, need = "player", text = "How long the server has been running."},

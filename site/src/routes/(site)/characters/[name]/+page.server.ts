@@ -2,6 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { report, REPORT_REASONS } from '$lib/server/reports';
 import { premiumDaysLeft } from '$lib/server/accounts';
 import { query, queryOne } from '$lib/server/db';
+import { getAchievements } from '$lib/server/achievements';
 import { towns, vocationBadge, vocationName } from '$lib/server/game';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -48,7 +49,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	);
 	if (!character) error(404, 'No character with that name');
 
-	const [deaths, guild, others] = await Promise.all([
+	const [deaths, guild, others, unlocked, achievementList] = await Promise.all([
 		query<{ time: number; level: number; killed_by: string; is_player: number; mostdamage_by: string; mostdamage_is_player: number }>(
 			'SELECT time, level, killed_by, is_player, mostdamage_by, mostdamage_is_player FROM player_deaths WHERE player_id = :id ORDER BY time DESC LIMIT 10',
 			{ id: character.id }
@@ -65,12 +66,27 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 					 WHERE p.account_id = :account AND p.id <> :id AND p.deletion = 0 ORDER BY p.name`,
 					{ account: character.account_id, id: character.id }
 				)
-			: Promise.resolve([])
+			: Promise.resolve([]),
+		// achievements (ot-server#30); the table exists once the game server has started with them
+		query<{ achievement_id: number; unlocked_at: number }>(
+			'SELECT achievement_id, unlocked_at FROM player_achievements WHERE player_id = :id ORDER BY unlocked_at DESC',
+			{ id: character.id }
+		).catch(() => []),
+		getAchievements().catch(() => new Map())
 	]);
+	const achievements = unlocked
+		.map((row) => ({ info: achievementList.get(row.achievement_id), at: row.unlocked_at * 1000 }))
+		.filter((entry) => entry.info)
+		.map((entry) => ({ name: entry.info!.name, text: entry.info!.text, points: entry.info!.points, at: entry.at }));
 
 	const premium = premiumDaysLeft(character.premdays, character.lastday) > 0;
 	const staff = character.group_id > 1;
 	return {
+		achievements: {
+			list: achievements,
+			points: achievements.reduce((sum, entry) => sum + entry.points, 0),
+			total: achievementList.size
+		},
 		character: {
 			name: character.name,
 			outfit: `/outfit/${character.looktype}-${character.lookhead}-${character.lookbody}-${character.looklegs}-${character.lookfeet}.png`,
