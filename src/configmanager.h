@@ -54,6 +54,7 @@ class ConfigManager
 			ROPE_SPOT_BLOCK,
 			FAKE_PLAYERS_ENABLED,
 			TRUST_FORWARDED_FOR,
+			WEB_CLIENT_ONLY,
 			LAST_BOOLEAN_CONFIG /* this must be the last one */
 		};
 

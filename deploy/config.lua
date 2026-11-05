@@ -18,6 +18,10 @@ bindOnlyGlobalAddress = false
 -- Only the reverse proxy can reach the game ports inside the compose network,
 -- so the client address it forwards can be trusted.
 trustForwardedFor = true
+-- Only our browser client (WebSocket) may log in; desktop clients (the
+-- original 7.92 client, OTClient) are refused with a message pointing to
+-- `url`. Set false to test with desktop clients or the load-test bots. (ot-server#38)
+webClientOnly = true
 
 -- Packets a connection may send per second (averaged over a few seconds)
 -- before it is disconnected. Normal play, even fast hotkey use, stays far
