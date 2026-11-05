@@ -51,10 +51,10 @@ services:
       - game-files:/srv/game-files
     # The login RSA key (deploy/rsa-key.sh; ot-server#17): the server refuses
     # to start without its own key
+    # (owned by uid 1000, mode 600 on the host: rsa-key.sh sets that, since
+    # Compose without Swarm mounts the file as it is)
     secrets:
-      - source: rsa_key
-        uid: "1000"
-        mode: 0400
+      - rsa_key
     # Not published: only the proxy reaches the game ports (see trustForwardedFor)
     expose:
       - "7171"

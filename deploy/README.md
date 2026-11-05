@@ -86,9 +86,12 @@ key) with an RSA key. The `key.pem` in the repository is the public
 OpenTibia key that every OT server ships: anyone holding it can decrypt
 logins. Production uses its own key (ot-server#17):
 
-- `./rsa-key.sh` makes `deploy/secrets/rsa-key.pem` (private; never commit
-  it, `secrets/` is ignored) and `deploy/secrets/rsa-public.js` (its public
-  half).
+- `./rsa-key.sh` (as root) makes `deploy/secrets/rsa-key.pem` (private;
+  never commit it, `secrets/` is ignored; owned by uid 1000, the game
+  server's user, mode 600, in a mode 700 folder) and
+  `deploy/secrets/rsa-public.js` (its public half). The key is a plain PEM
+  file, like a TLS or SSH host key: protect the host, and keep a copy
+  somewhere safe (a password manager).
 - The server reads the key as a Docker secret (`/run/secrets/rsa_key`) and
   **refuses to start** with the repository's public key
   (`rsaRequireOwnKey`).
