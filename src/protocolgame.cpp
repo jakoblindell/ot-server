@@ -297,6 +297,13 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	std::string characterName = msg.getString();
 	std::string password = msg.getString();
 
+	// webClientOnly (ot-server#38): only our browser client (WebSocket) may play
+	if (g_config.getBoolean(ConfigManager::WEB_CLIENT_ONLY) && !(connection && connection->isWebSocketConnection())) {
+		const std::string& url = g_config.getString(ConfigManager::URL);
+		disconnectClient(url.empty() ? "This world is played in the browser." : "This world is played in the browser:\n" + url);
+		return;
+	}
+
 	/*if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
 		//sendUpdateRequest();
 		disconnectClient("Use Tibia 7.72 to login!");

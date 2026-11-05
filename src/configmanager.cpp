@@ -86,6 +86,7 @@ bool ConfigManager::load()
 	boolean[DISTANCE_WEAPONS_DROP_ON_GROUND] = getGlobalBoolean(L, "distanceWeaponsDropOnGround", true);
 	boolean[FAKE_PLAYERS_ENABLED] = getGlobalBoolean(L, "fakePlayersEnabled", false);
 	boolean[TRUST_FORWARDED_FOR] = getGlobalBoolean(L, "trustForwardedFor", false);
+	boolean[WEB_CLIENT_ONLY] = getGlobalBoolean(L, "webClientOnly", false);
 
 	string[DEFAULT_PRIORITY] = getGlobalString(L, "defaultPriority", "high");
 	string[SERVER_NAME] = getGlobalString(L, "serverName", "");

@@ -33,6 +33,13 @@
 extern ConfigManager g_config;
 extern Game g_game;
 
+// webClientOnly (ot-server#38): only our browser client (WebSocket) may play
+static std::string webClientOnlyMessage()
+{
+	const std::string& url = g_config.getString(ConfigManager::URL);
+	return url.empty() ? "This world is played in the browser." : "This world is played in the browser:\n" + url;
+}
+
 void ProtocolLogin::disconnectClient(const std::string& message, uint16_t version)
 {
 	auto output = OutputMessagePool::getOutputMessage();
@@ -168,6 +175,11 @@ void ProtocolLogin::onRecvFirstMessage(NetworkMessage& msg)
 		std::ostringstream ss;
 		ss << "Your IP has been banned until " << formatDateShort(banInfo.expiresAt) << " by " << banInfo.bannedBy << ".\n\nReason specified:\n" << banInfo.reason;
 		disconnectClient(ss.str(), version);
+		return;
+	}
+
+	if (g_config.getBoolean(ConfigManager::WEB_CLIENT_ONLY) && !connection->isWebSocketConnection()) {
+		disconnectClient(webClientOnlyMessage(), version);
 		return;
 	}
 
