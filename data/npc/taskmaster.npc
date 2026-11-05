@@ -1,6 +1,8 @@
 # GIMUD - Graphical Interface Multi User Dungeon
 # taskmaster.npc: daily hunts (ot-server#21). The answers come from Lua:
-# data/lib/tasks/daily_hunts.lua (Script("dailyhunt.<what>")).
+# data/lib/tasks/daily_hunts.lua (Script("dailyhunt.<what>")) and hunting tasks
+# (ot-server#29): hunting_tasks.lua (Script("huntingtask.<what>")). The hunting
+# rules come before "task", which would also match "hunting task" and "tasks".
 
 Name = "Taskmaster"
 Outfit = (129,95-116-121-115-0)
@@ -8,7 +10,7 @@ Home = [32369,32241,7]
 Radius = 2
 
 Behaviour = {
-ADDRESS,"hello$",!       -> "Greetings, hunter %N. Looking for a task? I keep track of your progress, hand out your reward, and let you cancel if you must."
+ADDRESS,"hello$",!       -> "Greetings, hunter %N. Looking for a task? I keep track of your progress, hand out your reward, and let you cancel if you must. For longer work, ask me about hunting."
 ADDRESS,"hi$",!          -> *
 ADDRESS,!                -> Idle
 BUSY,"hello$",!          -> "One moment, %N.", Queue
@@ -24,6 +26,13 @@ VANISH,!                 -> "Good hunting."
 "streak"                 -> "Finish a hunt every day and your streak grows, up to seven days. The longer the streak, the more experience and the better the present. Miss a day, give up or run out of time and it starts over."
 "present"                -> "Every present holds gold, and with luck something more. Harder hunts, more experience and a long streak bring better presents."
 
+"hunting"                -> Script("huntingtask.list")
+"tasks"                  -> *
+"start"                  -> Script("huntingtask.start")
+"report"                 -> Script("huntingtask.report")
+"abandon"                -> Script("huntingtask.abandon"), Topic=2
+"rank"                   -> Script("huntingtask.rank")
+
 "task"                   -> Script("dailyhunt.task")
 "hunt"                   -> *
 "progress"               -> Script("dailyhunt.progress")
@@ -31,5 +40,7 @@ VANISH,!                 -> "Good hunting."
 "cancel"                 -> Script("dailyhunt.cancel"), Topic=1
 
 Topic=1,"yes"            -> Script("dailyhunt.cancelconfirm")
+Topic=2,"yes"            -> Script("huntingtask.abandonconfirm")
+Topic=2                  -> "Good. Keep at it."
 Topic=1                  -> "Good. Keep hunting."
 }
