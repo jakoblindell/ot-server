@@ -10,3 +10,6 @@ dofile('data/lib/tasks/hunting_tasks.lua')
 
 -- Achievements (ot-server#30)
 dofile('data/lib/achievements/achievements.lua')
+
+-- The Journal's Quests and Chests (ot-server#44)
+dofile('data/lib/journal/journal.lua')
