@@ -15,6 +15,9 @@ The browser client is downloaded from the `web-client-792-latest` release of
 assets (`Tibia.dat`/`Tibia.spr`) come from `SabrehavenOTClient/data/things/792`
 in this repository and are served next to it.
 
+**Going live for the first time?** Follow the checklist in
+[GO-LIVE.md](GO-LIVE.md).
+
 Tested on Linux (x86-64). The images are multi-arch and the server is built
 from source, so Apple Silicon should work the same way, but that has not been
 tried yet.
@@ -232,9 +235,10 @@ docker compose exec -T db sh -c 'mariadb -u"$MARIADB_USER" -p"$MARIADB_PASSWORD"
 
 ## Notes
 
-- Accounts have names (letters and digits). The browser client logs in with
-  the name; 7.92 desktop clients can only send numbers, so they can only use
-  accounts whose name is a number. Passwords are stored as salted, iterated
+- Accounts have names (letters and digits); the browser client logs in with
+  the name. Desktop clients (the original 7.92 client, OTClient) are refused
+  in production (`webClientOnly`, ot-server#38): the world is played in the
+  browser. Passwords are stored as salted, iterated
   SHA-256 (PBKDF2); accounts that still have an old SHA-1 hash get the new
   one on their next login. On its first start the server widens the
   `accounts` table's `name` and `password` columns for this.

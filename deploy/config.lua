@@ -35,6 +35,8 @@ rsaRequireOwnKey = true
 maxPacketsPerSecond = tonumber(env("MAX_PACKETS_PER_SECOND", "25"))
 
 serverName = env("SERVER_NAME", serverName)
+-- The website, shown in messages such as "This world is played in the browser"
+url = env("SITE_URL", "https://" .. env("DOMAIN", "localhost"))
 motd = env("MOTD", motd)
 
 mysqlHost = env("DB_HOST", "db")

@@ -42,6 +42,7 @@ services:
       DB_NAME: sabrehaven
       PUBLIC_IP: ${PUBLIC_IP:-127.0.0.1}
       SERVER_NAME: ${SERVER_NAME:-Elderwood}
+      DOMAIN: ${DOMAIN:-localhost}
       MOTD: ${MOTD:-}
       # Server time: the daily server save happens at 08:00 in this zone
       TZ: ${TZ:-Europe/Stockholm}
