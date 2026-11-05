@@ -55,6 +55,7 @@ class ConfigManager
 			FAKE_PLAYERS_ENABLED,
 			TRUST_FORWARDED_FOR,
 			WEB_CLIENT_ONLY,
+			RSA_REQUIRE_OWN_KEY,
 			LAST_BOOLEAN_CONFIG /* this must be the last one */
 		};
 
@@ -77,6 +78,7 @@ class ConfigManager
 			MYSQL_SOCK,
 			DEFAULT_PRIORITY,
 			MAP_AUTHOR,
+			RSA_KEY_FILE,
 
 			LAST_STRING_CONFIG /* this must be the last one */
 		};

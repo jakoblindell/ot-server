@@ -36,6 +36,11 @@ public:
 	void loadPEM(const std::string& filename);
 	void decrypt(char* msg) const;
 
+	// The public modulus (decimal), what our client needs
+	std::string getModulus() const;
+	// The standard OpenTibia key, whose private half everyone has (ot-server#17)
+	bool isPublicDevelopmentKey() const;
+
 private:
 	CryptoPP::RSA::PrivateKey pk;
 };

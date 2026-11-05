@@ -83,3 +83,25 @@ void RSA::loadPEM(const std::string& filename)
 		std::cout << e.what() << '\n';
 	}
 }
+
+std::string RSA::getModulus() const
+{
+	std::ostringstream oss;
+	oss << std::dec << pk.GetModulus();
+	std::string modulus = oss.str();
+	// Crypto++ writes a trailing '.' after decimal numbers
+	if (!modulus.empty() && modulus.back() == '.') {
+		modulus.pop_back();
+	}
+	return modulus;
+}
+
+// The modulus of the standard OpenTibia key (key.pem in this repository,
+// OTSERV_RSA in clients): fine for development, never for production
+static const std::string openTibiaModulus =
+	"109120132967399429278860960508995541528237502902798129123468757937266291492576446330739696001110603907230888610072655818825358503429057592827629436413108566029093628212635953836686562675849720620786279431090218017681061521755056710823876476444260558147179707119674283982419152118103759076030616683978566631413";
+
+bool RSA::isPublicDevelopmentKey() const
+{
+	return getModulus() == openTibiaModulus;
+}

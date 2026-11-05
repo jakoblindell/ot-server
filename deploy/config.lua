@@ -23,6 +23,12 @@ trustForwardedFor = true
 -- `url`. Set false to test with desktop clients or the load-test bots. (ot-server#38)
 webClientOnly = true
 
+-- The login RSA key (ot-server#17): our own, made by deploy/rsa-key.sh and
+-- mounted as a Docker secret. The server refuses to start with the public
+-- OpenTibia key from the repository.
+rsaKeyFile = env("RSA_KEY_FILE", "/run/secrets/rsa_key")
+rsaRequireOwnKey = true
+
 -- Packets a connection may send per second (averaged over a few seconds)
 -- before it is disconnected. Normal play, even fast hotkey use, stays far
 -- below 25; a modified client flooding the server does not.

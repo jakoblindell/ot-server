@@ -49,6 +49,12 @@ services:
     volumes:
       # data/ and config.lua as a git repository the website edits
       - game-files:/srv/game-files
+    # The login RSA key (deploy/rsa-key.sh; ot-server#17): the server refuses
+    # to start without its own key
+    secrets:
+      - source: rsa_key
+        uid: "1000"
+        mode: 0400
     # Not published: only the proxy reaches the game ports (see trustForwardedFor)
     expose:
       - "7171"
@@ -141,6 +147,12 @@ services:
     volumes:
       - caddy-data:/data
       - caddy-config:/config
+      # The login key's public half for the client (deploy/rsa-key.sh)
+      - ./secrets/rsa-public.js:/srv/web/play/rsa-public.js:ro
+
+secrets:
+  rsa_key:
+    file: ./secrets/rsa-key.pem
 
 volumes:
   db-data:

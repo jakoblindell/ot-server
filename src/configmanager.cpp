@@ -52,6 +52,8 @@ bool ConfigManager::load()
 		string[IP] = getGlobalString(L, "ip", "127.0.0.1");
 		string[MAP_NAME] = getGlobalString(L, "mapName", "forgotten");
 		string[MAP_AUTHOR] = getGlobalString(L, "mapAuthor", "Unknown");
+		string[RSA_KEY_FILE] = getGlobalString(L, "rsaKeyFile", "key.pem");
+		boolean[RSA_REQUIRE_OWN_KEY] = getGlobalBoolean(L, "rsaRequireOwnKey", false);
 		string[HOUSE_RENT_PERIOD] = getGlobalString(L, "houseRentPeriod", "never");
 		string[MYSQL_HOST] = getGlobalString(L, "mysqlHost", "127.0.0.1");
 		string[MYSQL_USER] = getGlobalString(L, "mysqlUser", "forgottenserver");

@@ -182,13 +182,22 @@ void mainLoader(int, char*[], ServiceManager* services)
 	}
 #endif
 
-	//set RSA key
+	//set RSA key: rsaKeyFile (ot-server#17). Production keeps its own key
+	//outside the repository; key.pem in the repository is the public
+	//OpenTibia key, for development only.
 	try {
-		g_RSA.loadPEM("key.pem");
+		g_RSA.loadPEM(g_config.getString(ConfigManager::RSA_KEY_FILE));
 	}
 	catch (const std::exception& e) {
 		startupErrorMessage(e.what());
 		return;
+	}
+	if (g_RSA.isPublicDevelopmentKey()) {
+		if (g_config.getBoolean(ConfigManager::RSA_REQUIRE_OWN_KEY)) {
+			startupErrorMessage("The login RSA key is the public OpenTibia development key (" + g_config.getString(ConfigManager::RSA_KEY_FILE) + ").\nCreate the production key: deploy/rsa-key.sh");
+			return;
+		}
+		std::cout << ">> Using the public OpenTibia RSA key (development only)" << std::endl;
 	}
 
 	std::cout << ">> Checking client version... " << std::flush;
