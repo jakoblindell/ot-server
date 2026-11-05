@@ -26,6 +26,7 @@ Needs Docker (Docker Desktop, OrbStack or Colima on a Mac).
 ```sh
 cd deploy
 cp .env.example .env          # set DB_PASSWORD to something random
+./rsa-key.sh                  # the login key (see "The login key" below)
 docker compose up -d --build  # first build takes a few minutes
 docker compose logs -f server # wait for "Server Online!"
 ./create-account.sh myaccount secret "Your Name" 30
@@ -58,7 +59,9 @@ docker compose cp web:/data/caddy/pki/authorities/local/root.crt caddy-root.crt
    (Caddy then gets a Let's Encrypt certificate), a random `DB_PASSWORD`,
    `PUBLIC_IP` to the server's IPv4 address, and the Turnstile keys
    (`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`) so sign-ups need a human.
-5. `docker compose up -d --build`. Players create their accounts on the
+5. `./rsa-key.sh` once: the login key (see below). Keep a copy of
+   `deploy/secrets/rsa-key.pem` somewhere safe.
+6. `docker compose up -d --build`. Players create their accounts on the
    website; `create-account.sh` still works for test accounts.
 
 Players open https://play.example.com/ (the website; "Play now" opens the
@@ -75,6 +78,32 @@ player looks like one of Cloudflare's servers, and the limits and bans below
 would hit many players at once. Use Cloudflare's "Full (strict)" TLS mode;
 Caddy still needs to obtain its own certificate, so keep ports 80/443
 reachable for that or switch Caddy to a Cloudflare origin certificate.
+
+### The login key
+
+The client encrypts the first login message (account, password, session
+key) with an RSA key. The `key.pem` in the repository is the public
+OpenTibia key that every OT server ships: anyone holding it can decrypt
+logins. Production uses its own key (ot-server#17):
+
+- `./rsa-key.sh` (as root) makes `deploy/secrets/rsa-key.pem` (private;
+  never commit it, `secrets/` is ignored; owned by uid 1000, the game
+  server's user, mode 600, in a mode 700 folder) and
+  `deploy/secrets/rsa-public.js` (its public half). The key is a plain PEM
+  file, like a TLS or SSH host key: protect the host, and keep a copy
+  somewhere safe (a password manager).
+- The server reads the key as a Docker secret (`/run/secrets/rsa_key`) and
+  **refuses to start** with the repository's public key
+  (`rsaRequireOwnKey`).
+- The web client loads `/play/rsa-public.js` before it starts and uses that
+  key for our server. Without the file it falls back to the public key,
+  which only works against a development server.
+- `./rsa-key.sh public` prints the public modulus.
+
+**Rotating the key:** move both files out of `secrets/`, run `./rsa-key.sh`
+again, and run `docker compose up -d` (server and web restart together).
+Players reload the page (the file is never cached). Logins from a page loaded
+before the change fail until it is reloaded.
 
 ## Limits and bans
 
