@@ -4,6 +4,9 @@ function onExtendedOpcode(player, opcode, buffer)
 		-- "journal": the Journal's Quests and Chests (long lists, sent when asked)
 		if buffer == 'journal' and Journal then
 			Journal.send(player)
+		-- "reportToken": a one-time token for a bug report (ot-server#48)
+		elseif buffer == 'reportToken' and ClientReports then
+			ClientReports.issue(player)
 		else
 			DailyHunts.sendStatus(player)
 		end

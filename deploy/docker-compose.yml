@@ -115,6 +115,8 @@ services:
       # Behind Caddy: the page's public address and the player's address
       ORIGIN: https://${DOMAIN:-localhost}
       ADDRESS_HEADER: X-Real-IP
+      # Client bug reports carry a screenshot (ot-server#48)
+      BODY_SIZE_LIMIT: 10M
     volumes:
       # Tibia.dat/Tibia.spr, for outfit pictures
       - ../SabrehavenOTClient/data/things/792:/game/things:ro
