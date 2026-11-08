@@ -45,6 +45,10 @@ function onUse(player, item, fromPosition, target, toPosition)
 	end
 	
 	player:sendTextMessage(MESSAGE_INFO_DESCR, "You have found " .. rewardName .. ".")
+	-- a picture of it in our client (ot-server#52)
+	if Moments then
+		Moments.send(player, 'chest', "You have found " .. rewardName .. ".")
+	end
 	
 	local attackAttribute = math.random(-2, 5)
 	local rewardClone = reward:clone()
