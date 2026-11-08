@@ -2100,6 +2100,7 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "hasBlessing", LuaScriptInterface::luaPlayerHasBlessing);
 	registerMethod("Player", "getUnjustifiedKills", LuaScriptInterface::luaPlayerGetUnjustifiedKills);
 	registerMethod("Player", "getSkullEnd", LuaScriptInterface::luaPlayerGetSkullEnd);
+	registerMethod("Player", "getDeathLoss", LuaScriptInterface::luaPlayerGetDeathLoss);
 	registerMethod("Player", "addBlessing", LuaScriptInterface::luaPlayerAddBlessing);
 	registerMethod("Player", "removeBlessing", LuaScriptInterface::luaPlayerRemoveBlessing);
 
@@ -8645,6 +8646,20 @@ int LuaScriptInterface::luaPlayerGetUnjustifiedKills(lua_State* L)
 		lua_rawseti(L, -2, ++index);
 	}
 	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetDeathLoss(lua_State* L)
+{
+	// player:getDeathLoss() -> experience/skills lost on death (percent), the
+	// chance (percent) for each equipped item to drop
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+	lua_pushnumber(L, player->getLostPercent() * 100);
+	lua_pushnumber(L, player->getDropLootPercent());
+	return 2;
 }
 
 int LuaScriptInterface::luaPlayerGetSkullEnd(lua_State* L)

@@ -6,7 +6,9 @@
 --              "red":{"day":4,"week":12,"month":35},   red skull at
 --              "ban":{"day":7,"week":18,"month":60}},  banishment at
 --     "skull":0,"skullLeft":0,                          skull, seconds until it ends
---     "premiumDays":0,"vocation":"Elite Knight"}}
+--     "premiumDays":0,"vocation":"Elite Knight",
+--     "food":600,                                       seconds of food left
+--     "death":{"loss":4.2,"itemChance":10,"amulet":false,"redSkull":false}}}
 
 CharacterSheet = CharacterSheet or {}
 
@@ -24,6 +26,30 @@ end
 
 local function config(key)
 	return configKeys[key] and configManager.getNumber(configKeys[key]) or 0
+end
+
+local AMULET_OF_LOSS = 3057
+
+function CharacterSheet.foodSeconds(player)
+	local condition = player:getCondition(CONDITION_REGENERATION, CONDITIONID_DEFAULT)
+	return condition and math.max(0, math.floor(condition:getTicks() / 1000)) or 0
+end
+
+-- What a death would cost now: experience and skills (percent), and the
+-- equipment: each item's drop chance, unless an amulet of loss protects it
+-- (not with a red skull, which drops everything)
+function CharacterSheet.death(player)
+	local loss, itemChance = 0, 10
+	if player.getDeathLoss then
+		loss, itemChance = player:getDeathLoss()
+	end
+	local amulet = player:getSlotItem(CONST_SLOT_NECKLACE)
+	return {
+		loss = math.floor(loss * 100 + 0.5) / 100,
+		itemChance = itemChance,
+		amulet = amulet ~= nil and amulet:getId() == AMULET_OF_LOSS,
+		redSkull = player:getSkull() == SKULL_RED,
+	}
 end
 
 function CharacterSheet.status(player)
@@ -48,6 +74,9 @@ function CharacterSheet.status(player)
 		premiumDays = player:getPremiumDays(),
 		-- (the 7.92 protocol has no vocation)
 		vocation = player:getVocation():getName(),
+		-- seconds of food left (regeneration)
+		food = CharacterSheet.foodSeconds(player),
+		death = CharacterSheet.death(player),
 	}
 end
 
