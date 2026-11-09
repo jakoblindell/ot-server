@@ -4,6 +4,9 @@ function onExtendedOpcode(player, opcode, buffer)
 		-- "journal": the Journal's Quests and Chests (long lists, sent when asked)
 		if buffer == 'journal' and Journal then
 			Journal.send(player)
+		-- "character": the hub's character sheet (ot-server#50)
+		elseif buffer == 'character' and CharacterSheet then
+			CharacterSheet.send(player)
 		else
 			DailyHunts.sendStatus(player)
 		end
