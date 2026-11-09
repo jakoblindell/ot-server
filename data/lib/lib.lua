@@ -14,5 +14,8 @@ dofile('data/lib/achievements/achievements.lua')
 -- The Journal's Quests and Chests (ot-server#44)
 dofile('data/lib/journal/journal.lua')
 
+-- Client bug reports: a one-time token for the website (ot-server#48)
+dofile('data/lib/reports/client_reports.lua')
+
 -- Moments: tells our client when to take a screenshot (ot-server#52)
 dofile('data/lib/moments/moments.lua')
