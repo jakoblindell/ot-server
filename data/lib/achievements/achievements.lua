@@ -90,6 +90,9 @@ function Achievements.unlock(player, achievement)
 	player:sendTextMessage(MESSAGE_INFO_DESCR, achievement.name .. ': ' .. achievement.text ..
 		' (' .. achievement.points .. (achievement.points == 1 and ' point' or ' points') .. ')')
 	player:getPosition():sendMagicEffect(CONST_ME_FIREWORK_YELLOW or CONST_ME_MAGIC_GREEN or 13)
+	if Moments then
+		Moments.send(player, 'achievement', 'Achievement unlocked: ' .. achievement.name .. '!')
+	end
 	addEvent(function(cid)
 		local target = Player(cid)
 		if target then

@@ -16,3 +16,6 @@ dofile('data/lib/journal/journal.lua')
 
 -- The hub's character sheet: blessings, frags, skull time (ot-server#50)
 dofile('data/lib/character/character.lua')
+
+-- Moments: tells our client when to take a screenshot (ot-server#52)
+dofile('data/lib/moments/moments.lua')
