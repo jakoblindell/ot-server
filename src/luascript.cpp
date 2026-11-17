@@ -2098,6 +2098,9 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "removePremiumDays", LuaScriptInterface::luaPlayerRemovePremiumDays);
 
 	registerMethod("Player", "hasBlessing", LuaScriptInterface::luaPlayerHasBlessing);
+	registerMethod("Player", "getUnjustifiedKills", LuaScriptInterface::luaPlayerGetUnjustifiedKills);
+	registerMethod("Player", "getSkullEnd", LuaScriptInterface::luaPlayerGetSkullEnd);
+	registerMethod("Player", "getDeathLoss", LuaScriptInterface::luaPlayerGetDeathLoss);
 	registerMethod("Player", "addBlessing", LuaScriptInterface::luaPlayerAddBlessing);
 	registerMethod("Player", "removeBlessing", LuaScriptInterface::luaPlayerRemoveBlessing);
 
@@ -8624,6 +8627,50 @@ int LuaScriptInterface::luaPlayerRemovePremiumDays(lua_State* L)
 		}
 	}
 	pushBoolean(L, true);
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetUnjustifiedKills(lua_State* L)
+{
+	// player:getUnjustifiedKills() -> { time, ... } (the kills that still count)
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+	const auto& kills = player->getMurderTimeStamps();
+	lua_createtable(L, kills.size(), 0);
+	int index = 0;
+	for (time_t time : kills) {
+		lua_pushnumber(L, time);
+		lua_rawseti(L, -2, ++index);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetDeathLoss(lua_State* L)
+{
+	// player:getDeathLoss() -> experience/skills lost on death (percent), the
+	// chance (percent) for each equipped item to drop
+	Player* player = getUserdata<Player>(L, 1);
+	if (!player) {
+		lua_pushnil(L);
+		return 1;
+	}
+	lua_pushnumber(L, player->getLostPercent() * 100);
+	lua_pushnumber(L, player->getDropLootPercent());
+	return 2;
+}
+
+int LuaScriptInterface::luaPlayerGetSkullEnd(lua_State* L)
+{
+	// player:getSkullEnd() -> when the white or red skull ends (os.time), 0 for none
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushnumber(L, player->getPlayerKillerEnd());
+	} else {
+		lua_pushnil(L);
+	}
 	return 1;
 }
 

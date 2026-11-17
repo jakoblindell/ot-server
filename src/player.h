@@ -599,6 +599,7 @@ class Player final : public Creature, public Cylinder
 		Skulls_t getSkull() const final;
 		Skulls_t getSkullClient(const Creature* creature) const final;
 		time_t getPlayerKillerEnd() const { return playerKillerEnd; }
+		const std::list<time_t>& getMurderTimeStamps() const { return murderTimeStamps; }
 		void setPlayerKillerEnd(time_t ticks) { playerKillerEnd = ticks; }
 
 		bool hasAttacked(const Player* attacked) const;

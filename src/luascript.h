@@ -916,6 +916,9 @@ class LuaScriptInterface
 		static int luaPlayerRemovePremiumDays(lua_State* L);
 
 		static int luaPlayerHasBlessing(lua_State* L);
+		static int luaPlayerGetUnjustifiedKills(lua_State* L);
+		static int luaPlayerGetSkullEnd(lua_State* L);
+		static int luaPlayerGetDeathLoss(lua_State* L);
 		static int luaPlayerAddBlessing(lua_State* L);
 		static int luaPlayerRemoveBlessing(lua_State* L);
 
