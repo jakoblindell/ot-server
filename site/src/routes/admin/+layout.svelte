@@ -23,6 +23,7 @@
 			links: [
 				{ href: '/admin/players', label: 'Players & accounts', show: data.staff.can.players },
 				{ href: '/admin/reports', label: 'Reports', show: data.staff.can.players, count: data.openReports },
+				{ href: '/admin/client-reports', label: 'Client reports', show: data.staff.can.players, count: data.openClientReports },
 				{ href: '/admin/bans', label: 'Bans', show: data.staff.can.punish }
 			]
 		},
