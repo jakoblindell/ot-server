@@ -1777,6 +1777,36 @@ void BehaviourDatabase::analyseDialogRules()
 		}
 	}
 
+	// Topics whose "yes" creates an item: "parcel" -> Price=15, Topic=37, and
+	// Topic=37,"yes",... -> Create(3503) sell that item (the post offices)
+	std::map<int32_t, int32_t> topicItems;
+	for (const NpcBehaviour* behaviour : behaviourEntries) {
+		int32_t created = 0;
+		for (const NpcBehaviourAction* action : behaviour->actions) {
+			if (action->type == BEHAVIOUR_TYPE_CREATE && action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
+				created = action->expression->number;
+				break;
+			}
+		}
+		if (created == 0) {
+			continue;
+		}
+		int32_t onTopic = 0;
+		bool yes = false;
+		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+			const NpcBehaviourNode* node = condition->expression;
+			if (condition->type == BEHAVIOUR_TYPE_STRING && condition->string == "yes") {
+				yes = true;
+			} else if (condition->type == BEHAVIOUR_TYPE_OPERATION && node && node->number == BEHAVIOUR_OPERATOR_EQUALS &&
+			           node->left && node->right && node->left->type == BEHAVIOUR_TYPE_TOPIC && node->right->type == BEHAVIOUR_TYPE_NUMBER) {
+				onTopic = node->right->number;
+			}
+		}
+		if (yes && onTopic != 0) {
+			topicItems.emplace(onTopic, created);
+		}
+	}
+
 	for (const NpcBehaviour* behaviour : behaviourEntries) {
 		if (behaviour->situation != SITUATION_NONE) {
 			continue;
@@ -1823,6 +1853,10 @@ void BehaviourDatabase::analyseDialogRules()
 				case BEHAVIOUR_TYPE_SCRIPT: speaks = true; break;
 				default: break;
 			}
+		}
+
+		if (item == 0 && hasPrice && !teleports && topicItems.count(setsTopic)) {
+			item = topicItems[setsTopic];
 		}
 
 		if (takesAmount) {
@@ -1912,7 +1946,7 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 		}
 	}
 	for (const DialogRule& rule : dialogKeywords) {
-		if ((rule.words == "job" || rule.words == "name") && listed.insert(rule.words).second) {
+		if ((rule.words == "job" || rule.words == "name" || rule.words == "offer" || rule.words == "trade") && listed.insert(rule.words).second) {
 			json << (keywords++ ? "," : "") << jsonString(rule.words);
 		}
 	}
