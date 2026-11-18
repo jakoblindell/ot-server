@@ -18,6 +18,10 @@
 
 {
 	order rate_limit before reverse_proxy
+	# Browsers send no server name (SNI) to a bare IP address. Without
+	# this, Caddy looks for a certificate for the container's own address
+	# and fails the handshake when DOMAIN is an IP (ot-server#54).
+	default_sni {$DOMAIN:localhost}
 	servers {
 		trusted_proxies {$TRUSTED_PROXIES:static 127.0.0.1/32}
 		client_ip_headers CF-Connecting-IP X-Forwarded-For
