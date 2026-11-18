@@ -139,7 +139,7 @@ affected, and through a trusted proxy each player has their own limits.
 ```sh
 docker compose logs -f server                  # server output
 docker compose restart server                  # restart the game server
-git pull && docker compose up -d --build       # update server and client
+git pull && docker compose up -d --build       # update server and client (staging updates itself: STAGING.md)
 docker compose build --no-cache web && docker compose up -d web   # newer client release only
 docker compose exec backup /backup.sh now   # extra database backup right now
 ./restore.sh backups/sabrehaven-YYYYMMDD-HHMMSS.sql.gz   # go back to a backup

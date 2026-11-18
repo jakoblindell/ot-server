@@ -1,0 +1,93 @@
+# Staging deploys (ot-server#34): every merge into web-client-792 builds the
+# server, website and web images once, pushes them to GitHub's registry
+# (ghcr.io) tagged with the commit, and runs them on the staging host.
+# "Run workflow" deploys again, for example to pick up a newer web client
+# (the web image takes the latest ot-client browser build).
+#
+# Setup on the host and in GitHub: deploy/STAGING.md.
+name: Deploy staging
+
+on:
+  push:
+    branches: [web-client-792]
+  # Pull requests build the images (a check that they still build) but
+  # neither push nor deploy them
+  pull_request:
+    branches: [web-client-792]
+  workflow_dispatch:
+
+# One deploy at a time; a newer merge waits for the running one
+concurrency:
+  group: deploy-staging-${{ github.event_name == 'pull_request' && github.ref || 'deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGES: ghcr.io/jakoblindell/ot-server
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - image: server
+            context: .
+            file: Dockerfile
+          - image: site
+            context: site
+            file: site/Dockerfile
+          - image: web
+            context: .
+            file: deploy/web/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.IMAGES }}/${{ matrix.image }}:sha-${{ github.sha }}
+            ${{ env.IMAGES }}/${{ matrix.image }}:staging
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,scope={0},mode=max', matrix.image) || '' }}
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    environment:
+      name: staging
+      url: https://${{ vars.STAGING_HOST }}/
+    steps:
+      - name: Deploy on the staging host
+        env:
+          HOST: ${{ vars.STAGING_HOST }}
+          HOST_KEY: ${{ vars.STAGING_HOST_KEY }}
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          # Read access to the images, valid until this job ends
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$HOST" ] || [ -z "$HOST_KEY" ] || [ -z "$SSH_KEY" ]; then
+            echo "::error::Staging isn't set up: STAGING_HOST, STAGING_HOST_KEY and STAGING_SSH_KEY (deploy/STAGING.md)"
+            exit 1
+          fi
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/staging && chmod 600 ~/.ssh/staging
+          # The host's own key, pinned: no trust-on-first-use
+          printf '%s %s\n' "$HOST" "$HOST_KEY" > ~/.ssh/known_hosts
+          printf '%s' "$TOKEN" | ssh -i ~/.ssh/staging -o IdentitiesOnly=yes -o BatchMode=yes \
+            "jakob@$HOST" "deploy $GITHUB_SHA"
