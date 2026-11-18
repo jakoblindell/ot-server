@@ -27,6 +27,9 @@ services:
       retries: 30
 
   server:
+    # Built here ("docker compose up -d --build"), or pulled from GitHub's
+    # registry on staging (IMAGES and IMAGE_TAG in .env; staging-deploy.sh)
+    image: ${IMAGES:-sabrehaven}/server:${IMAGE_TAG:-latest}
     build:
       context: ..
     restart: unless-stopped
@@ -82,6 +85,7 @@ services:
 
   # The website: account creation, highscores, admin (site/)
   site:
+    image: ${IMAGES:-sabrehaven}/site:${IMAGE_TAG:-latest}
     build:
       context: ../site
     restart: unless-stopped
@@ -127,6 +131,7 @@ services:
       - "3000"
 
   web:
+    image: ${IMAGES:-sabrehaven}/web:${IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: deploy/web/Dockerfile
