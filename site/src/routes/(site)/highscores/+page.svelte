@@ -187,10 +187,6 @@
 		.scroll {
 			padding: 4px 16px 0;
 		}
-
-		.table {
-			--stack-indent: 56px;
-		}
 	}
 
 	/* Phones: the lists as one row of tabs that scrolls sideways */

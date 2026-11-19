@@ -442,11 +442,6 @@ h3 {
 		font-size: 15px;
 	}
 
-	/* The second line starts under the name: set --stack-indent on the table */
-	.table.stack .more:not(.more ~ .more) {
-		margin-left: var(--stack-indent, 0);
-	}
-
 	.table.stack td.more[data-label]::before {
 		content: attr(data-label) ' ';
 		font-family: 'Alegreya Sans', system-ui, sans-serif;
