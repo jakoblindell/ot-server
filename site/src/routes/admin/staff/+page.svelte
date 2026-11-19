@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 </script>
 
@@ -18,7 +19,7 @@
 
 <section class="panel">
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Account</th><th>Role</th><th>Characters</th><th>Two-step login</th></tr></thead>
 			<tbody>
 				{#each data.members as member (member.id)}

@@ -30,15 +30,15 @@
 		<a class="new" href="/account/characters/new">+ New character</a>
 	</div>
 	<div class="scroll">
-		<table class="table">
-			<thead><tr><th>Name</th><th>Vocation</th><th>Level</th><th>Status</th><th class="right">Actions</th></tr></thead>
+		<table class="table stack">
+			<thead><tr><th class="main">Name</th><th class="more">Vocation</th><th class="end">Level</th><th class="more">Status</th><th class="right more">Actions</th></tr></thead>
 			<tbody>
 				{#each data.characters as character (character.name)}
 					<tr>
-						<td><strong>{character.name}</strong></td>
-						<td><span class="badge pixel" style:background={character.badge.color}>{character.badge.short}</span> {character.vocation}</td>
-						<td class="pixel">{character.level}</td>
-						<td>
+						<td class="main"><strong>{character.name}</strong></td>
+						<td class="more"><span class="badge pixel" style:background={character.badge.color}>{character.badge.short}</span> {character.vocation}</td>
+						<td class="pixel end">{character.level}</td>
+						<td class="more">
 							{#if character.namelocked}
 								<span class="deleting">Needs a new name</span>
 							{:else if character.deletesAt}
@@ -47,7 +47,7 @@
 								<span class:online={character.online}>{character.online ? 'Online' : 'Offline'}</span>
 							{/if}
 						</td>
-						<td class="right">
+						<td class="right more">
 							{#if character.namelocked}
 								<form method="POST" action="?/rename" class="rename">
 									<input type="hidden" name="name" value={character.name} />
@@ -153,11 +153,11 @@
 <section class="card" aria-labelledby="log-h">
 	<div class="card-head"><h2 id="log-h">Recent logins</h2><a href="/account/history">All</a></div>
 	<div class="scroll">
-		<table class="table">
-			<thead><tr><th>When</th><th>Address</th><th>Result</th></tr></thead>
+		<table class="table stack">
+			<thead><tr><th class="main">When</th><th class="more">Address</th><th class="end">Result</th></tr></thead>
 			<tbody>
 				{#each data.logins as login (login.at + login.ip)}
-					<tr><td>{date(login.at)}</td><td class="pixel">{login.ip}</td><td>{login.success ? 'Logged in' : 'Wrong password'}</td></tr>
+					<tr><td class="main">{date(login.at)}</td><td class="pixel more" data-label="Address">{login.ip}</td><td class="end">{login.success ? 'Logged in' : 'Wrong password'}</td></tr>
 				{:else}
 					<tr><td colspan="3">No website logins yet.</td></tr>
 				{/each}
@@ -200,8 +200,16 @@
 		padding: 8px 12px 12px;
 	}
 
-	.table {
-		min-width: 560px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 560px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.right {
+			margin-left: auto;
+		}
 	}
 
 	.right {

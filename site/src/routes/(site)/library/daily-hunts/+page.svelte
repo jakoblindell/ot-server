@@ -46,6 +46,13 @@
 					<tbody><tr><th>Experience</th>{#each guide.streak as value, i (i)}<td>{times(value)}</td>{/each}</tr></tbody>
 				</table>
 			</div>
+			<!-- Phones: the same, one day per row -->
+			<table class="table streak-list">
+				<thead><tr><th>Day</th><th>Experience</th></tr></thead>
+				<tbody>
+					{#each guide.streak as value, i (i)}<tr><td>{i + 1}{i === guide.streak.length - 1 ? '+' : ''}</td><td>{times(value)}</td></tr>{/each}
+				</tbody>
+			</table>
 			<p>A longer streak also brings better presents.</p>
 
 			<h2>Surprise boxes</h2>
@@ -133,6 +140,18 @@
 	.streak th,
 	.streak td {
 		text-align: center;
+	}
+	.streak-list {
+		display: none;
+		max-width: 320px;
+	}
+	@media (max-width: 600px) {
+		.scroll:has(.streak) {
+			display: none;
+		}
+		.streak-list {
+			display: table;
+		}
 	}
 	.boxes,
 	.hunts {

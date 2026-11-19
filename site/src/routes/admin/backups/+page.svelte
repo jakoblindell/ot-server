@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 	const when = (at: number) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 	const size = (bytes: number) => (bytes > 1e6 ? `${(bytes / 1e6).toFixed(1)} MB` : `${Math.round(bytes / 1e3)} kB`);
@@ -21,7 +22,7 @@
 
 <section class="panel">
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Dump</th><th>Made</th><th>Size</th><th></th></tr></thead>
 			<tbody>
 				{#if data.backups === null}
@@ -59,7 +60,9 @@
 		border: 1px solid var(--a-line);
 		border-radius: 6px;
 		padding: 10px 12px;
-		overflow: auto;
+		/* a command to copy: wraps on narrow screens instead of scrolling */
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
 	}
 
 	p {

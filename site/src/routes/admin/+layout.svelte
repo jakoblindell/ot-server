@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { scrollRow } from '$lib/scrollrow';
 	import './admin.css';
 
 	let { data, children } = $props();
@@ -57,18 +58,20 @@
 	</header>
 	<div class="body">
 		<nav class="side" aria-label="Admin">
-			{#each sections as section (section.title)}
-				{#if section.links.some((link) => link.show)}
-					<div class="group">
-						<span class="mono heading">{section.title.toUpperCase()}</span>
-						{#each section.links.filter((link) => link.show) as link (link.href)}
-							<a href={link.href} aria-current={current(link.href) ? 'page' : undefined}
-								>{link.label}{#if 'count' in link && link.count}<span class="count mono">{link.count}</span>{/if}</a
-							>
-						{/each}
-					</div>
-				{/if}
-			{/each}
+			<div class="side-links scroll-row" data-scroll-x use:scrollRow={page.url.pathname}>
+				{#each sections as section (section.title)}
+					{#if section.links.some((link) => link.show)}
+						<div class="group">
+							<span class="mono heading">{section.title.toUpperCase()}</span>
+							{#each section.links.filter((link) => link.show) as link (link.href)}
+								<a href={link.href} aria-current={current(link.href) ? 'page' : undefined}
+									>{link.label}{#if 'count' in link && link.count}<span class="count mono">{link.count}</span>{/if}</a
+								>
+							{/each}
+						</div>
+					{/if}
+				{/each}
+			</div>
 		</nav>
 		<main class="content">
 			{@render children()}

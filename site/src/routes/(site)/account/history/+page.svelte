@@ -12,15 +12,15 @@
 	<div class="card-head"><h1 id="hi-h">Login history</h1></div>
 	<div class="scroll">
 		<p>The last 50 logins on this website. Game logins are not listed here.</p>
-		<table class="table">
-			<thead><tr><th>When</th><th>Address</th><th>Browser</th><th>Result</th></tr></thead>
+		<table class="table stack">
+			<thead><tr><th class="main">When</th><th class="more">Address</th><th class="more">Browser</th><th class="end">Result</th></tr></thead>
 			<tbody>
 				{#each data.logins as login (login.id)}
 					<tr>
-						<td>{date(login.at)}</td>
-						<td class="pixel">{login.ip}</td>
-						<td class="browser" title={login.browser}>{login.browser}</td>
-						<td>{login.success ? 'Logged in' : 'Wrong password'}</td>
+						<td class="main">{date(login.at)}</td>
+						<td class="pixel more" data-label="Address">{login.ip}</td>
+						<td class="browser more" title={login.browser}>{login.browser}</td>
+						<td class="end">{login.success ? 'Logged in' : 'Wrong password'}</td>
 					</tr>
 				{:else}
 					<tr><td colspan="4">No logins yet.</td></tr>
@@ -40,8 +40,19 @@
 		margin: 0 12px 12px;
 	}
 
-	.table {
-		min-width: 620px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 620px;
+		}
+	}
+
+	/* Phones: the browser on a line of its own, shortened */
+	@media (max-width: 600px) {
+		.browser {
+			flex: 1 1 100%;
+			max-width: none;
+			overflow-wrap: normal;
+		}
 	}
 
 	.browser {

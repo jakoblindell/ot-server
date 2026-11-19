@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { scrollRow } from '$lib/scrollrow';
+
 	let { data } = $props();
 
 	const link = (changes: Record<string, string | number>) => {
@@ -18,9 +20,11 @@
 	<aside class="filters">
 		<nav class="panel" aria-label="Highscore lists">
 			<h2>Highscores</h2>
-			{#each data.categories as category (category.id)}
-				<a href={link({ category: category.id })} aria-current={category.id === data.category ? 'page' : undefined}>{category.label}</a>
-			{/each}
+			<div class="tabs scroll-row" data-scroll-x use:scrollRow={data.category}>
+				{#each data.categories as category (category.id)}
+					<a href={link({ category: category.id })} aria-current={category.id === data.category ? 'page' : undefined}>{category.label}</a>
+				{/each}
+			</div>
 		</nav>
 	</aside>
 
@@ -37,21 +41,21 @@
 			</form>
 		</div>
 		<div class="scroll">
-			<table class="table">
+			<table class="table stack">
 				<thead>
 					<tr>
-						<th>Rank</th><th>Name</th><th>Vocation</th><th class="num">{experience ? 'Level' : 'Skill'}</th>
-						{#if experience}<th class="num">Experience</th>{:else}<th class="num">Level</th>{/if}
+						<th class="rank">Rank</th><th class="main">Name</th><th class="more">Vocation</th><th class="num end">{experience ? 'Level' : 'Skill'}</th>
+						{#if experience}<th class="num more">Experience</th>{:else}<th class="num more">Level</th>{/if}
 					</tr>
 				</thead>
 				<tbody>
 					{#each data.rows as row (row.rank)}
 						<tr>
-							<td class="pixel">{row.rank}</td>
-							<td><a href="/characters/{encodeURIComponent(row.name)}">{row.name}</a></td>
-							<td><span class="badge pixel" style:background={row.badge.color}>{row.badge.short}</span> {row.vocation}</td>
-							<td class="num pixel">{row.value}</td>
-							<td class="num pixel">{experience ? row.points.toLocaleString('en-GB') : row.level}</td>
+							<td class="pixel rank">{row.rank}</td>
+							<td class="main"><a href="/characters/{encodeURIComponent(row.name)}">{row.name}</a></td>
+							<td class="more"><span class="badge pixel" style:background={row.badge.color}>{row.badge.short}</span> {row.vocation}</td>
+							<td class="num pixel end">{row.value}</td>
+							<td class="num pixel more" data-label={experience ? 'Experience' : 'Level'}>{experience ? row.points.toLocaleString('en-GB') : row.level}</td>
 						</tr>
 					{:else}
 						<tr><td colspan="5">Nobody here yet.</td></tr>
@@ -80,6 +84,7 @@
 
 	.filters {
 		flex: 1 1 240px;
+		min-width: 0;
 	}
 
 	.filters .panel {
@@ -91,6 +96,11 @@
 	.filters h2 {
 		font-size: 24px;
 		padding: 0 12px 8px;
+	}
+
+	.tabs {
+		flex-direction: column;
+		gap: 0;
 	}
 
 	.filters a {
@@ -129,8 +139,10 @@
 		padding: 8px 12px 0;
 	}
 
-	.table {
-		min-width: 520px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 520px;
+		}
 	}
 
 	.table a {
@@ -157,10 +169,29 @@
 		color: var(--paper-muted);
 	}
 
+	/* The card head's title and vocation list stack when there is no room */
+	.card-head {
+		flex-wrap: wrap;
+	}
+
+	.vocation {
+		margin-left: auto;
+	}
+
+	@media (max-width: 600px) {
+		.rank {
+			flex: 0 0 44px;
+			overflow-wrap: normal;
+		}
+
+		.scroll {
+			padding: 4px 16px 0;
+		}
+	}
+
+	/* Phones: the lists as one row of tabs that scrolls sideways */
 	@media (max-width: 700px) {
 		.filters .panel {
-			flex-direction: row;
-			overflow-x: auto;
 			padding: 8px;
 		}
 
@@ -168,8 +199,9 @@
 			display: none;
 		}
 
-		.filters a {
-			white-space: nowrap;
+		.tabs {
+			flex-direction: row;
+			gap: 4px;
 		}
 	}
 </style>

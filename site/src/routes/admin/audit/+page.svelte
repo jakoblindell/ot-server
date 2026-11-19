@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data } = $props();
 	const when = (at: number) =>
 		new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -22,7 +23,7 @@
 
 <section class="panel">
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th><th>Address</th></tr></thead>
 			<tbody>
 				{#each data.rows as row (row.id)}
