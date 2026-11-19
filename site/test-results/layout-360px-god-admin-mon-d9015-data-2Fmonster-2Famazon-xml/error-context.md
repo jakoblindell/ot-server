@@ -1,0 +1,1922 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: layout.spec.ts >> 360px, god >> /admin/monsters?file=data%2Fmonster%2Famazon.xml
+- Location: tests/layout.spec.ts:159:5
+
+# Error details
+
+```
+Error: /admin/monsters?file=data%2Fmonster%2Famazon.xml fits 360px
+
+expect(received).toEqual(expected) // deep equality
+
+- Expected  -  1
++ Received  + 27
+
+- Array []
++ Array [
++   "scrolls sideways: <nav.side> \"OVERVIEW DashboardSERVER ConsoleServer f\" is 1500px in 360px",
++   "off screen: <div.group> \"SERVER ConsoleServer filesMonstersLibrar\" spans 105..763px",
++   "off screen: <a> \"Monsters\" spans 279..363px",
++   "off screen: <a> \"Library\" spans 365..431px",
++   "off screen: <a> \"Pending changes\" spans 433..567px",
++   "off screen: <a> \"Config & rates\" spans 569..684px",
++   "off screen: <a> \"Backups\" spans 686..763px",
++   "off screen: <div.group> \"PLAYERS Players & accountsReports1Client\" spans 767..1202px",
++   "off screen: <a> \"Players & accounts\" spans 767..915px",
++   "off screen: <a> \"Reports1\" spans 917..1011px",
++   "off screen: <span.count.mono> \"1\" spans 980..1001px",
++   "off screen: <a> \"Client reports1\" spans 1013..1146px",
++   "off screen: <span.count.mono> \"1\" spans 1115..1136px",
++   "off screen: <a> \"Bans\" spans 1148..1202px",
++   "off screen: <div.group> \"CONTENT News posts\" spans 1206..1304px",
++   "off screen: <a> \"News posts\" spans 1206..1304px",
++   "off screen: <div.group> \"SYSTEM Audit logStaff & roles\" spans 1308..1492px",
++   "off screen: <a> \"Audit log\" spans 1308..1388px",
++   "off screen: <a> \"Staff & roles\" spans 1390..1492px",
++   "cut off: <section.panel.s-BswkNPZi73i8> \"Amazon Edit the XML Name ×Description ×R\" shows 326px of 366px",
++   "off screen: <div.attrs.s-EnEjxx369nEZ> \"Name ×Description ×Race bloodvenomundead\" spans 113..383px",
++   "off screen: <label.attr.s-EnEjxx369nEZ> \"Mana cost (summon/convince) ×\" spans 113..383px",
++   "off screen: <button.x.s-EnEjxx369nEZ> \"×\" spans 370..383px",
++   "cut off: <section.panel.s-BswkNPZi73i8> \"Loot Remove section ItemIdMax countChanc\" shows 326px of 709px",
++   "off screen: <table.loot.s-DKuOPpcYfXGs> \"ItemIdMax countChance (of 1000)Players s\" spans 33..726px",
++ ]
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e5]:
+    - link "Elderwood ADMIN" [ref=e6] [cursor=pointer]:
+      - /url: /admin
+      - generic [ref=e7]: Elderwood
+      - generic [ref=e8]: ADMIN
+    - search [ref=e9]:
+      - generic [ref=e10]: Search players and accounts
+      - searchbox "Search players and accounts" [ref=e11]
+    - generic [ref=e12]:
+      - link "View site ↗" [ref=e13] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e14]:
+        - generic [ref=e15]: GD
+        - text: layoutgod
+        - generic [ref=e16]: · God
+  - generic [ref=e17]:
+    - navigation "Admin" [ref=e18]:
+      - link "Dashboard" [ref=e20] [cursor=pointer]:
+        - /url: /admin
+      - generic [ref=e21]:
+        - link "Console" [ref=e22] [cursor=pointer]:
+          - /url: /admin/log
+        - link "Server files" [ref=e23] [cursor=pointer]:
+          - /url: /admin/files
+        - link "Monsters" [ref=e24] [cursor=pointer]:
+          - /url: /admin/monsters
+        - link "Library" [ref=e25] [cursor=pointer]:
+          - /url: /admin/library
+        - link "Pending changes" [ref=e26] [cursor=pointer]:
+          - /url: /admin/changes
+        - link "Config & rates" [ref=e27] [cursor=pointer]:
+          - /url: /admin/config
+        - link "Backups" [ref=e28] [cursor=pointer]:
+          - /url: /admin/backups
+      - generic [ref=e29]:
+        - link "Players & accounts" [ref=e30] [cursor=pointer]:
+          - /url: /admin/players
+        - link "Reports 1" [ref=e31] [cursor=pointer]:
+          - /url: /admin/reports
+          - text: Reports
+          - generic [ref=e32]: "1"
+        - link "Client reports 1" [ref=e33] [cursor=pointer]:
+          - /url: /admin/client-reports
+          - text: Client reports
+          - generic [ref=e34]: "1"
+        - link "Bans" [ref=e35] [cursor=pointer]:
+          - /url: /admin/bans
+      - link "News posts" [ref=e37] [cursor=pointer]:
+        - /url: /admin/news
+      - generic [ref=e38]:
+        - link "Audit log" [ref=e39] [cursor=pointer]:
+          - /url: /admin/audit
+        - link "Staff & roles" [ref=e40] [cursor=pointer]:
+          - /url: /admin/staff
+    - main [ref=e41]:
+      - generic [ref=e43]:
+        - heading "Monsters" [level=1] [ref=e44]
+        - paragraph [ref=e45]:
+          - text: The monster files as forms. Changes are versioned like other
+          - link "server files" [ref=e46] [cursor=pointer]:
+            - /url: /admin/files
+          - text: and listed under
+          - link "Pending changes" [ref=e47] [cursor=pointer]:
+            - /url: /admin/changes
+          - text: .
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - searchbox "Find a monster" [ref=e51]
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - link "acolyte of the cult 390 hp · 300 xp" [ref=e54] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Facolyte%20of%20the%20cult.xml"
+                - generic [ref=e56]: acolyte of the cult
+                - generic [ref=e57]: 390 hp · 300 xp
+            - listitem [ref=e58]:
+              - link "adept of the cult 430 hp · 400 xp" [ref=e59] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fadept%20of%20the%20cult.xml"
+                - generic [ref=e61]: adept of the cult
+                - generic [ref=e62]: 430 hp · 400 xp
+            - listitem [ref=e63]:
+              - link "amazon 110 hp · 60 xp" [ref=e64] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Famazon.xml"
+                - generic [ref=e66]: amazon
+                - generic [ref=e67]: 110 hp · 60 xp
+            - listitem [ref=e68]:
+              - link "ancient scarab 1000 hp · 720 xp" [ref=e69] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fancientscarab.xml"
+                - generic [ref=e71]: ancient scarab
+                - generic [ref=e72]: 1000 hp · 720 xp
+            - listitem [ref=e73]:
+              - link "apocalypse 125000 hp · 30000 xp" [ref=e74] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fapocalypse.xml"
+                - generic [ref=e76]: apocalypse
+                - generic [ref=e77]: 125000 hp · 30000 xp
+            - listitem [ref=e78]:
+              - link "apprentice sheng 95 hp · 150 xp" [ref=e79] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fapprentice%20sheng.xml"
+                - generic [ref=e81]: apprentice sheng
+                - generic [ref=e82]: 95 hp · 150 xp
+            - listitem [ref=e83]:
+              - link "ashmunrah 5000 hp · 3100 xp" [ref=e84] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohashmunrah.xml"
+                - generic [ref=e86]: ashmunrah
+                - generic [ref=e87]: 5000 hp · 3100 xp
+            - listitem [ref=e88]:
+              - link "assassin 175 hp · 105 xp" [ref=e89] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fassassin.xml"
+                - generic [ref=e91]: assassin
+                - generic [ref=e92]: 175 hp · 105 xp
+            - listitem [ref=e93]:
+              - link "azure frog 60 hp · 20 xp" [ref=e94] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fazure%20frog.xml"
+                - generic [ref=e96]: azure frog
+                - generic [ref=e97]: 60 hp · 20 xp
+            - listitem [ref=e98]:
+              - link "badger 23 hp · 5 xp" [ref=e99] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbadger.xml"
+                - generic [ref=e101]: badger
+                - generic [ref=e102]: 23 hp · 5 xp
+            - listitem [ref=e103]:
+              - link "bandit 245 hp · 65 xp" [ref=e104] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbandit.xml"
+                - generic [ref=e106]: bandit
+                - generic [ref=e107]: 245 hp · 65 xp
+            - listitem [ref=e108]:
+              - link "banshee 1000 hp · 900 xp" [ref=e109] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbanshee.xml"
+                - generic [ref=e111]: banshee
+                - generic [ref=e112]: 1000 hp · 900 xp
+            - listitem [ref=e113]:
+              - link "bat 30 hp · 10 xp" [ref=e114] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbat.xml"
+                - generic [ref=e116]: bat
+                - generic [ref=e117]: 30 hp · 10 xp
+            - listitem [ref=e118]:
+              - link "bazir 110000 hp · 30000 xp" [ref=e119] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbazir.xml"
+                - generic [ref=e121]: bazir
+                - generic [ref=e122]: 110000 hp · 30000 xp
+            - listitem [ref=e123]:
+              - link "bear 80 hp · 23 xp" [ref=e124] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbear.xml"
+                - generic [ref=e126]: bear
+                - generic [ref=e127]: 80 hp · 23 xp
+            - listitem [ref=e128]:
+              - link "behemoth 4000 hp · 2500 xp" [ref=e129] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbehemoth.xml"
+                - generic [ref=e131]: behemoth
+                - generic [ref=e132]: 4000 hp · 2500 xp
+            - listitem [ref=e133]:
+              - link "beholder 260 hp · 170 xp" [ref=e134] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbeholder.xml"
+                - generic [ref=e136]: beholder
+                - generic [ref=e137]: 260 hp · 170 xp
+            - listitem [ref=e138]:
+              - link "betrayed wraith 4200 hp · 3500 xp" [ref=e139] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fbetrayed%20wraith.xml"
+                - generic [ref=e141]: betrayed wraith
+                - generic [ref=e142]: 4200 hp · 3500 xp
+            - listitem [ref=e143]:
+              - link "black knight 1800 hp · 1600 xp" [ref=e144] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fblackknight.xml"
+                - generic [ref=e146]: black knight
+                - generic [ref=e147]: 1800 hp · 1600 xp
+            - listitem [ref=e148]:
+              - link "black sheep 20 hp · 0 xp" [ref=e149] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fblacksheep.xml"
+                - generic [ref=e151]: black sheep
+                - generic [ref=e152]: 20 hp · 0 xp
+            - listitem [ref=e153]:
+              - link "blightwalker 8900 hp · 5850 xp" [ref=e154] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fblightwalker.xml"
+                - generic [ref=e156]: blightwalker
+                - generic [ref=e157]: 8900 hp · 5850 xp
+            - listitem [ref=e158]:
+              - link "blood crab 290 hp · 160 xp" [ref=e159] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fblood%20crab.xml"
+                - generic [ref=e161]: blood crab
+                - generic [ref=e162]: 290 hp · 160 xp
+            - listitem [ref=e163]:
+              - link "blue butterfly 2 hp · 0 xp" [ref=e164] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbutterflyblue.xml"
+                - generic [ref=e166]: blue butterfly
+                - generic [ref=e167]: 2 hp · 0 xp
+            - listitem [ref=e168]:
+              - link "blue djinn 330 hp · 190 xp" [ref=e169] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbluedjinn.xml"
+                - generic [ref=e171]: blue djinn
+                - generic [ref=e172]: 330 hp · 190 xp
+            - listitem [ref=e173]:
+              - link "bonebeast 515 hp · 580 xp" [ref=e174] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbonebeast.xml"
+                - generic [ref=e176]: bonebeast
+                - generic [ref=e177]: 515 hp · 580 xp
+            - listitem [ref=e178]:
+              - link "brutus bloodbeard 1200 hp · 500 xp" [ref=e179] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fbrutus%20bloodbeard.xml"
+                - generic [ref=e181]: brutus bloodbeard
+                - generic [ref=e182]: 1200 hp · 500 xp
+            - listitem [ref=e183]:
+              - link "bug 29 hp · 18 xp" [ref=e184] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbug.xml"
+                - generic [ref=e186]: bug
+                - generic [ref=e187]: 29 hp · 18 xp
+            - listitem [ref=e188]:
+              - link "carniphila 255 hp · 150 xp" [ref=e189] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcarniphila.xml"
+                - generic [ref=e191]: carniphila
+                - generic [ref=e192]: 255 hp · 150 xp
+            - listitem [ref=e193]:
+              - link "carrion worm 145 hp · 70 xp" [ref=e194] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fcarrion%20worm.xml"
+                - generic [ref=e196]: carrion worm
+                - generic [ref=e197]: 145 hp · 70 xp
+            - listitem [ref=e198]:
+              - link "cave rat 30 hp · 10 xp" [ref=e199] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcaverat.xml"
+                - generic [ref=e201]: cave rat
+                - generic [ref=e202]: 30 hp · 10 xp
+            - listitem [ref=e203]:
+              - link "centipede 70 hp · 30 xp" [ref=e204] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcentipede.xml"
+                - generic [ref=e206]: centipede
+                - generic [ref=e207]: 70 hp · 30 xp
+            - listitem [ref=e208]:
+              - link "chicken 15 hp · 0 xp" [ref=e209] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fchicken.xml"
+                - generic [ref=e211]: chicken
+                - generic [ref=e212]: 15 hp · 0 xp
+            - listitem [ref=e213]:
+              - link "cobra 65 hp · 30 xp" [ref=e214] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcobra.xml"
+                - generic [ref=e216]: cobra
+                - generic [ref=e217]: 65 hp · 30 xp
+            - listitem [ref=e218]:
+              - link "coral frog 60 hp · 20 xp" [ref=e219] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fcoral%20frog.xml"
+                - generic [ref=e221]: coral frog
+                - generic [ref=e222]: 60 hp · 20 xp
+            - listitem [ref=e223]:
+              - link "countess sorrow 7200 hp · 5150 xp" [ref=e224] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fcountess%20sorrow.xml"
+                - generic [ref=e226]: countess sorrow
+                - generic [ref=e227]: 7200 hp · 5150 xp
+            - listitem [ref=e228]:
+              - link "crab 55 hp · 30 xp" [ref=e229] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcrab.xml"
+                - generic [ref=e231]: crab
+                - generic [ref=e232]: 55 hp · 30 xp
+            - listitem [ref=e233]:
+              - link "crimson frog 60 hp · 20 xp" [ref=e234] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fcrimson%20frog.xml"
+                - generic [ref=e236]: crimson frog
+                - generic [ref=e237]: 60 hp · 20 xp
+            - listitem [ref=e238]:
+              - link "crocodile 105 hp · 40 xp" [ref=e239] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcrocodile.xml"
+                - generic [ref=e241]: crocodile
+                - generic [ref=e242]: 105 hp · 40 xp
+            - listitem [ref=e243]:
+              - link "crypt shambler 330 hp · 195 xp" [ref=e244] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcryptshambler.xml"
+                - generic [ref=e246]: crypt shambler
+                - generic [ref=e247]: 330 hp · 195 xp
+            - listitem [ref=e248]:
+              - link "cyclops 260 hp · 150 xp" [ref=e249] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fcyclops.xml"
+                - generic [ref=e251]: cyclops
+                - generic [ref=e252]: 260 hp · 150 xp
+            - listitem [ref=e253]:
+              - link "dark monk 190 hp · 145 xp" [ref=e254] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdarkmonk.xml"
+                - generic [ref=e256]: dark monk
+                - generic [ref=e257]: 190 hp · 145 xp
+            - listitem [ref=e258]:
+              - link "dark torturer 7350 hp · 4650 xp" [ref=e259] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdark%20torturer.xml"
+                - generic [ref=e261]: dark torturer
+                - generic [ref=e262]: 7350 hp · 4650 xp
+            - listitem [ref=e263]:
+              - link "deadeye devious 1450 hp · 500 xp" [ref=e264] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fdeadeye%20devious.xml"
+                - generic [ref=e266]: deadeye devious
+                - generic [ref=e267]: 1450 hp · 500 xp
+            - listitem [ref=e268]:
+              - link "deathslicer 8200 hp · 0 xp" [ref=e269] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdeathslicer.xml"
+                - generic [ref=e271]: deathslicer
+                - generic [ref=e272]: 8200 hp · 0 xp
+            - listitem [ref=e273]:
+              - link "deer 25 hp · 0 xp" [ref=e274] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdeer.xml"
+                - generic [ref=e276]: deer
+                - generic [ref=e277]: 25 hp · 0 xp
+            - listitem [ref=e278]:
+              - link "defiler 3650 hp · 3700 xp" [ref=e279] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdefiler.xml"
+                - generic [ref=e281]: defiler
+                - generic [ref=e282]: 3650 hp · 3700 xp
+            - listitem [ref=e283]:
+              - link "demodras 3750 hp · 4000 xp" [ref=e284] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdemodras.xml"
+                - generic [ref=e286]: demodras
+                - generic [ref=e287]: 3750 hp · 4000 xp
+            - listitem [ref=e288]:
+              - link "demon 8200 hp · 6000 xp" [ref=e289] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdemon.xml"
+                - generic [ref=e291]: demon
+                - generic [ref=e292]: 8200 hp · 6000 xp
+            - listitem [ref=e293]:
+              - link "Demon (Goblin) 50 hp · 25 xp" [ref=e294] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdemon%20(goblin).xml"
+                - generic [ref=e296]: Demon (Goblin)
+                - generic [ref=e297]: 50 hp · 25 xp
+            - listitem [ref=e298]:
+              - link "demon skeleton 400 hp · 240 xp" [ref=e299] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdemonskeleton.xml"
+                - generic [ref=e301]: demon skeleton
+                - generic [ref=e302]: 400 hp · 240 xp
+            - listitem [ref=e303]:
+              - link "destroyer 3700 hp · 2500 xp" [ref=e304] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdestroyer.xml"
+                - generic [ref=e306]: destroyer
+                - generic [ref=e307]: 3700 hp · 2500 xp
+            - listitem [ref=e308]:
+              - link "dharalion 390 hp · 380 xp" [ref=e309] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdharalion.xml"
+                - generic [ref=e311]: dharalion
+                - generic [ref=e312]: 390 hp · 380 xp
+            - listitem [ref=e313]:
+              - link "diabolic imp 2900 hp · 1950 xp" [ref=e314] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdiabolic%20imp.xml"
+                - generic [ref=e316]: diabolic imp
+                - generic [ref=e317]: 2900 hp · 1950 xp
+            - listitem [ref=e318]:
+              - link "dipthrah 4200 hp · 2900 xp" [ref=e319] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohdipthrah.xml"
+                - generic [ref=e321]: dipthrah
+                - generic [ref=e322]: 4200 hp · 2900 xp
+            - listitem [ref=e323]:
+              - link "dog 20 hp · 0 xp" [ref=e324] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdog.xml"
+                - generic [ref=e326]: dog
+                - generic [ref=e327]: 20 hp · 0 xp
+            - listitem [ref=e328]:
+              - link "dracola 16200 hp · 11000 xp" [ref=e329] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fdracola.xml"
+                - generic [ref=e331]: dracola
+                - generic [ref=e332]: 16200 hp · 11000 xp
+            - listitem [ref=e333]:
+              - link "dragon 1000 hp · 700 xp" [ref=e334] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdragon.xml"
+                - generic [ref=e336]: dragon
+                - generic [ref=e337]: 1000 hp · 700 xp
+            - listitem [ref=e338]:
+              - link "dragon lord 1900 hp · 2100 xp" [ref=e339] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdragonlord.xml"
+                - generic [ref=e341]: dragon lord
+                - generic [ref=e342]: 1900 hp · 2100 xp
+            - listitem [ref=e343]:
+              - link "dwarf 90 hp · 45 xp" [ref=e344] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdwarf.xml"
+                - generic [ref=e346]: dwarf
+                - generic [ref=e347]: 90 hp · 45 xp
+            - listitem [ref=e348]:
+              - link "dwarf geomancer 380 hp · 245 xp" [ref=e349] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdwarfgeomancer.xml"
+                - generic [ref=e351]: dwarf geomancer
+                - generic [ref=e352]: 380 hp · 245 xp
+            - listitem [ref=e353]:
+              - link "dwarf guard 245 hp · 165 xp" [ref=e354] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdwarfguard.xml"
+                - generic [ref=e356]: dwarf guard
+                - generic [ref=e357]: 245 hp · 165 xp
+            - listitem [ref=e358]:
+              - link "dwarf soldier 135 hp · 70 xp" [ref=e359] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdwarfsoldier.xml"
+                - generic [ref=e361]: dwarf soldier
+                - generic [ref=e362]: 135 hp · 70 xp
+            - listitem [ref=e363]:
+              - link "dworc fleshhunter 85 hp · 35 xp" [ref=e364] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdworcfleshhunter.xml"
+                - generic [ref=e366]: dworc fleshhunter
+                - generic [ref=e367]: 85 hp · 35 xp
+            - listitem [ref=e368]:
+              - link "dworc venomsniper 80 hp · 30 xp" [ref=e369] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdworcvenomsniper.xml"
+                - generic [ref=e371]: dworc venomsniper
+                - generic [ref=e372]: 80 hp · 30 xp
+            - listitem [ref=e373]:
+              - link "dworc voodoomaster 80 hp · 50 xp" [ref=e374] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fdworcvoodoomaster.xml"
+                - generic [ref=e376]: dworc voodoomaster
+                - generic [ref=e377]: 80 hp · 50 xp
+            - listitem [ref=e378]:
+              - link "efreet 550 hp · 300 xp" [ref=e379] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fefreet.xml"
+                - generic [ref=e381]: efreet
+                - generic [ref=e382]: 550 hp · 300 xp
+            - listitem [ref=e383]:
+              - link "elder beholder 500 hp · 280 xp" [ref=e384] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Felderbeholder.xml"
+                - generic [ref=e386]: elder beholder
+                - generic [ref=e387]: 500 hp · 280 xp
+            - listitem [ref=e388]:
+              - link "elephant 320 hp · 160 xp" [ref=e389] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Felephant.xml"
+                - generic [ref=e391]: elephant
+                - generic [ref=e392]: 320 hp · 160 xp
+            - listitem [ref=e393]:
+              - link "elf 100 hp · 42 xp" [ref=e394] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Felf.xml"
+                - generic [ref=e396]: elf
+                - generic [ref=e397]: 100 hp · 42 xp
+            - listitem [ref=e398]:
+              - link "elf arcanist 220 hp · 175 xp" [ref=e399] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Felfarcanist.xml"
+                - generic [ref=e401]: elf arcanist
+                - generic [ref=e402]: 220 hp · 175 xp
+            - listitem [ref=e403]:
+              - link "elf scout 160 hp · 75 xp" [ref=e404] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Felfscout.xml"
+                - generic [ref=e406]: elf scout
+                - generic [ref=e407]: 160 hp · 75 xp
+            - listitem [ref=e408]:
+              - link "enlightened of the cult 700 hp · 500 xp" [ref=e409] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fenlightened%20of%20the%20cult.xml"
+                - generic [ref=e411]: enlightened of the cult
+                - generic [ref=e412]: 700 hp · 500 xp
+            - listitem [ref=e413]:
+              - link "fernfang 400 hp · 400 xp" [ref=e414] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ffernfang.xml"
+                - generic [ref=e416]: fernfang
+                - generic [ref=e417]: 400 hp · 400 xp
+            - listitem [ref=e418]:
+              - link "ferumbras 28000 hp · 12000 xp" [ref=e419] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fferumbras.xml"
+                - generic [ref=e421]: ferumbras
+                - generic [ref=e422]: 28000 hp · 12000 xp
+            - listitem [ref=e423]:
+              - link "fire devil 200 hp · 110 xp" [ref=e424] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ffiredevil.xml"
+                - generic [ref=e426]: fire devil
+                - generic [ref=e427]: 200 hp · 110 xp
+            - listitem [ref=e428]:
+              - link "fire elemental 280 hp · 220 xp" [ref=e429] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ffireelemental.xml"
+                - generic [ref=e431]: fire elemental
+                - generic [ref=e432]: 280 hp · 220 xp
+            - listitem [ref=e433]:
+              - link "flamethrower 100 hp · 18 xp" [ref=e434] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fflamethrower.xml"
+                - generic [ref=e436]: flamethrower
+                - generic [ref=e437]: 100 hp · 18 xp
+            - listitem [ref=e438]:
+              - link "flamingo 25 hp · 0 xp" [ref=e439] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fflamingo.xml"
+                - generic [ref=e441]: flamingo
+                - generic [ref=e442]: 25 hp · 0 xp
+            - listitem [ref=e443]:
+              - link "frost troll 55 hp · 23 xp" [ref=e444] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ffrosttroll.xml"
+                - generic [ref=e446]: frost troll
+                - generic [ref=e447]: 55 hp · 23 xp
+            - listitem [ref=e448]:
+              - link "fury 4100 hp · 4500 xp" [ref=e449] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Ffury.xml"
+                - generic [ref=e451]: fury
+                - generic [ref=e452]: 4100 hp · 4500 xp
+            - listitem [ref=e453]:
+              - link "gamemaster 8200 hp · 0 xp" [ref=e454] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgamemaster.xml"
+                - generic [ref=e456]: gamemaster
+                - generic [ref=e457]: 8200 hp · 0 xp
+            - listitem [ref=e458]:
+              - link "gargoyle 250 hp · 150 xp" [ref=e459] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgargoyle.xml"
+                - generic [ref=e461]: gargoyle
+                - generic [ref=e462]: 250 hp · 150 xp
+            - listitem [ref=e463]:
+              - link "gazer 120 hp · 90 xp" [ref=e464] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgazer.xml"
+                - generic [ref=e466]: gazer
+                - generic [ref=e467]: 120 hp · 90 xp
+            - listitem [ref=e468]:
+              - link "general murius 550 hp · 300 xp" [ref=e469] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmurius.xml"
+                - generic [ref=e471]: general murius
+                - generic [ref=e472]: 550 hp · 300 xp
+            - listitem [ref=e473]:
+              - link "ghost 150 hp · 120 xp" [ref=e474] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fghost.xml"
+                - generic [ref=e476]: ghost
+                - generic [ref=e477]: 150 hp · 120 xp
+            - listitem [ref=e478]:
+              - link "ghoul 100 hp · 85 xp" [ref=e479] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fghoul.xml"
+                - generic [ref=e481]: ghoul
+                - generic [ref=e482]: 100 hp · 85 xp
+            - listitem [ref=e483]:
+              - link "giant spider 1300 hp · 900 xp" [ref=e484] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgiantspider.xml"
+                - generic [ref=e486]: giant spider
+                - generic [ref=e487]: 1300 hp · 900 xp
+            - listitem [ref=e488]:
+              - link "goblin 50 hp · 25 xp" [ref=e489] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgoblin.xml"
+                - generic [ref=e491]: goblin
+                - generic [ref=e492]: 50 hp · 25 xp
+            - listitem [ref=e493]:
+              - link "green djinn 330 hp · 190 xp" [ref=e494] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgreendjinn.xml"
+                - generic [ref=e496]: green djinn
+                - generic [ref=e497]: 330 hp · 190 xp
+            - listitem [ref=e498]:
+              - link "green frog 25 hp · 0 xp" [ref=e499] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fgreen%20frog.xml"
+                - generic [ref=e501]: green frog
+                - generic [ref=e502]: 25 hp · 0 xp
+            - listitem [ref=e503]:
+              - link "grorlam 2700 hp · 1600 xp" [ref=e504] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fgrorlam.xml"
+                - generic [ref=e506]: grorlam
+                - generic [ref=e507]: 2700 hp · 1600 xp
+            - listitem [ref=e508]:
+              - link "grynch clan goblin 80 hp · 4 xp" [ref=e509] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fgrynch%20clan%20goblin.xml"
+                - generic [ref=e511]: grynch clan goblin
+                - generic [ref=e512]: 80 hp · 4 xp
+            - listitem [ref=e513]:
+              - link "hand of cursed fate 7500 hp · 5000 xp" [ref=e514] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fhand%20of%20cursed%20fate.xml"
+                - generic [ref=e516]: hand of cursed fate
+                - generic [ref=e517]: 7500 hp · 5000 xp
+            - listitem [ref=e518]:
+              - link "hellfire fighter 3800 hp · 3900 xp" [ref=e519] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fhellfire%20fighter.xml"
+                - generic [ref=e521]: hellfire fighter
+                - generic [ref=e522]: 3800 hp · 3900 xp
+            - listitem [ref=e523]:
+              - link "hellhound 7500 hp · 6800 xp" [ref=e524] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fhellhound.xml"
+                - generic [ref=e526]: hellhound
+                - generic [ref=e527]: 7500 hp · 6800 xp
+            - listitem [ref=e528]:
+              - link "hero 1400 hp · 1200 xp" [ref=e529] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhero.xml"
+                - generic [ref=e531]: hero
+                - generic [ref=e532]: 1400 hp · 1200 xp
+            - listitem [ref=e533]:
+              - link "hunter 150 hp · 150 xp" [ref=e534] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhunter.xml"
+                - generic [ref=e536]: hunter
+                - generic [ref=e537]: 150 hp · 150 xp
+            - listitem [ref=e538]:
+              - link "hyaena 60 hp · 20 xp" [ref=e539] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhyaena.xml"
+                - generic [ref=e541]: hyaena
+                - generic [ref=e542]: 60 hp · 20 xp
+            - listitem [ref=e543]:
+              - link "hydra 2250 hp · 2100 xp" [ref=e544] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhydra.xml"
+                - generic [ref=e546]: hydra
+                - generic [ref=e547]: 2250 hp · 2100 xp
+            - listitem [ref=e548]:
+              - link "illusion 50 hp · 25 xp" [ref=e549] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fillusion.xml"
+                - generic [ref=e551]: illusion
+                - generic [ref=e552]: 50 hp · 25 xp
+            - listitem [ref=e553]:
+              - link "infernatil 110000 hp · 30000 xp" [ref=e554] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Finfernatil.xml"
+                - generic [ref=e556]: infernatil
+                - generic [ref=e557]: 110000 hp · 30000 xp
+            - listitem [ref=e558]:
+              - link "island troll 50 hp · 20 xp" [ref=e559] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fisland%20troll.xml"
+                - generic [ref=e561]: island troll
+                - generic [ref=e562]: 50 hp · 20 xp
+            - listitem [ref=e563]:
+              - link "juggernaut 20000 hp · 6500 xp" [ref=e564] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fjuggernaut.xml"
+                - generic [ref=e566]: juggernaut
+                - generic [ref=e567]: 20000 hp · 6500 xp
+            - listitem [ref=e568]:
+              - link "kongra 340 hp · 110 xp" [ref=e569] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fkongra.xml"
+                - generic [ref=e571]: kongra
+                - generic [ref=e572]: 340 hp · 110 xp
+            - listitem [ref=e573]:
+              - link "larva 70 hp · 44 xp" [ref=e574] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flarva.xml"
+                - generic [ref=e576]: larva
+                - generic [ref=e577]: 70 hp · 44 xp
+            - listitem [ref=e578]:
+              - link "lavahole 100 hp · 0 xp" [ref=e579] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Flavahole.xml"
+                - generic [ref=e581]: lavahole
+                - generic [ref=e582]: 100 hp · 0 xp
+            - listitem [ref=e583]:
+              - link "lethal lissy 1450 hp · 500 xp" [ref=e584] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Flethal%20lissy.xml"
+                - generic [ref=e586]: lethal lissy
+                - generic [ref=e587]: 1450 hp · 500 xp
+            - listitem [ref=e588]:
+              - link "lich 880 hp · 900 xp" [ref=e589] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flich.xml"
+                - generic [ref=e591]: lich
+                - generic [ref=e592]: 880 hp · 900 xp
+            - listitem [ref=e593]:
+              - link "lion 80 hp · 30 xp" [ref=e594] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flion.xml"
+                - generic [ref=e596]: lion
+                - generic [ref=e597]: 80 hp · 30 xp
+            - listitem [ref=e598]:
+              - link "lizard sentinel 265 hp · 105 xp" [ref=e599] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flizardsentinel.xml"
+                - generic [ref=e601]: lizard sentinel
+                - generic [ref=e602]: 265 hp · 105 xp
+            - listitem [ref=e603]:
+              - link "lizard snakecharmer 325 hp · 200 xp" [ref=e604] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flizardsnakecharmer.xml"
+                - generic [ref=e606]: lizard snakecharmer
+                - generic [ref=e607]: 325 hp · 200 xp
+            - listitem [ref=e608]:
+              - link "lizard templar 410 hp · 145 xp" [ref=e609] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Flizardtemplar.xml"
+                - generic [ref=e611]: lizard templar
+                - generic [ref=e612]: 410 hp · 145 xp
+            - listitem [ref=e613]:
+              - link "lost soul 5800 hp · 4000 xp" [ref=e614] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Flost%20soul.xml"
+                - generic [ref=e616]: lost soul
+                - generic [ref=e617]: 5800 hp · 4000 xp
+            - listitem [ref=e618]:
+              - link "magic pillar 9950 hp · 0 xp" [ref=e619] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fmagic%20pillar.xml"
+                - generic [ref=e621]: magic pillar
+                - generic [ref=e622]: 9950 hp · 0 xp
+            - listitem [ref=e623]:
+              - link "magicthrower 100 hp · 18 xp" [ref=e624] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmagicthrower.xml"
+                - generic [ref=e626]: magicthrower
+                - generic [ref=e627]: 100 hp · 18 xp
+            - listitem [ref=e628]:
+              - link "mahrdis 3900 hp · 3050 xp" [ref=e629] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohmahrdis.xml"
+                - generic [ref=e631]: mahrdis
+                - generic [ref=e632]: 3900 hp · 3050 xp
+            - listitem [ref=e633]:
+              - link "mammoth 320 hp · 160 xp" [ref=e634] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fmammoth.xml"
+                - generic [ref=e636]: mammoth
+                - generic [ref=e637]: 320 hp · 160 xp
+            - listitem [ref=e638]:
+              - link "marid 550 hp · 300 xp" [ref=e639] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmarid.xml"
+                - generic [ref=e641]: marid
+                - generic [ref=e642]: 550 hp · 300 xp
+            - listitem [ref=e643]:
+              - link "massacre 30000 hp · 9800 xp" [ref=e644] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fmassacre.xml"
+                - generic [ref=e646]: massacre
+                - generic [ref=e647]: 30000 hp · 9800 xp
+            - listitem [ref=e648]:
+              - link "massive water elemental 1250 hp · 800 xp" [ref=e649] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fmassive%20water%20elemental.xml"
+                - generic [ref=e651]: massive water elemental
+                - generic [ref=e652]: 1250 hp · 800 xp
+            - listitem [ref=e653]:
+              - link "merlkin 230 hp · 135 xp" [ref=e654] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmerlkin.xml"
+                - generic [ref=e656]: merlkin
+                - generic [ref=e657]: 230 hp · 135 xp
+            - listitem [ref=e658]:
+              - link "mimic 29 hp · 18 xp" [ref=e659] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmimic.xml"
+                - generic [ref=e661]: mimic
+                - generic [ref=e662]: 29 hp · 18 xp
+            - listitem [ref=e663]:
+              - link "minotaur 100 hp · 50 xp" [ref=e664] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fminotaur.xml"
+                - generic [ref=e666]: minotaur
+                - generic [ref=e667]: 100 hp · 50 xp
+            - listitem [ref=e668]:
+              - link "minotaur archer 100 hp · 65 xp" [ref=e669] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fminotaurarcher.xml"
+                - generic [ref=e671]: minotaur archer
+                - generic [ref=e672]: 100 hp · 65 xp
+            - listitem [ref=e673]:
+              - link "minotaur guard 185 hp · 160 xp" [ref=e674] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fminotaurguard.xml"
+                - generic [ref=e676]: minotaur guard
+                - generic [ref=e677]: 185 hp · 160 xp
+            - listitem [ref=e678]:
+              - link "minotaur mage 155 hp · 150 xp" [ref=e679] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fminotaurmage.xml"
+                - generic [ref=e681]: minotaur mage
+                - generic [ref=e682]: 155 hp · 150 xp
+            - listitem [ref=e683]:
+              - link "monk 240 hp · 200 xp" [ref=e684] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmonk.xml"
+                - generic [ref=e686]: monk
+                - generic [ref=e687]: 240 hp · 200 xp
+            - listitem [ref=e688]:
+              - link "morgaroth 55000 hp · 15000 xp" [ref=e689] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmorgaroth.xml"
+                - generic [ref=e691]: morgaroth
+                - generic [ref=e692]: 55000 hp · 15000 xp
+            - listitem [ref=e693]:
+              - link "morgaroth 55000 hp · 15000 xp" [ref=e694] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fmorgaroth.xml"
+                - generic [ref=e696]: morgaroth
+                - generic [ref=e697]: 55000 hp · 15000 xp
+            - listitem [ref=e698]:
+              - link "morguthis 4800 hp · 3000 xp" [ref=e699] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohmorguthis.xml"
+                - generic [ref=e701]: morguthis
+                - generic [ref=e702]: 4800 hp · 3000 xp
+            - listitem [ref=e703]:
+              - link "mr. punish 12000 hp · 5500 xp" [ref=e704] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fmr.%20punish.xml"
+                - generic [ref=e706]: mr. punish
+                - generic [ref=e707]: 12000 hp · 5500 xp
+            - listitem [ref=e708]:
+              - link "mummy 240 hp · 150 xp" [ref=e709] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fmummy.xml"
+                - generic [ref=e711]: mummy
+                - generic [ref=e712]: 240 hp · 150 xp
+            - listitem [ref=e713]:
+              - link "munster 58 hp · 35 xp" [ref=e714] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fmunster.xml"
+                - generic [ref=e716]: munster
+                - generic [ref=e717]: 58 hp · 35 xp
+            - listitem [ref=e718]:
+              - link "necromancer 580 hp · 580 xp" [ref=e719] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fnecromancer.xml"
+                - generic [ref=e721]: necromancer
+                - generic [ref=e722]: 580 hp · 580 xp
+            - listitem [ref=e723]:
+              - link "necropharus 750 hp · 700 xp" [ref=e724] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fnecropharus.xml"
+                - generic [ref=e726]: necropharus
+                - generic [ref=e727]: 750 hp · 700 xp
+            - listitem [ref=e728]:
+              - link "nightmare 2700 hp · 2150 xp" [ref=e729] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fnightmare.xml"
+                - generic [ref=e731]: nightmare
+                - generic [ref=e732]: 2700 hp · 2150 xp
+            - listitem [ref=e733]:
+              - link "nomad 160 hp · 60 xp" [ref=e734] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fnomad.xml"
+                - generic [ref=e736]: nomad
+                - generic [ref=e737]: 160 hp · 60 xp
+            - listitem [ref=e738]:
+              - link "novice of the cult 285 hp · 100 xp" [ref=e739] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fnovice%20of%20the%20cult.xml"
+                - generic [ref=e741]: novice of the cult
+                - generic [ref=e742]: 285 hp · 100 xp
+            - listitem [ref=e743]:
+              - link "omruc 4300 hp · 2950 xp" [ref=e744] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohomruc.xml"
+                - generic [ref=e746]: omruc
+                - generic [ref=e747]: 4300 hp · 2950 xp
+            - listitem [ref=e748]:
+              - link "orc 70 hp · 25 xp" [ref=e749] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forc.xml"
+                - generic [ref=e751]: orc
+                - generic [ref=e752]: 70 hp · 25 xp
+            - listitem [ref=e753]:
+              - link "orc berserker 210 hp · 195 xp" [ref=e754] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcberserker.xml"
+                - generic [ref=e756]: orc berserker
+                - generic [ref=e757]: 210 hp · 195 xp
+            - listitem [ref=e758]:
+              - link "orc leader 450 hp · 270 xp" [ref=e759] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcleader.xml"
+                - generic [ref=e761]: orc leader
+                - generic [ref=e762]: 450 hp · 270 xp
+            - listitem [ref=e763]:
+              - link "orc rider 180 hp · 110 xp" [ref=e764] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcrider.xml"
+                - generic [ref=e766]: orc rider
+                - generic [ref=e767]: 180 hp · 110 xp
+            - listitem [ref=e768]:
+              - link "orc shaman 115 hp · 110 xp" [ref=e769] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcshaman.xml"
+                - generic [ref=e771]: orc shaman
+                - generic [ref=e772]: 115 hp · 110 xp
+            - listitem [ref=e773]:
+              - link "orc spearman 105 hp · 38 xp" [ref=e774] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcspearman.xml"
+                - generic [ref=e776]: orc spearman
+                - generic [ref=e777]: 105 hp · 38 xp
+            - listitem [ref=e778]:
+              - link "orc warlord 950 hp · 670 xp" [ref=e779] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcwarlord.xml"
+                - generic [ref=e781]: orc warlord
+                - generic [ref=e782]: 950 hp · 670 xp
+            - listitem [ref=e783]:
+              - link "orc warrior 125 hp · 50 xp" [ref=e784] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forcwarrior.xml"
+                - generic [ref=e786]: orc warrior
+                - generic [ref=e787]: 125 hp · 50 xp
+            - listitem [ref=e788]:
+              - link "orchid frog 60 hp · 20 xp" [ref=e789] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Forchid%20frog.xml"
+                - generic [ref=e791]: orchid frog
+                - generic [ref=e792]: 60 hp · 20 xp
+            - listitem [ref=e793]:
+              - link "orshabaal 22500 hp · 9999 xp" [ref=e794] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Forshabaal.xml"
+                - generic [ref=e796]: orshabaal
+                - generic [ref=e797]: 22500 hp · 9999 xp
+            - listitem [ref=e798]:
+              - link "panda 80 hp · 23 xp" [ref=e799] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpanda.xml"
+                - generic [ref=e801]: panda
+                - generic [ref=e802]: 80 hp · 23 xp
+            - listitem [ref=e803]:
+              - link "parrot 25 hp · 0 xp" [ref=e804] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fparrot.xml"
+                - generic [ref=e806]: parrot
+                - generic [ref=e807]: 25 hp · 0 xp
+            - listitem [ref=e808]:
+              - link "phantasm 3950 hp · 4400 xp" [ref=e809] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fphantasm.xml"
+                - generic [ref=e811]: phantasm
+                - generic [ref=e812]: 3950 hp · 4400 xp
+            - listitem [ref=e813]:
+              - link "phantasm summon 65 hp · 0 xp" [ref=e814] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fphantasm%20summon.xml"
+                - generic [ref=e816]: phantasm summon
+                - generic [ref=e817]: 65 hp · 0 xp
+            - listitem [ref=e818]:
+              - link "pig 25 hp · 0 xp" [ref=e819] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpig.xml"
+                - generic [ref=e821]: pig
+                - generic [ref=e822]: 25 hp · 0 xp
+            - listitem [ref=e823]:
+              - link "pirate buccaneer 425 hp · 250 xp" [ref=e824] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20buccaneer.xml"
+                - generic [ref=e826]: pirate buccaneer
+                - generic [ref=e827]: 425 hp · 250 xp
+            - listitem [ref=e828]:
+              - link "pirate corsair 675 hp · 350 xp" [ref=e829] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20corsair.xml"
+                - generic [ref=e831]: pirate corsair
+                - generic [ref=e832]: 675 hp · 350 xp
+            - listitem [ref=e833]:
+              - link "pirate cutthroat 325 hp · 175 xp" [ref=e834] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20cutthroat.xml"
+                - generic [ref=e836]: pirate cutthroat
+                - generic [ref=e837]: 325 hp · 175 xp
+            - listitem [ref=e838]:
+              - link "pirate ghost 275 hp · 250 xp" [ref=e839] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20ghost.xml"
+                - generic [ref=e841]: pirate ghost
+                - generic [ref=e842]: 275 hp · 250 xp
+            - listitem [ref=e843]:
+              - link "pirate marauder 210 hp · 125 xp" [ref=e844] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20marauder.xml"
+                - generic [ref=e846]: pirate marauder
+                - generic [ref=e847]: 210 hp · 125 xp
+            - listitem [ref=e848]:
+              - link "pirate skeleton 190 hp · 85 xp" [ref=e849] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fpirate%20skeleton.xml"
+                - generic [ref=e851]: pirate skeleton
+                - generic [ref=e852]: 190 hp · 85 xp
+            - listitem [ref=e853]:
+              - link "plaguesmith 8250 hp · 4500 xp" [ref=e854] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fplaguesmith.xml"
+                - generic [ref=e856]: plaguesmith
+                - generic [ref=e857]: 8250 hp · 4500 xp
+            - listitem [ref=e858]:
+              - link "plaguethrower 100 hp · 18 xp" [ref=e859] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fplaguethrower.xml"
+                - generic [ref=e861]: plaguethrower
+                - generic [ref=e862]: 100 hp · 18 xp
+            - listitem [ref=e863]:
+              - link "poison spider 26 hp · 22 xp" [ref=e864] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpoisonspider.xml"
+                - generic [ref=e866]: poison spider
+                - generic [ref=e867]: 26 hp · 22 xp
+            - listitem [ref=e868]:
+              - link "polar bear 85 hp · 28 xp" [ref=e869] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpolarbear.xml"
+                - generic [ref=e871]: polar bear
+                - generic [ref=e872]: 85 hp · 28 xp
+            - listitem [ref=e873]:
+              - link "priestess 390 hp · 420 xp" [ref=e874] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpriestess.xml"
+                - generic [ref=e876]: priestess
+                - generic [ref=e877]: 390 hp · 420 xp
+            - listitem [ref=e878]:
+              - link "purple butterfly 2 hp · 0 xp" [ref=e879] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbutterflypurple.xml"
+                - generic [ref=e881]: purple butterfly
+                - generic [ref=e882]: 2 hp · 0 xp
+            - listitem [ref=e883]:
+              - link "quara constrictor 450 hp · 250 xp" [ref=e884] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20constrictor.xml"
+                - generic [ref=e886]: quara constrictor
+                - generic [ref=e887]: 450 hp · 250 xp
+            - listitem [ref=e888]:
+              - link "quara constrictor scout 450 hp · 250 xp" [ref=e889] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20constrictor%20scout.xml"
+                - generic [ref=e891]: quara constrictor scout
+                - generic [ref=e892]: 450 hp · 250 xp
+            - listitem [ref=e893]:
+              - link "quara hydromancer 1100 hp · 800 xp" [ref=e894] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20hydromancer.xml"
+                - generic [ref=e896]: quara hydromancer
+                - generic [ref=e897]: 1100 hp · 800 xp
+            - listitem [ref=e898]:
+              - link "quara hydromancer scout 1100 hp · 800 xp" [ref=e899] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20hydromancer%20scout.xml"
+                - generic [ref=e901]: quara hydromancer scout
+                - generic [ref=e902]: 1100 hp · 800 xp
+            - listitem [ref=e903]:
+              - link "quara mantassin 800 hp · 400 xp" [ref=e904] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20mantassin.xml"
+                - generic [ref=e906]: quara mantassin
+                - generic [ref=e907]: 800 hp · 400 xp
+            - listitem [ref=e908]:
+              - link "quara mantassin scout 220 hp · 100 xp" [ref=e909] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20mantassin%20scout.xml"
+                - generic [ref=e911]: quara mantassin scout
+                - generic [ref=e912]: 220 hp · 100 xp
+            - listitem [ref=e913]:
+              - link "quara pincher 1800 hp · 1200 xp" [ref=e914] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20pincher.xml"
+                - generic [ref=e916]: quara pincher
+                - generic [ref=e917]: 1800 hp · 1200 xp
+            - listitem [ref=e918]:
+              - link "quara pincher scout 775 hp · 600 xp" [ref=e919] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20pincher%20scout.xml"
+                - generic [ref=e921]: quara pincher scout
+                - generic [ref=e922]: 775 hp · 600 xp
+            - listitem [ref=e923]:
+              - link "quara predator 2200 hp · 1600 xp" [ref=e924] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20predator.xml"
+                - generic [ref=e926]: quara predator
+                - generic [ref=e927]: 2200 hp · 1600 xp
+            - listitem [ref=e928]:
+              - link "quara predator scout 890 hp · 400 xp" [ref=e929] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fquara%20predator%20scout.xml"
+                - generic [ref=e931]: quara predator scout
+                - generic [ref=e932]: 890 hp · 400 xp
+            - listitem [ref=e933]:
+              - link "rabbit 15 hp · 0 xp" [ref=e934] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Frabbit.xml"
+                - generic [ref=e936]: rabbit
+                - generic [ref=e937]: 15 hp · 0 xp
+            - listitem [ref=e938]:
+              - link "rahemos 3700 hp · 3100 xp" [ref=e939] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohrahemos.xml"
+                - generic [ref=e941]: rahemos
+                - generic [ref=e942]: 3700 hp · 3100 xp
+            - listitem [ref=e943]:
+              - link "raid orc 70 hp · 25 xp" [ref=e944] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fraids%2Forc.xml"
+                - generic [ref=e946]: raid orc
+                - generic [ref=e947]: 70 hp · 25 xp
+            - listitem [ref=e948]:
+              - link "raid orc warlord 950 hp · 670 xp" [ref=e949] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fraids%2Forcwarlord.xml"
+                - generic [ref=e951]: raid orc warlord
+                - generic [ref=e952]: 950 hp · 670 xp
+            - listitem [ref=e953]:
+              - link "rat 20 hp · 5 xp" [ref=e954] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Frat.xml"
+                - generic [ref=e956]: rat
+                - generic [ref=e957]: 20 hp · 5 xp
+            - listitem [ref=e958]:
+              - link "red butterfly 2 hp · 0 xp" [ref=e959] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbutterflyred.xml"
+                - generic [ref=e961]: red butterfly
+                - generic [ref=e962]: 2 hp · 0 xp
+            - listitem [ref=e963]:
+              - link "ron the ripper 1500 hp · 500 xp" [ref=e964] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fron%20the%20ripper.xml"
+                - generic [ref=e966]: ron the ripper
+                - generic [ref=e967]: 1500 hp · 500 xp
+            - listitem [ref=e968]:
+              - link "rotworm 65 hp · 40 xp" [ref=e969] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Frotworm.xml"
+                - generic [ref=e971]: rotworm
+                - generic [ref=e972]: 65 hp · 40 xp
+            - listitem [ref=e973]:
+              - link "scarab 320 hp · 120 xp" [ref=e974] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fscarab.xml"
+                - generic [ref=e976]: scarab
+                - generic [ref=e977]: 320 hp · 120 xp
+            - listitem [ref=e978]:
+              - link "scorpion 45 hp · 45 xp" [ref=e979] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fscorpion.xml"
+                - generic [ref=e981]: scorpion
+                - generic [ref=e982]: 45 hp · 45 xp
+            - listitem [ref=e983]:
+              - link "seagull 25 hp · 0 xp" [ref=e984] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fseagull.xml"
+                - generic [ref=e986]: seagull
+                - generic [ref=e987]: 25 hp · 0 xp
+            - listitem [ref=e988]:
+              - link "serpent spawn 3000 hp · 2000 xp" [ref=e989] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fserpentspawn.xml"
+                - generic [ref=e991]: serpent spawn
+                - generic [ref=e992]: 3000 hp · 2000 xp
+            - listitem [ref=e993]:
+              - link "sheep 20 hp · 0 xp" [ref=e994] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fsheep.xml"
+                - generic [ref=e996]: sheep
+                - generic [ref=e997]: 20 hp · 0 xp
+            - listitem [ref=e998]:
+              - link "shredderthrower 100 hp · 18 xp" [ref=e999] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fshredderthrower.xml"
+                - generic [ref=e1001]: shredderthrower
+                - generic [ref=e1002]: 100 hp · 18 xp
+            - listitem [ref=e1003]:
+              - link "sibang 225 hp · 100 xp" [ref=e1004] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fsibang.xml"
+                - generic [ref=e1006]: sibang
+                - generic [ref=e1007]: 225 hp · 100 xp
+            - listitem [ref=e1008]:
+              - link "skeleton 50 hp · 35 xp" [ref=e1009] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fskeleton.xml"
+                - generic [ref=e1011]: skeleton
+                - generic [ref=e1012]: 50 hp · 35 xp
+            - listitem [ref=e1013]:
+              - link "skunk 20 hp · 3 xp" [ref=e1014] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fskunk.xml"
+                - generic [ref=e1016]: skunk
+                - generic [ref=e1017]: 20 hp · 3 xp
+            - listitem [ref=e1018]:
+              - link "slime 150 hp · 160 xp" [ref=e1019] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fslime.xml"
+                - generic [ref=e1021]: slime
+                - generic [ref=e1022]: 150 hp · 160 xp
+            - listitem [ref=e1023]:
+              - link "slime2 150 hp · 55 xp" [ref=e1024] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fslime2.xml"
+                - generic [ref=e1026]: slime2
+                - generic [ref=e1027]: 150 hp · 55 xp
+            - listitem [ref=e1028]:
+              - link "smuggler 130 hp · 48 xp" [ref=e1029] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fsmuggler.xml"
+                - generic [ref=e1031]: smuggler
+                - generic [ref=e1032]: 130 hp · 48 xp
+            - listitem [ref=e1033]:
+              - link "snake 15 hp · 10 xp" [ref=e1034] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fsnake.xml"
+                - generic [ref=e1036]: snake
+                - generic [ref=e1037]: 15 hp · 10 xp
+            - listitem [ref=e1038]:
+              - link "son of verminor 8500 hp · 5900 xp" [ref=e1039] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fson%20of%20verminor.xml"
+                - generic [ref=e1041]: son of verminor
+                - generic [ref=e1042]: 8500 hp · 5900 xp
+            - listitem [ref=e1043]:
+              - link "spectre 1350 hp · 2100 xp" [ref=e1044] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fspectre.xml"
+                - generic [ref=e1046]: spectre
+                - generic [ref=e1047]: 1350 hp · 2100 xp
+            - listitem [ref=e1048]:
+              - link "spider 20 hp · 12 xp" [ref=e1049] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fspider.xml"
+                - generic [ref=e1051]: spider
+                - generic [ref=e1052]: 20 hp · 12 xp
+            - listitem [ref=e1053]:
+              - link "spit nettle 150 hp · 20 xp" [ref=e1054] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fspitnettle.xml"
+                - generic [ref=e1056]: spit nettle
+                - generic [ref=e1057]: 150 hp · 20 xp
+            - listitem [ref=e1058]:
+              - link "stalker 120 hp · 90 xp" [ref=e1059] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fstalker.xml"
+                - generic [ref=e1061]: stalker
+                - generic [ref=e1062]: 120 hp · 90 xp
+            - listitem [ref=e1063]:
+              - link "stone golem 270 hp · 160 xp" [ref=e1064] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fstonegolem.xml"
+                - generic [ref=e1066]: stone golem
+                - generic [ref=e1067]: 270 hp · 160 xp
+            - listitem [ref=e1068]:
+              - link "swamp troll 55 hp · 25 xp" [ref=e1069] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fswamptroll.xml"
+                - generic [ref=e1071]: swamp troll
+                - generic [ref=e1072]: 55 hp · 25 xp
+            - listitem [ref=e1073]:
+              - link "tarantula 225 hp · 120 xp" [ref=e1074] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ftarantula.xml"
+                - generic [ref=e1076]: tarantula
+                - generic [ref=e1077]: 225 hp · 120 xp
+            - listitem [ref=e1078]:
+              - link "terror bird 300 hp · 150 xp" [ref=e1079] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fterrorbird.xml"
+                - generic [ref=e1081]: terror bird
+                - generic [ref=e1082]: 300 hp · 150 xp
+            - listitem [ref=e1083]:
+              - link "thalas 4100 hp · 2950 xp" [ref=e1084] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohthalas.xml"
+                - generic [ref=e1086]: thalas
+                - generic [ref=e1087]: 4100 hp · 2950 xp
+            - listitem [ref=e1088]:
+              - link "the evil eye 1100 hp · 500 xp" [ref=e1089] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fevileye.xml"
+                - generic [ref=e1091]: the evil eye
+                - generic [ref=e1092]: 1100 hp · 500 xp
+            - listitem [ref=e1093]:
+              - link "the halloween hare 2000 hp · 0 xp" [ref=e1094] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhalloweenhare.xml"
+                - generic [ref=e1096]: the halloween hare
+                - generic [ref=e1097]: 2000 hp · 0 xp
+            - listitem [ref=e1098]:
+              - link "the handmaiden 14500 hp · 3850 xp" [ref=e1099] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fthe%20handmaiden.xml"
+                - generic [ref=e1101]: the handmaiden
+                - generic [ref=e1102]: 14500 hp · 3850 xp
+            - listitem [ref=e1103]:
+              - link "the horned fox 265 hp · 200 xp" [ref=e1104] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fhornedfox.xml"
+                - generic [ref=e1106]: the horned fox
+                - generic [ref=e1107]: 265 hp · 200 xp
+            - listitem [ref=e1108]:
+              - link "the imperor 15000 hp · 8000 xp" [ref=e1109] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fthe%20imperor.xml"
+                - generic [ref=e1111]: the imperor
+                - generic [ref=e1112]: 15000 hp · 8000 xp
+            - listitem [ref=e1113]:
+              - link "the old widow 3550 hp · 2800 xp" [ref=e1114] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Foldwidow.xml"
+                - generic [ref=e1116]: the old widow
+                - generic [ref=e1117]: 3550 hp · 2800 xp
+            - listitem [ref=e1118]:
+              - link "the plasmother 7500 hp · 8900 xp" [ref=e1119] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fthe%20plasmother.xml"
+                - generic [ref=e1121]: the plasmother
+                - generic [ref=e1122]: 7500 hp · 8900 xp
+            - listitem [ref=e1123]:
+              - link "thornback tortoise 300 hp · 150 xp" [ref=e1124] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fthornback%20tortoise.xml"
+                - generic [ref=e1126]: thornback tortoise
+                - generic [ref=e1127]: 300 hp · 150 xp
+            - listitem [ref=e1128]:
+              - link "thul 2950 hp · 2700 xp" [ref=e1129] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Fthul.xml"
+                - generic [ref=e1131]: thul
+                - generic [ref=e1132]: 2950 hp · 2700 xp
+            - listitem [ref=e1133]:
+              - link "tiger 75 hp · 40 xp" [ref=e1134] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ftiger.xml"
+                - generic [ref=e1136]: tiger
+                - generic [ref=e1137]: 75 hp · 40 xp
+            - listitem [ref=e1138]:
+              - link "tiquandas revenge 2400 hp · 2635 xp" [ref=e1139] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Ftiquandas%20revenge.xml"
+                - generic [ref=e1141]: tiquandas revenge
+                - generic [ref=e1142]: 2400 hp · 2635 xp
+            - listitem [ref=e1143]:
+              - link "toad 135 hp · 60 xp" [ref=e1144] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Ftoad.xml"
+                - generic [ref=e1146]: toad
+                - generic [ref=e1147]: 135 hp · 60 xp
+            - listitem [ref=e1148]:
+              - link "tortoise 185 hp · 90 xp" [ref=e1149] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F781%2Ftortoise.xml"
+                - generic [ref=e1151]: tortoise
+                - generic [ref=e1152]: 185 hp · 90 xp
+            - listitem [ref=e1153]:
+              - link "Training Monk 100000 hp · 0 xp" [ref=e1154] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2FTraining%20Monk.xml"
+                - generic [ref=e1156]: Training Monk
+                - generic [ref=e1157]: 100000 hp · 0 xp
+            - listitem [ref=e1158]:
+              - link "troll 50 hp · 20 xp" [ref=e1159] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Ftroll.xml"
+                - generic [ref=e1161]: troll
+                - generic [ref=e1162]: 50 hp · 20 xp
+            - listitem [ref=e1163]:
+              - link "undead dragon 8350 hp · 7200 xp" [ref=e1164] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fundead%20dragon.xml"
+                - generic [ref=e1166]: undead dragon
+                - generic [ref=e1167]: 8350 hp · 7200 xp
+            - listitem [ref=e1168]:
+              - link "valkyrie 190 hp · 85 xp" [ref=e1169] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fvalkyrie.xml"
+                - generic [ref=e1171]: valkyrie
+                - generic [ref=e1172]: 190 hp · 85 xp
+            - listitem [ref=e1173]:
+              - link "vampire 450 hp · 290 xp" [ref=e1174] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fvampire.xml"
+                - generic [ref=e1176]: vampire
+                - generic [ref=e1177]: 450 hp · 290 xp
+            - listitem [ref=e1178]:
+              - link "vashresamun 4000 hp · 2950 xp" [ref=e1179] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fpharaohvashresamun.xml"
+                - generic [ref=e1181]: vashresamun
+                - generic [ref=e1182]: 4000 hp · 2950 xp
+            - listitem [ref=e1183]:
+              - link "war wolf 140 hp · 55 xp" [ref=e1184] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwarwolf.xml"
+                - generic [ref=e1186]: war wolf
+                - generic [ref=e1187]: 140 hp · 55 xp
+            - listitem [ref=e1188]:
+              - link "warlock 3200 hp · 4000 xp" [ref=e1189] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwarlock.xml"
+                - generic [ref=e1191]: warlock
+                - generic [ref=e1192]: 3200 hp · 4000 xp
+            - listitem [ref=e1193]:
+              - link "wasp 35 hp · 24 xp" [ref=e1194] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwasp.xml"
+                - generic [ref=e1196]: wasp
+                - generic [ref=e1197]: 35 hp · 24 xp
+            - listitem [ref=e1198]:
+              - link "wild warrior 135 hp · 60 xp" [ref=e1199] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwildwarrior.xml"
+                - generic [ref=e1201]: wild warrior
+                - generic [ref=e1202]: 135 hp · 60 xp
+            - listitem [ref=e1203]:
+              - link "winter wolf 30 hp · 20 xp" [ref=e1204] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwinterwolf.xml"
+                - generic [ref=e1206]: winter wolf
+                - generic [ref=e1207]: 30 hp · 20 xp
+            - listitem [ref=e1208]:
+              - link "witch 300 hp · 120 xp" [ref=e1209] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwitch.xml"
+                - generic [ref=e1211]: witch
+                - generic [ref=e1212]: 300 hp · 120 xp
+            - listitem [ref=e1213]:
+              - link "wolf 25 hp · 18 xp" [ref=e1214] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fwolf.xml"
+                - generic [ref=e1216]: wolf
+                - generic [ref=e1217]: 25 hp · 18 xp
+            - listitem [ref=e1218]:
+              - link "wyvern 795 hp · 515 xp" [ref=e1219] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2F790%2Fwyvern.xml"
+                - generic [ref=e1221]: wyvern
+                - generic [ref=e1222]: 795 hp · 515 xp
+            - listitem [ref=e1223]:
+              - link "yellow butterfly 2 hp · 0 xp" [ref=e1224] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fbutterflyyellow.xml"
+                - generic [ref=e1226]: yellow butterfly
+                - generic [ref=e1227]: 2 hp · 0 xp
+            - listitem [ref=e1228]:
+              - link "yeti 950 hp · 460 xp" [ref=e1229] [cursor=pointer]:
+                - /url: "?file=data%2Fmonster%2Fyeti.xml"
+                - generic [ref=e1231]: yeti
+                - generic [ref=e1232]: 950 hp · 460 xp
+        - generic [ref=e1234]:
+          - generic [ref=e1235]:
+            - generic [ref=e1236]:
+              - heading "Amazon" [level=2] [ref=e1237]
+              - link "Edit the XML" [ref=e1238] [cursor=pointer]:
+                - /url: /admin/files?file=data%2Fmonster%2Famazon.xml
+            - generic [ref=e1241]:
+              - generic [ref=e1242]:
+                - generic "name" [ref=e1243]: Name
+                - textbox "Name ×" [ref=e1244]: Amazon
+                - button "×" [ref=e1245] [cursor=pointer]
+              - generic [ref=e1246]:
+                - generic "nameDescription" [ref=e1247]: Description
+                - textbox "Description ×" [ref=e1248]: an amazon
+                - button "×" [ref=e1249] [cursor=pointer]
+              - generic [ref=e1250]:
+                - generic "race" [ref=e1251]: Race
+                - combobox "Race ×" [ref=e1252]:
+                  - option "blood" [selected]
+                  - option "venom"
+                  - option "undead"
+                  - option "fire"
+                  - option "energy"
+                - button "×" [ref=e1253] [cursor=pointer]
+              - generic [ref=e1254]:
+                - generic "experience" [ref=e1255]: Experience
+                - textbox "Experience ×" [ref=e1256]: "60"
+                - button "×" [ref=e1257] [cursor=pointer]
+              - generic [ref=e1258]:
+                - generic "speed" [ref=e1259]: Speed
+                - textbox "Speed ×" [ref=e1260]: "46"
+                - button "×" [ref=e1261] [cursor=pointer]
+              - generic [ref=e1262]:
+                - generic "manacost" [ref=e1263]: Mana cost (summon/convince)
+                - textbox "Mana cost (summon/convince) ×" [ref=e1264]: "390"
+                - button "×" [ref=e1265] [cursor=pointer]
+              - generic [ref=e1266]:
+                - textbox "new attribute" [ref=e1267]
+                - button "Add" [ref=e1268] [cursor=pointer]
+          - generic [ref=e1269]:
+            - heading "Health" [level=2] [ref=e1271]
+            - generic [ref=e1273]:
+              - generic [ref=e1274]:
+                - generic "now" [ref=e1275]: At spawn
+                - textbox "At spawn ×" [ref=e1276]: "110"
+                - button "×" [ref=e1277] [cursor=pointer]
+              - generic [ref=e1278]:
+                - generic "max" [ref=e1279]: Maximum
+                - textbox "Maximum ×" [ref=e1280]: "110"
+                - button "×" [ref=e1281] [cursor=pointer]
+              - generic [ref=e1282]:
+                - textbox "new attribute" [ref=e1283]
+                - button "Add" [ref=e1284] [cursor=pointer]
+          - generic [ref=e1285]:
+            - heading "Look" [level=2] [ref=e1287]
+            - generic [ref=e1288]:
+              - paragraph [ref=e1289]: "type: outfit; typeex: shown as an item instead; corpse: the item left behind"
+              - generic [ref=e1290]:
+                - generic [ref=e1291]:
+                  - generic "type" [ref=e1292]
+                  - textbox "type ×" [ref=e1293]: "137"
+                  - button "×" [ref=e1294] [cursor=pointer]
+                - generic [ref=e1295]:
+                  - generic "head" [ref=e1296]
+                  - textbox "head ×" [ref=e1297]: "113"
+                  - button "×" [ref=e1298] [cursor=pointer]
+                - generic [ref=e1299]:
+                  - generic "body" [ref=e1300]
+                  - textbox "body ×" [ref=e1301]: "120"
+                  - button "×" [ref=e1302] [cursor=pointer]
+                - generic [ref=e1303]:
+                  - generic "legs" [ref=e1304]
+                  - textbox "legs ×" [ref=e1305]: "95"
+                  - button "×" [ref=e1306] [cursor=pointer]
+                - generic [ref=e1307]:
+                  - generic "feet" [ref=e1308]
+                  - textbox "feet ×" [ref=e1309]: "115"
+                  - button "×" [ref=e1310] [cursor=pointer]
+                - generic [ref=e1311]:
+                  - generic "corpse" [ref=e1312]
+                  - textbox "corpse ×" [ref=e1313]: "6081"
+                  - button "×" [ref=e1314] [cursor=pointer]
+                - generic [ref=e1315]:
+                  - textbox "new attribute" [ref=e1316]
+                  - button "Add" [ref=e1317] [cursor=pointer]
+          - generic [ref=e1318]:
+            - heading "Target change" [level=2] [ref=e1320]
+            - generic [ref=e1321]:
+              - paragraph [ref=e1322]: How often (ms) and how likely (%) it picks a new target
+              - generic [ref=e1323]:
+                - generic [ref=e1324]:
+                  - generic "interval" [ref=e1325]
+                  - textbox "interval ×" [ref=e1326]: "1000"
+                  - button "×" [ref=e1327] [cursor=pointer]
+                - generic [ref=e1328]:
+                  - generic "chance" [ref=e1329]
+                  - textbox "chance ×" [ref=e1330]: "50"
+                  - button "×" [ref=e1331] [cursor=pointer]
+                - generic [ref=e1332]:
+                  - textbox "new attribute" [ref=e1333]
+                  - button "Add" [ref=e1334] [cursor=pointer]
+          - generic [ref=e1335]:
+            - heading "Target strategy" [level=2] [ref=e1337]
+            - generic [ref=e1339]:
+              - generic [ref=e1340]:
+                - generic "nearest" [ref=e1341]
+                - textbox "nearest ×" [ref=e1342]: "100"
+                - button "×" [ref=e1343] [cursor=pointer]
+              - generic [ref=e1344]:
+                - generic "weakest" [ref=e1345]
+                - textbox "weakest ×" [ref=e1346]: "0"
+                - button "×" [ref=e1347] [cursor=pointer]
+              - generic [ref=e1348]:
+                - generic "mostdamage" [ref=e1349]
+                - textbox "mostdamage ×" [ref=e1350]: "0"
+                - button "×" [ref=e1351] [cursor=pointer]
+              - generic [ref=e1352]:
+                - generic "random" [ref=e1353]
+                - textbox "random ×" [ref=e1354]: "0"
+                - button "×" [ref=e1355] [cursor=pointer]
+              - generic [ref=e1356]:
+                - textbox "new attribute" [ref=e1357]
+                - button "Add" [ref=e1358] [cursor=pointer]
+          - generic [ref=e1359]:
+            - heading "Flags" [level=2] [ref=e1361]
+            - generic [ref=e1362]:
+              - generic [ref=e1363]:
+                - generic [ref=e1364]:
+                  - generic [ref=e1365]:
+                    - checkbox "summonable" [checked] [ref=e1366]
+                    - text: summonable
+                  - button "×" [ref=e1367] [cursor=pointer]
+                - generic [ref=e1368]:
+                  - generic [ref=e1369]:
+                    - checkbox "attackable" [checked] [ref=e1370]
+                    - text: attackable
+                  - button "×" [ref=e1371] [cursor=pointer]
+                - generic [ref=e1372]:
+                  - generic [ref=e1373]:
+                    - checkbox "hostile" [checked] [ref=e1374]
+                    - text: hostile
+                  - button "×" [ref=e1375] [cursor=pointer]
+                - generic [ref=e1376]:
+                  - generic [ref=e1377]:
+                    - checkbox "illusionable" [checked] [ref=e1378]
+                    - text: illusionable
+                  - button "×" [ref=e1379] [cursor=pointer]
+                - generic [ref=e1380]:
+                  - generic [ref=e1381]:
+                    - checkbox "convinceable" [checked] [ref=e1382]
+                    - text: convinceable
+                  - button "×" [ref=e1383] [cursor=pointer]
+                - generic [ref=e1384]:
+                  - generic [ref=e1385]:
+                    - checkbox "pushable" [ref=e1386]
+                    - text: pushable
+                  - button "×" [ref=e1387] [cursor=pointer]
+                - generic [ref=e1388]:
+                  - generic [ref=e1389]:
+                    - checkbox "canpushitems" [checked] [ref=e1390]
+                    - text: canpushitems
+                  - button "×" [ref=e1391] [cursor=pointer]
+                - generic [ref=e1392]:
+                  - generic [ref=e1393]:
+                    - checkbox "canpushcreatures" [ref=e1394]
+                    - text: canpushcreatures
+                  - button "×" [ref=e1395] [cursor=pointer]
+                - generic [ref=e1396]:
+                  - generic [ref=e1397]:
+                    - text: targetdistance
+                    - textbox "targetdistance" [ref=e1398]: "4"
+                  - button "×" [ref=e1399] [cursor=pointer]
+                - generic [ref=e1400]:
+                  - generic [ref=e1401]:
+                    - text: runonhealth
+                    - textbox "runonhealth" [ref=e1402]: "10"
+                  - button "×" [ref=e1403] [cursor=pointer]
+              - generic [ref=e1404]:
+                - combobox "add flag" [ref=e1405]
+                - button "Add" [ref=e1406] [cursor=pointer]
+          - generic [ref=e1407]:
+            - heading "Attacks" [level=2] [ref=e1409]
+            - generic [ref=e1410]:
+              - paragraph [ref=e1411]: "attack/skill on <attacks>: melee strength. Spells: interval (ms), chance (%), min/max (negative: damage)"
+              - generic [ref=e1412]:
+                - generic [ref=e1413]:
+                  - generic "attack" [ref=e1414]
+                  - textbox "attack ×" [ref=e1415]: "16"
+                  - button "×" [ref=e1416] [cursor=pointer]
+                - generic [ref=e1417]:
+                  - generic "skill" [ref=e1418]
+                  - textbox "skill ×" [ref=e1419]: "24"
+                  - button "×" [ref=e1420] [cursor=pointer]
+                - generic [ref=e1421]:
+                  - textbox "new attribute" [ref=e1422]
+                  - button "Add" [ref=e1423] [cursor=pointer]
+              - list [ref=e1424]:
+                - listitem [ref=e1425]:
+                  - generic [ref=e1426]:
+                    - generic [ref=e1427]: <attack>
+                    - button "Remove" [ref=e1428] [cursor=pointer]
+                  - generic [ref=e1429]:
+                    - generic [ref=e1430]:
+                      - generic "name" [ref=e1431]
+                      - textbox "name ×" [ref=e1432]: physical
+                      - button "×" [ref=e1433] [cursor=pointer]
+                    - generic [ref=e1434]:
+                      - generic "min" [ref=e1435]
+                      - textbox "min ×" [ref=e1436]: "-20"
+                      - button "×" [ref=e1437] [cursor=pointer]
+                    - generic [ref=e1438]:
+                      - generic "max" [ref=e1439]
+                      - textbox "max ×" [ref=e1440]: "-30"
+                      - button "×" [ref=e1441] [cursor=pointer]
+                    - generic [ref=e1442]:
+                      - generic "range" [ref=e1443]
+                      - textbox "range ×" [ref=e1444]: "7"
+                      - button "×" [ref=e1445] [cursor=pointer]
+                    - generic [ref=e1446]:
+                      - generic "chance" [ref=e1447]
+                      - textbox "chance ×" [ref=e1448]: "10"
+                      - button "×" [ref=e1449] [cursor=pointer]
+                    - generic [ref=e1450]:
+                      - textbox "new attribute" [ref=e1451]
+                      - button "Add" [ref=e1452] [cursor=pointer]
+                  - list [ref=e1453]:
+                    - listitem [ref=e1454]:
+                      - generic [ref=e1455]:
+                        - generic [ref=e1456]: <attribute>
+                        - button "Remove" [ref=e1457] [cursor=pointer]
+                      - generic [ref=e1458]:
+                        - generic [ref=e1459]:
+                          - generic "key" [ref=e1460]
+                          - textbox "key ×" [ref=e1461]: shootEffect
+                          - button "×" [ref=e1462] [cursor=pointer]
+                        - generic [ref=e1463]:
+                          - generic "value" [ref=e1464]
+                          - textbox "value ×" [ref=e1465]: throwingknife
+                          - button "×" [ref=e1466] [cursor=pointer]
+                        - generic [ref=e1467]:
+                          - textbox "new attribute" [ref=e1468]
+                          - button "Add" [ref=e1469] [cursor=pointer]
+              - button "Add attack" [ref=e1470] [cursor=pointer]
+          - generic [ref=e1471]:
+            - heading "Defenses" [level=2] [ref=e1473]
+            - generic [ref=e1474]:
+              - generic [ref=e1475]:
+                - generic [ref=e1476]:
+                  - generic "armor" [ref=e1477]
+                  - textbox "armor ×" [ref=e1478]: "11"
+                  - button "×" [ref=e1479] [cursor=pointer]
+                - generic [ref=e1480]:
+                  - generic "defense" [ref=e1481]
+                  - textbox "defense ×" [ref=e1482]: "11"
+                  - button "×" [ref=e1483] [cursor=pointer]
+                - generic [ref=e1484]:
+                  - textbox "new attribute" [ref=e1485]
+                  - button "Add" [ref=e1486] [cursor=pointer]
+              - list
+              - button "Add defense" [ref=e1487] [cursor=pointer]
+          - generic [ref=e1488]:
+            - generic [ref=e1489]:
+              - heading "Voices" [level=2] [ref=e1490]
+              - button "Remove section" [ref=e1491] [cursor=pointer]
+            - generic [ref=e1492]:
+              - generic [ref=e1494]:
+                - textbox "new attribute" [ref=e1495]
+                - button "Add" [ref=e1496] [cursor=pointer]
+              - list [ref=e1497]:
+                - listitem [ref=e1498]:
+                  - generic [ref=e1499]:
+                    - generic [ref=e1500]: <voice>
+                    - button "Remove" [ref=e1501] [cursor=pointer]
+                  - generic [ref=e1502]:
+                    - generic [ref=e1503]:
+                      - generic "sentence" [ref=e1504]
+                      - textbox "sentence ×" [ref=e1505]: Yeeee ha!
+                      - button "×" [ref=e1506] [cursor=pointer]
+                    - generic [ref=e1507]:
+                      - textbox "new attribute" [ref=e1508]
+                      - button "Add" [ref=e1509] [cursor=pointer]
+                - listitem [ref=e1510]:
+                  - generic [ref=e1511]:
+                    - generic [ref=e1512]: <voice>
+                    - button "Remove" [ref=e1513] [cursor=pointer]
+                  - generic [ref=e1514]:
+                    - generic [ref=e1515]:
+                      - generic "sentence" [ref=e1516]
+                      - textbox "sentence ×" [ref=e1517]: Your head will be mine!
+                      - button "×" [ref=e1518] [cursor=pointer]
+                    - generic [ref=e1519]:
+                      - textbox "new attribute" [ref=e1520]
+                      - button "Add" [ref=e1521] [cursor=pointer]
+              - button "Add voice" [ref=e1522] [cursor=pointer]
+          - generic [ref=e1523]:
+            - generic [ref=e1524]:
+              - heading "Loot" [level=2] [ref=e1525]
+              - button "Remove section" [ref=e1526] [cursor=pointer]
+            - generic [ref=e1527]:
+              - table [ref=e1528]:
+                - rowgroup [ref=e1529]:
+                  - row [ref=e1530]:
+                    - columnheader [ref=e1531]
+                    - columnheader "Item" [ref=e1532]
+                    - columnheader "Id" [ref=e1533]
+                    - columnheader "Max count" [ref=e1534]
+                    - columnheader "Chance (of 1000)" [ref=e1535]
+                    - columnheader "Players see" [ref=e1536]
+                    - columnheader [ref=e1537]
+                - rowgroup [ref=e1538]:
+                  - row [ref=e1539]:
+                    - cell [ref=e1540]
+                    - cell "a brown bread" [ref=e1541]
+                    - cell [ref=e1542]:
+                      - combobox [ref=e1543]: "3602"
+                    - cell [ref=e1544]:
+                      - textbox [ref=e1545]: "1"
+                    - cell [ref=e1546]:
+                      - textbox [ref=e1547]: "300"
+                      - text: 30%
+                    - cell [ref=e1548]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1549]':
+                        - checkbox "Common" [ref=e1550]
+                        - text: Common
+                    - cell [ref=e1551]:
+                      - button "Remove" [ref=e1552] [cursor=pointer]
+                  - row [ref=e1553]:
+                    - cell [ref=e1554]
+                    - cell "a crystal necklace" [ref=e1555]
+                    - cell [ref=e1556]:
+                      - combobox [ref=e1557]: "3008"
+                    - cell [ref=e1558]:
+                      - textbox [ref=e1559]: "1"
+                    - cell [ref=e1560]:
+                      - textbox [ref=e1561]: "2"
+                      - text: 0.2%
+                    - cell [ref=e1562]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1563]':
+                        - checkbox "Very rare" [ref=e1564]
+                        - text: Very rare
+                    - cell [ref=e1565]:
+                      - button "Remove" [ref=e1566] [cursor=pointer]
+                  - row [ref=e1567]:
+                    - cell [ref=e1568]
+                    - cell "a dagger" [ref=e1569]
+                    - cell [ref=e1570]:
+                      - combobox [ref=e1571]: "3267"
+                    - cell [ref=e1572]:
+                      - textbox [ref=e1573]: "1"
+                    - cell [ref=e1574]:
+                      - textbox [ref=e1575]: "800"
+                      - text: 80%
+                    - cell [ref=e1576]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1577]':
+                        - checkbox "Common" [ref=e1578]
+                        - text: Common
+                    - cell [ref=e1579]:
+                      - button "Remove" [ref=e1580] [cursor=pointer]
+                  - row [ref=e1581]:
+                    - cell [ref=e1582]
+                    - cell "a gold coin" [ref=e1583]
+                    - cell [ref=e1584]:
+                      - combobox [ref=e1585]: "3031"
+                    - cell [ref=e1586]:
+                      - textbox [ref=e1587]: "10"
+                    - cell [ref=e1588]:
+                      - textbox [ref=e1589]: "400"
+                      - text: 40%
+                    - cell [ref=e1590]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1591]':
+                        - checkbox "Common" [ref=e1592]
+                        - text: Common
+                    - cell [ref=e1593]:
+                      - button "Remove" [ref=e1594] [cursor=pointer]
+                  - row [ref=e1595]:
+                    - cell [ref=e1596]
+                    - cell "a leather armor" [ref=e1597]
+                    - cell [ref=e1598]:
+                      - combobox [ref=e1599]: "3361"
+                    - cell [ref=e1600]:
+                      - textbox [ref=e1601]: "1"
+                    - cell [ref=e1602]:
+                      - textbox [ref=e1603]: "500"
+                      - text: 50%
+                    - cell [ref=e1604]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1605]':
+                        - checkbox "Common" [ref=e1606]
+                        - text: Common
+                    - cell [ref=e1607]:
+                      - button "Remove" [ref=e1608] [cursor=pointer]
+                  - row [ref=e1609]:
+                    - cell [ref=e1610]
+                    - cell "a sabre" [ref=e1611]
+                    - cell [ref=e1612]:
+                      - combobox [ref=e1613]: "3273"
+                    - cell [ref=e1614]:
+                      - textbox [ref=e1615]: "1"
+                    - cell [ref=e1616]:
+                      - textbox [ref=e1617]: "230"
+                      - text: 23%
+                    - cell [ref=e1618]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1619]':
+                        - checkbox "Common" [ref=e1620]
+                        - text: Common
+                    - cell [ref=e1621]:
+                      - button "Remove" [ref=e1622] [cursor=pointer]
+                  - row [ref=e1623]:
+                    - cell [ref=e1624]
+                    - cell "a skull" [ref=e1625]
+                    - cell [ref=e1626]:
+                      - combobox [ref=e1627]: "3114"
+                    - cell [ref=e1628]:
+                      - textbox [ref=e1629]: "2"
+                    - cell [ref=e1630]:
+                      - textbox [ref=e1631]: "800"
+                      - text: 80%
+                    - cell [ref=e1632]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1633]':
+                        - checkbox "Common" [ref=e1634]
+                        - text: Common
+                    - cell [ref=e1635]:
+                      - button "Remove" [ref=e1636] [cursor=pointer]
+                  - row [ref=e1637]:
+                    - cell [ref=e1638]
+                    - cell "a small ruby" [ref=e1639]
+                    - cell [ref=e1640]:
+                      - combobox [ref=e1641]: "3030"
+                    - cell [ref=e1642]:
+                      - textbox [ref=e1643]: "1"
+                    - cell [ref=e1644]:
+                      - textbox [ref=e1645]: "1"
+                      - text: 0.1%
+                    - cell [ref=e1646]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1647]':
+                        - checkbox "Extremely rare" [ref=e1648]
+                        - text: Extremely rare
+                    - cell [ref=e1649]:
+                      - button "Remove" [ref=e1650] [cursor=pointer]
+                  - row [ref=e1651]:
+                    - cell [ref=e1652]
+                    - cell "a studded shield" [ref=e1653]
+                    - cell [ref=e1654]:
+                      - combobox [ref=e1655]: "3426"
+                    - cell [ref=e1656]:
+                      - textbox [ref=e1657]: "1"
+                    - cell [ref=e1658]:
+                      - textbox [ref=e1659]: "50"
+                      - text: 5%
+                    - cell [ref=e1660]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1661]':
+                        - checkbox "Uncommon" [ref=e1662]
+                        - text: Uncommon
+                    - cell [ref=e1663]:
+                      - button "Remove" [ref=e1664] [cursor=pointer]
+                  - row [ref=e1665]:
+                    - cell [ref=e1666]
+                    - cell "a torch" [ref=e1667]
+                    - cell [ref=e1668]:
+                      - combobox [ref=e1669]: "2920"
+                    - cell [ref=e1670]:
+                      - textbox [ref=e1671]: "1"
+                    - cell [ref=e1672]:
+                      - textbox [ref=e1673]: "50"
+                      - text: 5%
+                    - cell [ref=e1674]:
+                      - 'generic "Hidden: players see Unknown on the website and in the client" [ref=e1675]':
+                        - checkbox "Uncommon" [ref=e1676]
+                        - text: Uncommon
+                    - cell [ref=e1677]:
+                      - button "Remove" [ref=e1678] [cursor=pointer]
+              - button "Add item" [ref=e1679] [cursor=pointer]
+          - generic [ref=e1680]:
+            - heading "Scripts" [level=2] [ref=e1682]
+            - generic [ref=e1683]:
+              - generic [ref=e1685]:
+                - textbox "new attribute" [ref=e1686]
+                - button "Add" [ref=e1687] [cursor=pointer]
+              - list [ref=e1688]:
+                - listitem [ref=e1689]:
+                  - generic [ref=e1690]:
+                    - generic [ref=e1691]: <event>
+                    - button "Remove" [ref=e1692] [cursor=pointer]
+                  - generic [ref=e1693]:
+                    - generic [ref=e1694]:
+                      - generic "name" [ref=e1695]
+                      - textbox "name ×" [ref=e1696]: KillingInTheNameOf
+                      - button "×" [ref=e1697] [cursor=pointer]
+                    - generic [ref=e1698]:
+                      - textbox "new attribute" [ref=e1699]
+                      - button "Add" [ref=e1700] [cursor=pointer]
+          - paragraph [ref=e1701]:
+            - generic [ref=e1702]: "Add:"
+            - button "Immunities" [ref=e1703] [cursor=pointer]
+            - button "Elements" [ref=e1704] [cursor=pointer]
+            - button "Summons" [ref=e1705] [cursor=pointer]
+          - generic [ref=e1706]:
+            - generic [ref=e1707]:
+              - text: What changed (for the history)
+              - textbox "What changed (for the history)" [ref=e1708]
+            - generic [ref=e1709]:
+              - checkbox "Apply now (reload monsters)" [ref=e1710]
+              - text: Apply now (reload monsters)
+            - button "Save" [disabled] [ref=e1711]
+          - paragraph [ref=e1712]: Saved changes go live at the next server save, or now with "Apply now". Monsters already on the map keep their old values until they respawn.
+```
+
+# Test source
+
+```ts
+  67  | 		'/guilds/create',
+  68  | 		GUILD,
+  69  | 		CHARACTER,
+  70  | 		'/news/9401',
+  71  | 		'/highscores'
+  72  | 	],
+  73  | 	god: [
+  74  | 		'/account',
+  75  | 		'/admin',
+  76  | 		'/admin/players',
+  77  | 		'/admin/players?q=a',
+  78  | 		'/admin/players?player=Grumbold%20Axebeard',
+  79  | 		'/admin/bans',
+  80  | 		'/admin/reports',
+  81  | 		'/admin/client-reports',
+  82  | 		'/admin/client-reports/9501',
+  83  | 		'/admin/news',
+  84  | 		'/admin/news?edit=9401',
+  85  | 		'/admin/audit',
+  86  | 		'/admin/staff',
+  87  | 		'/admin/backups',
+  88  | 		'/admin/changes',
+  89  | 		'/admin/config',
+  90  | 		'/admin/files',
+  91  | 		'/admin/files?file=data%2FXML%2Fcommands.xml',
+  92  | 		'/admin/library',
+  93  | 		'/admin/log',
+  94  | 		'/admin/monsters',
+  95  | 		'/admin/monsters?file=data%2Fmonster%2Famazon.xml'
+  96  | 	]
+  97  | };
+  98  | 
+  99  | const VIEWPORTS = [
+  100 | 	{ width: 393, height: 660 }, // iPhone 15 Pro
+  101 | 	{ width: 360, height: 640 } // small Android phones
+  102 | ];
+  103 | 
+  104 | /** What does not fit, as readable lines; empty when the page fits */
+  105 | async function layoutProblems(page: Page) {
+  106 | 	return page.evaluate(() => {
+  107 | 		const problems: string[] = [];
+  108 | 		const root = document.documentElement;
+  109 | 		const width = root.clientWidth;
+  110 | 		if (root.scrollWidth > width) problems.push(`the page scrolls sideways: ${root.scrollWidth}px wide on a ${width}px screen`);
+  111 | 
+  112 | 		const describe = (el: Element) => {
+  113 | 			const id = el.id ? `#${el.id}` : '';
+  114 | 			const cls = typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+  115 | 			const text = (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 40);
+  116 | 			return `<${el.tagName.toLowerCase()}${id}${cls}>${text ? ` "${text}"` : ''}`;
+  117 | 		};
+  118 | 		const visible = (el: Element) => {
+  119 | 			const box = el.getBoundingClientRect();
+  120 | 			if (box.width <= 1 || box.height <= 1) return false;
+  121 | 			const style = getComputedStyle(el);
+  122 | 			return style.visibility !== 'hidden' && style.display !== 'none';
+  123 | 		};
+  124 | 		// Form fields scroll their own text; rows marked data-scroll-x scroll on purpose
+  125 | 		const skip = (el: Element) =>
+  126 | 			el.matches('input, textarea, select, option, svg *, .visually-hidden, .visually-hidden *') || !!el.closest('[data-scroll-x]');
+  127 | 
+  128 | 		for (const el of document.body.querySelectorAll('*')) {
+  129 | 			if (skip(el) || !visible(el)) continue;
+  130 | 			const style = getComputedStyle(el);
+  131 | 			const overflowX = style.overflowX;
+  132 | 			// Cut off: a box that hides what does not fit (not an intended ellipsis)
+  133 | 			if ((overflowX === 'hidden' || overflowX === 'clip') && style.textOverflow !== 'ellipsis' && el.scrollWidth > el.clientWidth + 1) {
+  134 | 				problems.push(`cut off: ${describe(el)} shows ${el.clientWidth}px of ${el.scrollWidth}px`);
+  135 | 			}
+  136 | 			// Scrolls sideways without being meant to
+  137 | 			if ((overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1) {
+  138 | 				problems.push(`scrolls sideways: ${describe(el)} is ${el.scrollWidth}px in ${el.clientWidth}px`);
+  139 | 			}
+  140 | 			// Sticks out of the screen (fixed and absolutely placed things included)
+  141 | 			const box = el.getBoundingClientRect();
+  142 | 			if (box.right > width + 1 || box.left < -1) {
+  143 | 				if (style.position !== 'fixed' || box.left < width) {
+  144 | 					problems.push(`off screen: ${describe(el)} spans ${Math.round(box.left)}..${Math.round(box.right)}px`);
+  145 | 				}
+  146 | 			}
+  147 | 		}
+  148 | 		// One line per element: the innermost causes are enough
+  149 | 		return [...new Set(problems)].slice(0, 25);
+  150 | 	});
+  151 | }
+  152 | 
+  153 | for (const viewport of VIEWPORTS) {
+  154 | 	for (const [visitor, paths] of Object.entries(PAGES) as [Visitor, string[]][]) {
+  155 | 		test.describe(`${viewport.width}px, ${visitor}`, () => {
+  156 | 			test.use({ viewport, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
+  157 | 
+  158 | 			for (const path of paths) {
+  159 | 				test(path, async ({ page, context, baseURL }) => {
+  160 | 					const session = SESSIONS[visitor];
+  161 | 					if (session) await context.addCookies([{ name: 'ew_session', value: session, url: baseURL! }]);
+  162 | 					const response = await page.goto(path, { waitUntil: 'load' });
+  163 | 					expect(response?.status(), `${path} answers`).toBeLessThan(400);
+  164 | 					// Logged-in pages must not bounce to the login page
+  165 | 					if (session) expect(new URL(page.url()).pathname).not.toBe('/login');
+  166 | 					await page.evaluate(() => document.fonts.ready);
+> 167 | 					expect(await layoutProblems(page), `${path} fits ${viewport.width}px`).toEqual([]);
+      |                                                                             ^ Error: /admin/monsters?file=data%2Fmonster%2Famazon.xml fits 360px
+  168 | 				});
+  169 | 			}
+  170 | 		});
+  171 | 	}
+  172 | }
+  173 | 
+```

@@ -16,22 +16,22 @@
 			<input class="filter" type="search" placeholder="Filter…" bind:value={filter} aria-label="Filter creatures" />
 		</div>
 		<div class="scroll">
-			<table class="table">
+			<table class="table stack">
 				<thead>
 					<tr>
-						<th></th>
-						<th><a href="?sort=name">Name</a></th>
-						<th class="num"><a href="?sort=health">Toughness</a></th>
-						<th class="num"><a href="?sort=experience">Experience</a></th>
+						<th class="icon"><span class="visually-hidden">Picture</span></th>
+						<th class="main"><a href="?sort=name">Name</a></th>
+						<th class="num end"><a href="?sort=health">Toughness</a></th>
+						<th class="num more"><a href="?sort=experience">Experience</a></th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each shown as creature (creature.slug)}
 						<tr>
 							<td class="icon">{#if creature.image}<img src={creature.image} alt="" loading="lazy" />{/if}</td>
-							<td><a href="/library/creatures/{creature.slug}">{creature.name}</a></td>
-							<td class="num">{creature.health}</td>
-							<td class="num">{creature.experience}</td>
+							<td class="main"><a href="/library/creatures/{creature.slug}">{creature.name}</a></td>
+							<td class="num end">{creature.health}</td>
+							<td class="num more" data-label="Experience">{creature.experience}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -58,6 +58,8 @@
 	}
 
 	.filter {
+		flex: 1 1 180px;
+		max-width: 320px;
 		min-height: 36px;
 		border-radius: 4px;
 		border: 1px solid var(--head-edge);
@@ -88,6 +90,29 @@
 	.icon {
 		width: 44px;
 		padding: 4px 8px;
+	}
+
+	@media (max-width: 600px) {
+		/* The picture beside both lines */
+		tr {
+			display: grid !important;
+			grid-template-columns: 44px 1fr auto;
+			align-items: baseline;
+		}
+
+		tr::before {
+			display: none;
+		}
+
+		.icon {
+			grid-row: span 2;
+			align-self: center;
+			padding: 0;
+		}
+
+		.more {
+			grid-column: 2 / -1;
+		}
 	}
 
 	.icon img {

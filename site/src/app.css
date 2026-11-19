@@ -78,9 +78,16 @@ h3 {
 	padding: 10px 20px;
 	border-bottom: 2px solid var(--head-edge);
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: 8px 12px;
+}
+
+/* A title and a control share the head while there is room, else stack */
+.card-head > * {
+	min-width: 0;
+	overflow-wrap: break-word;
 }
 
 .card-head h1,
@@ -323,4 +330,125 @@ h3 {
 	overflow: hidden;
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
+}
+
+/* A row of tabs or links that scrolls sideways when it does not fit (phones):
+   the edge with more to show fades out. Needs use:scrollRow
+   ($lib/scrollrow.ts), which sets the fades as the row scrolls. Put it on an element without its own background or
+   border: the fade covers the whole box. */
+.scroll-row {
+	--fade-left: 0px;
+	--fade-right: 0px;
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scrollbar-width: none;
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
+	mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
+}
+
+.scroll-row::-webkit-scrollbar {
+	display: none;
+}
+
+.scroll-row > * {
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+
+.scroll-row.more-right {
+	--fade-right: 48px;
+}
+
+.scroll-row.more-left {
+	--fade-left: 48px;
+}
+
+/* Tables on phones: class="table stack" puts each row on one or two lines.
+   The first line keeps the key cells (picture, name, the main value); cells
+   with class "more" go on the second line, each with its column name from
+   data-label. "main" is the cell that takes the free width (the name), "end"
+   is pushed to the right (the main value). Header cells of "more" columns
+   are hidden unless they hold a link (sorting). */
+@media (max-width: 600px) {
+	.table.stack,
+	.table.stack thead,
+	.table.stack tbody {
+		display: block;
+		min-width: 0;
+		width: 100%;
+	}
+
+	.table.stack tr {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 12px;
+		row-gap: 2px;
+		padding: 10px 4px;
+		border-bottom: 1px dashed var(--paper-rule);
+	}
+
+	.table.stack thead tr {
+		padding: 4px;
+		border-bottom: 2px solid var(--paper-rule);
+	}
+
+	.table.stack tr:last-child {
+		border-bottom: 0;
+	}
+
+	/* Line break between the key cells and the "more" cells */
+	.table.stack tr::before {
+		content: '';
+		order: 1;
+		flex: 0 0 100%;
+	}
+
+	.table.stack th,
+	.table.stack td {
+		display: block;
+		padding: 0;
+		border: 0;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.table.stack .main {
+		flex: 1 1 0;
+	}
+
+	.table.stack .end {
+		margin-left: auto;
+		text-align: right;
+	}
+
+	.table.stack .more {
+		order: 2;
+		font-size: 15px;
+	}
+
+	/* The second line starts under the name: set --stack-indent on the table */
+	.table.stack .more:not(.more ~ .more) {
+		margin-left: var(--stack-indent, 0);
+	}
+
+	.table.stack td.more[data-label]::before {
+		content: attr(data-label) ' ';
+		font-family: 'Alegreya Sans', system-ui, sans-serif;
+		font-size: 12px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--paper-muted);
+	}
+
+	.table.stack th.more:not(:has(a)) {
+		display: none;
+	}
+
+	/* A cell that spans the whole row ("Nobody here yet.") */
+	.table.stack td[colspan] {
+		flex: 1 1 100%;
+	}
 }
