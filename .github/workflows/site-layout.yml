@@ -1,0 +1,112 @@
+# The website on phones (ot-server#59): every page at 393 px and 360 px,
+# logged out, as a player and as staff, against a database with test data
+# (site/tests/seed.sql). Fails when a page scrolls sideways or a box cuts
+# off its content. Run it locally as described in site/README.md.
+name: Site layout
+
+on:
+  pull_request:
+    branches: [web-client-792]
+    paths:
+      - site/**
+      - data/**
+      - deploy/db/**
+      - deploy/game-files.sh
+      - sabrehaven.sql
+      - sabrehaven_znote.sql
+      - .github/workflows/site-layout.yml
+  push:
+    branches: [web-client-792]
+    paths:
+      - site/**
+      - .github/workflows/site-layout.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phones:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      db:
+        image: mariadb:11.4
+        env:
+          MARIADB_DATABASE: sabrehaven
+          MARIADB_USER: sabrehaven
+          MARIADB_PASSWORD: layout-test
+          MARIADB_RANDOM_ROOT_PASSWORD: '1'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: sabrehaven
+      DB_PASSWORD: layout-test
+      DB_NAME: sabrehaven
+      GAME_HOST: 127.0.0.1
+      GAME_FILES: ${{ github.workspace }}/.layout/game-files
+      BACKUPS_DIR: ${{ github.workspace }}/.layout/game-files/backups
+      ORIGIN: http://localhost:3000
+      SECURE_COOKIES: 'false'
+      PORT: '3000'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Database schemas
+        run: |
+          sql() { docker exec -i ${{ job.services.db.id }} mariadb --user=sabrehaven --password=layout-test sabrehaven; }
+          for file in sabrehaven.sql deploy/db/02-znote-schema.sql sabrehaven_znote.sql deploy/db/04-powergamers.sql; do
+            sql < "$file"
+          done
+
+      - name: Game files for the admin pages
+        run: site/tests/game-files.sh "$GAME_FILES"
+
+      - name: Build the website
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+
+      - name: Start the website, then add the test data
+        working-directory: site
+        run: |
+          nohup node build > ../.layout/site.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:3000/ && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://localhost:3000/ || { cat ../.layout/site.log; exit 1; }
+          docker exec -i ${{ job.services.db.id }} mariadb --user=sabrehaven --password=layout-test sabrehaven < tests/seed.sql
+
+      - name: Install Chromium
+        working-directory: site
+        run: npx playwright install --with-deps chromium
+
+      - name: Check every page at phone widths
+        working-directory: site
+        env:
+          BASE_URL: http://localhost:3000
+          CI: 'true'
+        run: npx playwright test
+
+      - name: Website log
+        if: failure()
+        run: cat .layout/site.log || true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: layout-report
+          path: site/playwright-report
+          retention-days: 14

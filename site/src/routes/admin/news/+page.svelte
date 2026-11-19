@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 	const when = (at: number) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 	const e = $derived(data.editing);
@@ -57,7 +58,7 @@
 <section class="panel">
 	<div class="panel-head"><h2>All posts</h2></div>
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Kind</th><th>Title</th><th>Signed</th><th>Published</th><th></th></tr></thead>
 			<tbody>
 				{#each data.posts as post (post.id)}

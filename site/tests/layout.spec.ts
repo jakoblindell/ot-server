@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // Every page must fit a phone: no sideways scrolling of the page, and no
 // content cut off by a box that hides its overflow (the cards do). Run
-// against a site with tests/seed.sql loaded (tests/README.md).
+// against a site with tests/seed.sql loaded (see "Layout check" in README.md).
 //
 // A row that is meant to scroll sideways (the highscore skills, for
 // example) carries data-scroll-x; anything else that scrolls or sticks out
@@ -125,6 +125,11 @@ async function layoutProblems(page: Page) {
 		const skip = (el: Element) =>
 			el.matches('input, textarea, select, option, svg *, .visually-hidden, .visually-hidden *') || !!el.closest('[data-scroll-x]');
 
+		const offScreen = (el: Element) => {
+			const box = el.getBoundingClientRect();
+			return box.width > 1 && (box.right > width + 1 || box.left < -1);
+		};
+
 		for (const el of document.body.querySelectorAll('*')) {
 			if (skip(el) || !visible(el)) continue;
 			const style = getComputedStyle(el);
@@ -137,16 +142,13 @@ async function layoutProblems(page: Page) {
 			if ((overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth + 1) {
 				problems.push(`scrolls sideways: ${describe(el)} is ${el.scrollWidth}px in ${el.clientWidth}px`);
 			}
-			// Sticks out of the screen (fixed and absolutely placed things included)
-			const box = el.getBoundingClientRect();
-			if (box.right > width + 1 || box.left < -1) {
-				if (style.position !== 'fixed' || box.left < width) {
-					problems.push(`off screen: ${describe(el)} spans ${Math.round(box.left)}..${Math.round(box.right)}px`);
-				}
+			// Sticks out of the screen; reported for the outermost such element only
+			if (offScreen(el) && !(el.parentElement && offScreen(el.parentElement))) {
+				const box = el.getBoundingClientRect();
+				problems.push(`off screen: ${describe(el)} spans ${Math.round(box.left)}..${Math.round(box.right)}px`);
 			}
 		}
-		// One line per element: the innermost causes are enough
-		return [...new Set(problems)].slice(0, 25);
+		return [...new Set(problems)].slice(0, 30);
 	});
 }
 

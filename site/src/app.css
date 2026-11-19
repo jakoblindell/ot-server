@@ -71,6 +71,8 @@ h3 {
 		0 0 0 4px var(--surface),
 		0 0 0 5px var(--border-strong);
 	overflow: hidden;
+	/* long words and links wrap instead of being cut off */
+	overflow-wrap: break-word;
 }
 
 .card-head {
@@ -107,12 +109,23 @@ h3 {
 	padding: 24px 28px 28px;
 }
 
+@media (max-width: 520px) {
+	.card-head {
+		padding: 10px 16px;
+	}
+
+	.card-body {
+		padding: 20px 16px 24px;
+	}
+}
+
 /* Dark side panel */
 .panel {
 	background: var(--surface);
 	border: 1px solid var(--border-strong);
 	border-radius: 6px;
 	padding: 24px;
+	overflow-wrap: break-word;
 }
 
 .panel h2 {
@@ -450,5 +463,65 @@ h3 {
 	/* A cell that spans the whole row ("Nobody here yet.") */
 	.table.stack td[colspan] {
 		flex: 1 1 100%;
+	}
+}
+
+/* Tables of records on phones (the admin pages): class="cards" and
+   use:cardLabels ($lib/cardlabels.ts) make each row a small card: the first
+   cell as its title, then every other cell with its column name. */
+@media (max-width: 600px) {
+	table.cards,
+	table.cards thead,
+	table.cards tbody {
+		display: block;
+		width: 100%;
+		min-width: 0;
+	}
+
+	table.cards thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+	}
+
+	table.cards tr {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 4px 16px;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--stack-rule, var(--paper-rule));
+	}
+
+	table.cards tr:last-child {
+		border-bottom: 0;
+	}
+
+	table.cards td {
+		display: block;
+		padding: 0;
+		border: 0;
+		min-width: 0;
+		max-width: 100%;
+		overflow-wrap: anywhere;
+	}
+
+	table.cards td:first-child,
+	table.cards td[colspan] {
+		flex: 1 1 100%;
+	}
+
+	table.cards td:empty {
+		display: none;
+	}
+
+	table.cards td[data-label]:not(:first-child)::before {
+		content: attr(data-label) ' ';
+		font-size: 12px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--stack-label, var(--paper-muted));
 	}
 }

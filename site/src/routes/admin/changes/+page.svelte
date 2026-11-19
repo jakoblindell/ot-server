@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 	const when = (at: number) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 	const statusLabel: Record<string, string> = { M: 'changed', A: 'new', D: 'deleted', R: 'renamed' };
@@ -93,7 +94,7 @@
 		<section class="panel">
 			<div class="panel-head"><h2>Edits since the last start</h2></div>
 			<div class="scroll">
-				<table>
+				<table class="cards" use:cardLabels>
 					<thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
 					<tbody>
 						{#each data.commits as commit (commit.hash)}

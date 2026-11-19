@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data } = $props();
 	const when = (at: number) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 </script>
@@ -20,7 +21,7 @@
 
 <section class="panel">
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Sent</th><th>Character</th><th>Problem</th><th>Device</th><th>{data.status === 'open' ? '' : 'Outcome'}</th></tr></thead>
 			<tbody>
 				{#each data.reports as report (report.id)}

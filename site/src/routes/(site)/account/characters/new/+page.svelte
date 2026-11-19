@@ -57,8 +57,8 @@
 	}
 
 	.outfit img {
-		width: 128px;
-		height: 128px;
+		width: 100%;
+		height: 100%;
 		object-fit: contain;
 		padding: 8px;
 		image-rendering: pixelated;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 
 	const time = (at: number) => new Date(at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -130,7 +131,7 @@
 	<section class="panel">
 		<div class="panel-head"><h2>Recent server commands</h2></div>
 		<div class="scroll">
-			<table>
+			<table class="cards" use:cardLabels>
 				<thead><tr><th>When</th><th>Command</th><th>By</th><th>Result</th></tr></thead>
 				<tbody>
 					{#each data.commands as command (command.id)}
@@ -157,7 +158,7 @@
 <section class="panel">
 	<div class="panel-head"><h2>Recent staff actions</h2><a href="/admin/audit">Audit log</a></div>
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th></tr></thead>
 			<tbody>
 				{#each data.actions as action (action.id)}

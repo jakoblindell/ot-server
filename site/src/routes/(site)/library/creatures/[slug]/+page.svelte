@@ -39,15 +39,15 @@
 			<div class="card-head"><h2 id="l-h">Loot</h2></div>
 			<div class="card-body">
 				{#if c.loot.length}
-					<table class="table loot">
+					<table class="table stack loot">
 						<tbody>
 							{#each c.loot as item, i (i)}
 								<tr>
 									{#if item.id}
 										<td class="icon"><img src="/item/{item.id}.png" alt="" loading="lazy" /></td>
-										<td><a href="/library/items/{item.id}">{item.name}</a></td>
-										<td>{item.amount}</td>
-										<td class="rarity">
+										<td class="main"><a href="/library/items/{item.id}">{item.name}</a></td>
+										<td class="end">{item.amount}</td>
+										<td class="rarity more">
 											<span class="bars">{#each [1, 2, 3, 4, 5] as bar (bar)}<span class:on={bars(item.tier) >= bar}></span>{/each}</span>
 											{item.rarity}
 										</td>
@@ -235,6 +235,35 @@
 	.rarity {
 		white-space: nowrap;
 		font-size: 14px;
+	}
+
+	/* Phones: the picture beside the name and amount, the rarity below them */
+	@media (max-width: 600px) {
+		.loot tr {
+			display: grid;
+			grid-template-columns: 44px 1fr auto;
+			align-items: baseline;
+		}
+
+		.loot tr::before {
+			display: none;
+		}
+
+		.loot .icon {
+			grid-row: span 2;
+			align-self: center;
+			padding: 0;
+		}
+
+		.loot .more,
+		.loot td[colspan] {
+			grid-column: 2 / -1;
+			grid-row: span 2;
+		}
+
+		.loot .more {
+			grid-row: auto;
+		}
 	}
 
 	.bars {

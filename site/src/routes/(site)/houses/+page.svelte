@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scrollRow } from '$lib/scrollrow';
 	let { data } = $props();
 	const town = $derived(data.towns.find((entry) => entry.id === data.townId)?.name ?? '');
 	const free = $derived(data.houses.filter((house) => !house.owner).length);
@@ -9,7 +10,7 @@
 </svelte:head>
 
 <main class="wrap page">
-	<nav class="kinds" aria-label="Towns">
+	<nav class="kinds scroll-row" data-scroll-x use:scrollRow={data.townId} aria-label="Towns">
 		{#each data.towns as entry (entry.id)}
 			<a href="?town={entry.id}" aria-current={entry.id === data.townId ? 'true' : undefined}>{entry.name}</a>
 		{/each}
@@ -17,16 +18,16 @@
 	<section class="card">
 		<div class="card-head"><h1>Houses in {town}</h1><span class="note pixel">{free} of {data.houses.length} free</span></div>
 		<div class="scroll">
-			<table class="table">
-				<thead><tr><th>House</th><th class="num">Size</th><th class="num">Beds</th><th class="num">Rent</th><th>Owner</th></tr></thead>
+			<table class="table stack">
+				<thead><tr><th class="main">House</th><th class="num more">Size</th><th class="num more">Beds</th><th class="num end">Rent</th><th class="more">Owner</th></tr></thead>
 				<tbody>
 					{#each data.houses as house (house.id)}
 						<tr>
-							<td><strong>{house.name}</strong></td>
-							<td class="num pixel">{house.size} sqm</td>
-							<td class="num pixel">{house.beds}</td>
-							<td class="num pixel">{house.rent.toLocaleString('en-GB')} gp</td>
-							<td>{#if house.owner}<a href="/characters/{encodeURIComponent(house.owner)}">{house.owner}</a>{:else}<span class="free">Free</span>{/if}</td>
+							<td class="main"><strong>{house.name}</strong></td>
+							<td class="num pixel more" data-label="Size">{house.size} sqm</td>
+							<td class="num pixel more" data-label="Beds">{house.beds}</td>
+							<td class="num pixel end">{house.rent.toLocaleString('en-GB')} gp</td>
+							<td class="more" data-label="Owner">{#if house.owner}<a href="/characters/{encodeURIComponent(house.owner)}">{house.owner}</a>{:else}<span class="free">Free</span>{/if}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -49,8 +50,14 @@
 
 	.kinds {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 8px;
+	}
+
+	/* Wider screens: the chips wrap; phones: one row that scrolls sideways */
+	@media (min-width: 601px) {
+		.kinds {
+			flex-wrap: wrap;
+		}
 	}
 
 	.kinds a {
@@ -76,8 +83,10 @@
 		padding: 8px 12px 12px;
 	}
 
-	.table {
-		min-width: 560px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 560px;
+		}
 	}
 
 	.table a {

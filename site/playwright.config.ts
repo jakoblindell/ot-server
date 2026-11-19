@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
 // Layout checks on phone widths (tests/layout.spec.ts). The site must be
-// running against a database with tests/seed.sql loaded; see tests/README.md.
+// running against a database with tests/seed.sql loaded: see "Layout check"
+// in README.md.
 export default defineConfig({
 	testDir: 'tests',
 	fullyParallel: true,
