@@ -137,6 +137,15 @@ void Connection::close(bool force)
 	}
 	connectionState = CONNECTION_STATE_CLOSED;
 
+	// The pending read handler holds a reference to this connection; drop it
+	// so the connection can be freed. wsInput is left alone here because a
+	// read into it may still be in progress; the read path clears it.
+	wsReadHandler = nullptr;
+	wsReadBuffer = nullptr;
+	wsReadSize = 0;
+	std::vector<uint8_t>().swap(wsPayload);
+	wsPayloadPos = 0;
+
 	if (protocol) {
 		g_dispatcher.addTask(
 			createTask(std::bind(&Protocol::release, protocol)));
@@ -420,9 +429,26 @@ void Connection::readBytes(uint8_t* buffer, size_t size, ReadHandler handler)
 	readWebSocketFrames();
 }
 
+void Connection::releaseWebSocketRead()
+{
+	// Called from the read path with no read in progress
+	wsReadHandler = nullptr;
+	wsReadBuffer = nullptr;
+	wsReadSize = 0;
+	std::vector<uint8_t>().swap(wsPayload);
+	wsPayloadPos = 0;
+	wsInput.consume(wsInput.size());
+}
+
 void Connection::readWebSocketFrames()
 {
+	if (connectionState != CONNECTION_STATE_OPEN) {
+		releaseWebSocketRead();
+		return;
+	}
+
 	if (!parseWebSocketFrames()) {
+		releaseWebSocketRead();
 		close(FORCE_CLOSE);
 		return;
 	}

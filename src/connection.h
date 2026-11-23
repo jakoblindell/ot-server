@@ -109,6 +109,7 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		void readBytes(uint8_t* buffer, size_t size, ReadHandler handler);
 		void readWebSocketFrames();
+		void releaseWebSocketRead();
 		bool parseWebSocketFrames();
 		void parseWebSocketHandshake(const boost::system::error_code& error);
 		void onWebSocketHandshakeSent(const boost::system::error_code& error);
