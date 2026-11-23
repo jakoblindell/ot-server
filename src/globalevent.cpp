@@ -26,6 +26,20 @@
 #include "pugicast.h"
 
 extern ConfigManager g_config;
+extern Dispatcher g_dispatcher;
+
+namespace {
+
+// how many global event scripts are running right now (they can nest)
+uint32_t runningEvents = 0;
+
+struct RunningEvent
+{
+	RunningEvent() { ++runningEvents; }
+	~RunningEvent() { --runningEvents; }
+};
+
+}
 
 GlobalEvents::GlobalEvents() :
 	scriptInterface("GlobalEvent Interface")
@@ -58,6 +72,31 @@ void GlobalEvents::clear()
 	clearMap(timerMap);
 
 	scriptInterface.reInitState();
+}
+
+bool GlobalEvents::reload()
+{
+	if (runningEvents == 0) {
+		return BaseEvents::reload();
+	}
+
+	// The running event and the loop in think(), timer() or execute() still use
+	// the events and maps that a reload deletes, so reload as the next task,
+	// after they have returned. That task also stops the think and timer events
+	// they schedule on return, before scheduling new ones.
+	if (!reloadQueued) {
+		reloadQueued = true;
+		g_dispatcher.addTask(createTask(std::bind(&GlobalEvents::runQueuedReload, this)), true);
+	}
+	return true;
+}
+
+void GlobalEvents::runQueuedReload()
+{
+	reloadQueued = false;
+	if (!BaseEvents::reload()) {
+		std::cout << "[Error - GlobalEvents::reload] Failed to reload globalevents." << std::endl;
+	}
 }
 
 Event* GlobalEvents::getEvent(const std::string& nodeName)
@@ -304,6 +343,8 @@ bool GlobalEvent::executeRecord(uint32_t current, uint32_t old)
 		return false;
 	}
 
+	RunningEvent running;
+
 	ScriptEnvironment* env = scriptInterface->getScriptEnv();
 	env->setScriptId(scriptId, scriptInterface);
 
@@ -321,6 +362,8 @@ bool GlobalEvent::executeEvent()
 		std::cout << "[Error - GlobalEvent::executeEvent] Call stack overflow" << std::endl;
 		return false;
 	}
+
+	RunningEvent running;
 
 	ScriptEnvironment* env = scriptInterface->getScriptEnv();
 	env->setScriptId(scriptId, scriptInterface);

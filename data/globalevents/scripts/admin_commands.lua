@@ -64,7 +64,12 @@ local commands = {
 		if not reloadType then
 			return false, "unknown reload type " .. target
 		end
-		Game.reload(reloadType)
+		-- globalevents (also part of weapons, which reloads everything) is
+		-- reloaded right after this onThink returns (Game.reload returns true
+		-- once it is queued); the other types are reloaded here
+		if not Game.reload(reloadType) then
+			return false, target .. " could not be reloaded (see the server log)"
+		end
 		return true, target .. " reloaded"
 	end,
 	kick = function(target)

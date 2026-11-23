@@ -45,6 +45,10 @@ class GlobalEvents final : public BaseEvents
 		GlobalEvents(const GlobalEvents&) = delete;
 		GlobalEvents& operator=(const GlobalEvents&) = delete;
 
+		// Called from inside one of these events (an onThink that runs an admin
+		// command, for example), the reload waits until that event has returned.
+		bool reload();
+
 		void startup() const;
 
 		void timer();
@@ -68,8 +72,11 @@ class GlobalEvents final : public BaseEvents
 		}
 		LuaScriptInterface scriptInterface;
 
+		void runQueuedReload();
+
 		GlobalEventMap thinkMap, serverMap, timerMap;
 		int32_t thinkEventId = 0, timerEventId = 0;
+		bool reloadQueued = false;
 };
 
 class GlobalEvent final : public Event
