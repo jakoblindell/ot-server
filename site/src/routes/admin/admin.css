@@ -1,6 +1,8 @@
 /* The admin pages (Claude Design's admin boards): a dark tool look of its
    own, the same in every colour scheme. Everything is under .admin. */
 .admin {
+	--stack-rule: var(--a-line-soft);
+	--stack-label: var(--a-faint);
 	--a-bg: #0f1115;
 	--a-panel: #14171d;
 	--a-raised: #171a21;
@@ -157,7 +159,10 @@
 	background: var(--a-panel);
 	border-right: 1px solid var(--a-line);
 	padding: 16px 12px 24px;
-	display: flex;
+	min-width: 0;
+}
+
+.admin .side-links {
 	flex-direction: column;
 	gap: 18px;
 }
@@ -206,12 +211,14 @@
 
 @media (max-width: 760px) {
 	.admin .side {
-		flex-direction: row;
-		overflow-x: auto;
-		gap: 4px;
 		border-right: 0;
 		border-bottom: 1px solid var(--a-line);
 		padding: 8px;
+	}
+
+	.admin .side-links {
+		flex-direction: row;
+		gap: 4px;
 	}
 
 	.admin .group {

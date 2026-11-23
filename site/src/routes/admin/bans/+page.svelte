@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 	const when = (at: number) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 	const until = (at: number) => (at ? when(at) : 'permanent');
@@ -21,7 +22,7 @@
 <section class="panel">
 	<div class="panel-head"><h2>Banned accounts</h2><span class="pill">{data.accounts.length}</span></div>
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Account</th><th>Characters</th><th>Reason</th><th>By</th><th>Since</th><th>Until</th><th></th></tr></thead>
 			<tbody>
 				{#each data.accounts as ban (ban.account_id)}
@@ -50,7 +51,7 @@
 <section class="panel">
 	<div class="panel-head"><h2>Banned addresses</h2><span class="pill">{data.ips.length}</span></div>
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Address</th><th>Reason</th><th>By</th><th>Since</th><th>Until</th><th></th></tr></thead>
 			<tbody>
 				{#each data.ips as ban (ban.ip)}
@@ -80,7 +81,7 @@
 <section class="panel">
 	<div class="panel-head"><h2>Namelocks</h2><span class="pill">{data.namelocks.length}</span></div>
 	<div class="scroll">
-		<table>
+		<table class="cards" use:cardLabels>
 			<thead><tr><th>Character</th><th>Reason</th><th>By</th><th>Since</th><th></th></tr></thead>
 			<tbody>
 				{#each data.namelocks as lock (lock.player_id)}

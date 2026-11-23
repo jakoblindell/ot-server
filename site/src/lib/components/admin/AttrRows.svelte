@@ -50,11 +50,14 @@
 
 <style>
 	.attrs {
+		flex: 1 1 240px;
+		min-width: 0;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 6px 12px;
 	}
 	.attr {
+		max-width: 100%;
 		display: flex;
 		align-items: center;
 		gap: 6px;
@@ -63,7 +66,11 @@
 		font-size: 12px;
 		color: var(--admin-muted, #9aa3ad);
 		min-width: 0;
-		white-space: nowrap;
+	}
+	.attr input,
+	.attr select {
+		min-width: 0;
+		flex: 0 1 auto;
 	}
 	.attr input,
 	.attr select {

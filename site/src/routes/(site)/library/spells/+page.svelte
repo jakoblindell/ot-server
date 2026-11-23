@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scrollRow } from '$lib/scrollrow';
 	let { data } = $props();
 	const vocations = ['', 'Knight', 'Paladin', 'Sorcerer', 'Druid'];
 	const groups = $derived([
@@ -18,7 +19,7 @@
 
 <main class="wrap page">
 	<nav class="crumbs" aria-label="Breadcrumbs"><a href="/library">Library</a> › <span>Spells</span></nav>
-	<nav class="kinds" aria-label="Vocation">
+	<nav class="kinds scroll-row" data-scroll-x use:scrollRow={data.vocation} aria-label="Vocation">
 		{#each vocations as vocation (vocation)}
 			<a href="?vocation={vocation}" aria-current={data.vocation === vocation ? 'true' : undefined}>{vocation ? `${vocation}s` : 'All vocations'}</a>
 		{/each}
@@ -28,21 +29,21 @@
 			<section class="card">
 				<div class="card-head"><h2>{group.title}</h2></div>
 				<div class="scroll">
-					<table class="table">
-						<thead><tr><th>Name</th><th>Words</th><th class="num">Magic level</th><th class="num">Mana</th><th>Vocations</th><th>Premium</th></tr></thead>
+					<table class="table stack">
+						<thead><tr><th class="main">Name</th><th class="end">Words</th><th class="num more">Magic level</th><th class="num more">Mana</th><th class="more">Vocations</th><th class="more">Premium</th></tr></thead>
 						<tbody>
 							{#each group.spells as spell, i (i)}
 								<tr id={encodeURIComponent(spell.name)}>
-									<td>
+									<td class="main">
 										{#if spell.runeId}<img class="rune" src="/item/{spell.runeId}.png" alt="" loading="lazy" />{/if}
 										<strong>{spell.name}</strong>
 										{#if spell.itemName && spell.kind === 'conjure'}<span class="muted"> → {spell.conjureCount > 1 ? `${spell.conjureCount}× ` : ''}{spell.itemName}</span>{/if}
 									</td>
-									<td class="pixel">{spell.words}</td>
-									<td class="num pixel">{spell.magicLevel}</td>
-									<td class="num pixel">{spell.mana || '–'}</td>
-									<td>{short(spell.vocations)}</td>
-									<td>{spell.premium ? 'Yes' : ''}</td>
+									<td class="pixel end">{spell.words}</td>
+									<td class="num pixel more" data-label="Magic level">{spell.magicLevel}</td>
+									<td class="num pixel more" data-label="Mana">{spell.mana || '–'}</td>
+									<td class="more">{short(spell.vocations)}</td>
+									<td class="more" class:none={!spell.premium} data-label="Premium">{spell.premium ? 'Yes' : ''}</td>
 								</tr>
 							{/each}
 						</tbody>
@@ -73,8 +74,14 @@
 
 	.kinds {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 8px;
+	}
+
+	/* Wider screens: the chips wrap; phones: one row that scrolls sideways */
+	@media (min-width: 601px) {
+		.kinds {
+			flex-wrap: wrap;
+		}
 	}
 
 	.kinds a {
@@ -96,8 +103,16 @@
 		padding: 8px 12px 12px;
 	}
 
-	.table {
-		min-width: 680px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 680px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.none {
+			display: none !important;
+		}
 	}
 
 	tr:target td {

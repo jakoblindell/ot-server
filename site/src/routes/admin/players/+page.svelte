@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 
 	const dateTime = (at: number) =>
@@ -47,7 +48,7 @@
 <div class="split">
 	<section class="panel list">
 		<div class="scroll">
-			<table>
+			<table class="cards" use:cardLabels>
 				<thead><tr><th>Character</th><th>Account</th><th>Level</th><th>Last IP</th><th>Status</th></tr></thead>
 				<tbody>
 					{#each data.rows as row (row.name)}

@@ -142,6 +142,7 @@
 	}
 	.general {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 16px;
 		align-items: flex-start;
 	}

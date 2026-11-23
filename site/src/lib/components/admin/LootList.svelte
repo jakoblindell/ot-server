@@ -2,6 +2,7 @@
 	import type { MonsterNode } from '$lib/monster';
 	import LootList from './LootList.svelte';
 	import { rarity } from '$lib/rarity';
+	import { cardLabels } from '$lib/cardlabels';
 
 	// <loot> (or a container's <inside>): one row per <item>, with its picture
 	// and name. The comment after an item names it, as in the files; it is
@@ -42,7 +43,7 @@
 	};
 </script>
 
-<table class="loot">
+<table class="loot cards" use:cardLabels>
 	<thead>
 		<tr><th></th><th>Item</th><th>Id</th><th>Max count</th><th>Chance (of 1000)</th><th>Players see</th><th></th></tr>
 	</thead>
@@ -52,7 +53,7 @@
 			{@const inside = item.children.find((child) => child.tag === 'inside')}
 			<tr>
 				<td class="icon">{#if get(item, 'id')}<img src="/item/{get(item, 'id')}.png" alt="" loading="lazy" />{/if}</td>
-				<td>{names.get(Number(get(item, 'id'))) ?? '?'}</td>
+				<td class="name">{names.get(Number(get(item, 'id'))) ?? '?'}</td>
 				<td>
 					<input class="num" list="item-names" value={get(item, 'id')} onchange={(event) => (set(item, 'id', event.currentTarget.value.trim()), nameComment(row.index))} />
 				</td>
@@ -101,5 +102,21 @@
 	}
 	.inside td {
 		padding-top: 0;
+	}
+	/* Phones: the picture and name as the card's title */
+	@media (max-width: 600px) {
+		.icon {
+			flex: 0 0 auto;
+		}
+		.name {
+			flex: 1 1 0;
+			font-weight: 600;
+		}
+		.name::before {
+			display: none;
+		}
+		.num {
+			width: 72px;
+		}
 	}
 </style>

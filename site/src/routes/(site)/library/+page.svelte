@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { scrollRow } from '$lib/scrollrow';
 	let { data } = $props();
 	const kinds = [
 		{ id: 'all', label: 'All' },
@@ -32,7 +33,7 @@
 				<input type="hidden" name="kind" value={data.kind} />
 				<button class="button" type="submit">Search</button>
 			</form>
-			<nav class="kinds" aria-label="Kinds">
+			<nav class="kinds scroll-row" data-scroll-x use:scrollRow={data.kind} aria-label="Kinds">
 				{#each kinds as kind (kind.id)}
 					<a href="?q={encodeURIComponent(data.query)}&kind={kind.id}" aria-current={data.kind === kind.id ? 'true' : undefined}>
 						{kind.label}{kind.id !== 'all' ? ` (${data.counts[kind.id as keyof typeof data.counts]})` : ''}
@@ -94,9 +95,15 @@
 
 	.kinds {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 8px;
 		margin: 16px 0;
+	}
+
+	/* Wider screens: the chips wrap; phones: one row that scrolls sideways */
+	@media (min-width: 601px) {
+		.kinds {
+			flex-wrap: wrap;
+		}
 	}
 
 	.kinds a {

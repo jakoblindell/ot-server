@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { cardLabels } from '$lib/cardlabels';
 	let { data, form } = $props();
 </script>
 
@@ -46,7 +47,7 @@
 			<button class="btn small-btn">Hide</button>
 		</form>
 		{#if data.hidden.length}
-			<table>
+			<table class="cards" use:cardLabels>
 				<tbody>
 					{#each data.hidden as item (item.id)}
 						<tr>

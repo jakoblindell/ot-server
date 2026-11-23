@@ -35,19 +35,19 @@
 	<section class="card" aria-labelledby="m-h">
 		<div class="card-head"><h2 id="m-h">Members</h2></div>
 		<div class="scroll">
-			<table class="table">
-				<thead><tr><th>Rank</th><th>Name</th><th>Vocation</th><th class="num">Level</th><th>Status</th></tr></thead>
+			<table class="table stack">
+				<thead><tr><th class="rank-head">Rank</th><th class="main">Name</th><th class="more">Vocation</th><th class="num end">Level</th><th class="more">Status</th></tr></thead>
 				<tbody>
 					{#each data.members as member, index (member.name)}
 						<tr class:first={index === 0 || data.members[index - 1].rank !== member.rank}>
-							<td class="rank">{index === 0 || data.members[index - 1].rank !== member.rank ? member.rank : ''}</td>
-							<td>
+							<td class="rank" class:blank={index > 0 && data.members[index - 1].rank === member.rank}>{index === 0 || data.members[index - 1].rank !== member.rank ? member.rank : ''}</td>
+							<td class="main">
 								<a href="/characters/{encodeURIComponent(member.name)}">{member.name}</a>
 								{#if member.nick}<span class="nick">({member.nick})</span>{/if}
 							</td>
-							<td><span class="badge pixel" style:background={member.badge.color}>{member.badge.short}</span> {member.vocation}</td>
-							<td class="num pixel">{member.level}</td>
-							<td class:online={member.online}>{member.online ? 'Online' : 'Offline'}</td>
+							<td class="more"><span class="badge pixel" style:background={member.badge.color}>{member.badge.short}</span> {member.vocation}</td>
+							<td class="num pixel end">{member.level}</td>
+							<td class="more" class:online={member.online}>{member.online ? 'Online' : 'Offline'}</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -221,8 +221,22 @@
 		padding: 8px 12px 12px;
 	}
 
-	.table {
-		min-width: 560px;
+	@media (min-width: 601px) {
+		.table {
+			min-width: 560px;
+		}
+	}
+
+	/* Phones: the rank above its members, the name and level on one line */
+	@media (max-width: 600px) {
+		.rank-head,
+		.rank.blank {
+			display: none;
+		}
+
+		.rank {
+			flex: 1 1 100%;
+		}
 	}
 
 	.rank {

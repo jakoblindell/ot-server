@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { scrollRow } from '$lib/scrollrow';
 
 	let { data, children } = $props();
 
@@ -16,11 +17,13 @@
 
 <main class="wrap columns">
 	<nav aria-label="Account">
-		{#each links as link (link.href)}
-			<a href={link.href} aria-current={page.url.pathname === link.href ? 'page' : undefined}>{link.label}</a>
-		{/each}
-		{#if data.me.staff}<a class="admin" href="/admin">Admin ›</a>{/if}
-		<form method="POST" action="/logout"><button type="submit">Log out</button></form>
+		<div class="links scroll-row" data-scroll-x use:scrollRow={page.url.pathname}>
+			{#each links as link (link.href)}
+				<a href={link.href} aria-current={page.url.pathname === link.href ? 'page' : undefined}>{link.label}</a>
+			{/each}
+			{#if data.me.staff}<a class="admin" href="/admin">Admin ›</a>{/if}
+			<form method="POST" action="/logout"><button type="submit">Log out</button></form>
+		</div>
 	</nav>
 	<div class="main">
 		{@render children()}
@@ -40,12 +43,16 @@
 
 	nav {
 		flex: 1 1 220px;
-		display: flex;
-		flex-direction: column;
+		min-width: 0;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 6px;
 		padding: 8px;
+	}
+
+	.links {
+		flex-direction: column;
+		gap: 0;
 	}
 
 	nav a,
@@ -87,27 +94,23 @@
 		padding-top: 6px;
 	}
 
-	/* Phones: the menu as a strip that scrolls sideways */
+	/* Phones: the menu as a row that scrolls sideways */
 	@media (max-width: 700px) {
 		nav {
 			flex: 1 1 100%;
+		}
+
+		.links {
 			flex-direction: row;
-			overflow-x: auto;
 			gap: 4px;
 		}
 
 		nav a,
 		nav button {
 			width: auto;
-			white-space: nowrap;
 		}
 
-		nav .admin {
-		color: var(--accent);
-		font-weight: 700;
-	}
-
-	nav form {
+		nav form {
 			border-top: 0;
 			margin-top: 0;
 			padding-top: 0;
