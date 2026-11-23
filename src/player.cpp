@@ -973,6 +973,8 @@ void Player::onRemoveCreature(Creature* creature, bool isLogout)
 
 		g_chat->removeUserFromAllChannels(*this);
 
+		endDisconnectProtection("removed from the world");
+
 		std::cout << getName() << " has logged out." << std::endl;
 
 		if (guild) {
@@ -2911,6 +2913,10 @@ bool Player::setAttackedCreature(Creature* creature)
 
 void Player::goToFollowCreature()
 {
+	if (hasDisconnectProtection()) {
+		return;
+	}
+
 	if (!walkTask) {
 		if ((OTSYS_TIME() - lastFailedFollow) < 2000) {
 			return;
@@ -2932,6 +2938,11 @@ void Player::getPathSearchParams(const Creature* creature, FindPathParams& fpp) 
 
 void Player::doAttacking(uint32_t)
 {
+	// The target is kept, so the fight continues when the protection ends
+	if (hasDisconnectProtection()) {
+		return;
+	}
+
 	if (lastAttack == 0) {
 		lastAttack = OTSYS_TIME() - getAttackSpeed() - 1;
 	}
@@ -3377,19 +3388,22 @@ bool Player::canWear(uint32_t lookType, uint8_t addons) const
 
 void Player::onConnectionLost()
 {
-	if (isRemoved() || hasDisconnectProtection() || isFakePlayer) {
+	// A replacement login (the same character logging in again) is not a lost
+	// connection
+	if (isRemoved() || hasDisconnectProtection() || isFakePlayer || isConnecting) {
 		return;
 	}
 
 	const int64_t now = OTSYS_TIME();
+	Game::DisconnectProtectionBudget& budget = g_game.getDisconnectProtectionBudget(getGUID());
 	const int64_t window = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_WINDOW_MINUTES) * 60000;
-	if (now - disconnectProtectionWindowStart >= window) {
-		disconnectProtectionWindowStart = now;
-		disconnectProtectionUsed = 0;
+	if (now - budget.windowStart >= window) {
+		budget.windowStart = now;
+		budget.used = 0;
 	}
 
 	const int64_t maxDuration = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_SECONDS) * 1000;
-	const int64_t budgetLeft = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_BUDGET_SECONDS) * 1000 - disconnectProtectionUsed;
+	const int64_t budgetLeft = g_config.getNumber(ConfigManager::DISCONNECT_PROTECTION_BUDGET_SECONDS) * 1000 - budget.used;
 	const int64_t duration = std::min(maxDuration, budgetLeft);
 	if (duration <= 0) {
 		std::cout << "> " << getName() << " lost the connection; no disconnect protection left in this period" << std::endl;
@@ -3398,6 +3412,9 @@ void Player::onConnectionLost()
 
 	disconnectProtectionStart = now;
 	disconnectProtectionEnd = now + duration;
+
+	// The character stays where it is: a walk in progress (or a chase) stops
+	stopWalk();
 
 	int32_t monsters = 0;
 	SpectatorVec spectators;
@@ -3428,7 +3445,8 @@ void Player::endDisconnectProtection(const char* reason)
 	}
 
 	const int64_t now = OTSYS_TIME();
-	disconnectProtectionUsed += now - disconnectProtectionStart;
+	Game::DisconnectProtectionBudget& budget = g_game.getDisconnectProtectionBudget(getGUID());
+	budget.used += now - disconnectProtectionStart;
 	disconnectProtectionStart = 0;
 	disconnectProtectionEnd = 0;
 
@@ -3440,7 +3458,7 @@ void Player::endDisconnectProtection(const char* reason)
 	}
 
 	std::cout << "> " << getName() << ": disconnect protection ended (" << reason << ") with " << getHealth()
-	          << "/" << getMaxHealth() << " HP, used " << disconnectProtectionUsed / 1000 << " s in this period" << std::endl;
+	          << "/" << getMaxHealth() << " HP, used " << budget.used / 1000 << " s in this period" << std::endl;
 }
 
 bool Player::isBlockedByDisconnectProtection(const Creature* attacker) const

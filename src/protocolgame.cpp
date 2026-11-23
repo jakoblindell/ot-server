@@ -166,8 +166,9 @@ void ProtocolGame::login(const std::string& name, uint32_t accountId, OperatingS
 
 		if (foundPlayer->client) {
 			foundPlayer->client->sendSessionEnd("You have been logged in from another location.");
-			foundPlayer->disconnect();
+			// Set first: closing the old connection is not a lost connection
 			foundPlayer->isConnecting = true;
+			foundPlayer->disconnect();
 
 			eventConnect = g_scheduler.addEvent(createSchedulerTask(1000, std::bind(&ProtocolGame::connect, getThis(), foundPlayer->getID(), operatingSystem)));
 		} else {
