@@ -42,6 +42,11 @@ public:
 	bool isConnectionExpired() const {
 		return connection.expired();
 	}
+	// Closed, or already released
+	bool isConnectionClosed() const {
+		const auto connection = getConnection();
+		return !connection || connection->isClosed();
+	}
 
 	Connection_ptr getConnection() const {
 		return connection.lock();

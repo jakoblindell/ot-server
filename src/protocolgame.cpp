@@ -184,13 +184,17 @@ void ProtocolGame::connect(uint32_t playerId, OperatingSystem_t operatingSystem)
 
 	Player* foundPlayer = g_game.getPlayerByID(playerId);
 	if (!foundPlayer || foundPlayer->client) {
+		if (foundPlayer) {
+			foundPlayer->isConnecting = false;
+		}
 		disconnectClient("You are already logged in.");
 		return;
 	}
 
-	if (isConnectionExpired()) {
-		//ProtocolGame::release() has been called at this point and the Connection object
-		//no longer exists, so we return to prevent leakage of the Player.
+	if (isConnectionClosed()) {
+		//ProtocolGame::release() has been called or queued at this point, so the
+		//player must not be attached to this protocol.
+		foundPlayer->isConnecting = false;
 		return;
 	}
 
@@ -346,6 +350,12 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 
 void ProtocolGame::enterGame(uint32_t accountId, std::string characterName, OperatingSystem_t operatingSystem)
 {
+	if (isConnectionClosed()) {
+		//The connection closed during the password check: ProtocolGame::release()
+		//has been called or queued already, so no player may be attached now.
+		return;
+	}
+
 	if (accountId == 0 || !IOLoginData::canUseCharacter(accountId, characterName)) {
 		disconnectClient("Account name or password is not correct.");
 		return;
