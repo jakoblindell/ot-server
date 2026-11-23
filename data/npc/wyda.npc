@@ -110,7 +110,7 @@ VANISH,!                                 -> "Farewell."
 
 "quest"         -> "A quest? Well, if you're so keen on doing me a favour... Why don't you try to find a blood herb?"
 "herbs"         -> "The swamp is home to a wide variety of herbs, but the most famous is the blood herb."
-"blood","herb$",Count(3734)>=1,! -> "Do you have a blood herb for me?", Topic=1
+"blood","herb$",Count(3734)>=1,! -> Amount=1, "Do you have a blood herb for me?", Topic=1
 "blood","herb$" -> "The blood herb is very rare. This plant would be very useful for me, but I don't know any accessible places to find it."
 
 Topic=1,"yes",Count(3734)<1,! -> "Well, do you own one or not?"

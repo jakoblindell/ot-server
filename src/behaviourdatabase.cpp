@@ -36,10 +36,8 @@ extern LuaEnvironment g_luaEnvironment;
 
 BehaviourDatabase::BehaviourDatabase(Npc * _npc) : npc(_npc) {
 	topic = 0;
-	data = -1;
-	type = 0;
-	price = 0;
-	amount = 0;
+	clearExchangeValues();
+	greetingValues = getExchangeValues();
 	delay = 1000;
 }
 
@@ -710,8 +708,69 @@ NpcBehaviourNode* BehaviourDatabase::readFactor(ScriptReader& script, NpcBehavio
 	return nextNode;
 }
 
+namespace {
+
+bool nodeUses(const NpcBehaviourNode* node, NpcBehaviourType_t type)
+{
+	return node && (node->type == type || nodeUses(node->left, type) || nodeUses(node->right, type));
+}
+
+// The rule asks for a topic (Topic=1,"yes"): it goes on with what the rule
+// that set the topic began
+bool continuesTopic(const NpcBehaviour* behaviour)
+{
+	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+		if (condition->type == BEHAVIOUR_TYPE_OPERATION && nodeUses(condition->expression, BEHAVIOUR_TYPE_TOPIC)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+}
+
+void BehaviourDatabase::clearExchangeValues()
+{
+	data = -1;
+	type = 0;
+	price = 0;
+	amount = 0;
+}
+
+BehaviourDatabase::ExchangeValues BehaviourDatabase::getExchangeValues() const
+{
+	ExchangeValues values;
+	values.data = data;
+	values.type = type;
+	values.price = price;
+	values.amount = amount;
+	return values;
+}
+
+void BehaviourDatabase::setExchangeValues(const ExchangeValues& values)
+{
+	data = values.data;
+	type = values.type;
+	price = values.price;
+	amount = values.amount;
+}
+
 void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, const std::string& message)
 {
+	// The Type, Amount, Price and Data a rule works with, in its conditions
+	// and its actions: for a rule of the customer that continues a topic,
+	// what the rule that set the topic left; for the customer's other rules,
+	// what the greeting left; for a greeting or someone else's rule (BUSY),
+	// the defaults. Someone else's rule leaves the customer's topic and
+	// values as they were.
+	const uint32_t customerId = npc->focusCreature;
+	const bool fromCustomer = customerId != 0 && player->getID() == customerId;
+	const int32_t customerTopic = topic;
+	const ExchangeValues customerValues = getExchangeValues();
+	if (!fromCustomer) {
+		topic = 0;
+	}
+
 	for (NpcBehaviour* behaviour : behaviourEntries) {
 		bool fulfilled = true;
 
@@ -731,6 +790,14 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 			continue;
 		}
 
+		if (!fromCustomer) {
+			clearExchangeValues();
+		} else if (continuesTopic(behaviour)) {
+			setExchangeValues(customerValues);
+		} else {
+			setExchangeValues(greetingValues);
+		}
+
 		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
 			if (!checkCondition(condition, player, message)) {
 				fulfilled = false;
@@ -742,7 +809,7 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 			continue;
 		}
 
-		if (player->getID() == npc->focusCreature) {
+		if (fromCustomer) {
 			topic = 0;
 		}
 
@@ -762,6 +829,13 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 			checkAction(action, player, message);
 		}
 
+		if (situation == SITUATION_ADDRESS) {
+			greetingValues = getExchangeValues();
+		} else if (!fromCustomer && npc->focusCreature == customerId) {
+			topic = customerTopic;
+			setExchangeValues(customerValues);
+		}
+
 		if (situation != SITUATION_VANISH && npc->focusCreature == player->getID()) {
 			lastDialog = behaviour;
 			sendDialog(player, behaviour);
@@ -769,6 +843,9 @@ void BehaviourDatabase::react(BehaviourSituation_t situation, Player* player, co
 
 		return;
 	}
+
+	topic = customerTopic;
+	setExchangeValues(customerValues);
 
 	// "hi" to an NPC already talking to the player (their client reconnected,
 	// or the window was lost): the NPC has no answer, so show the dialog again
@@ -1723,11 +1800,6 @@ bool mentionsWord(const std::string& text, const std::string& word)
 		}
 	}
 	return false;
-}
-
-bool nodeUses(const NpcBehaviourNode* node, NpcBehaviourType_t type)
-{
-	return node && (node->type == type || nodeUses(node->left, type) || nodeUses(node->right, type));
 }
 
 // "bring me to port hope" -> "Port Hope"
