@@ -286,7 +286,8 @@ class Player final : public Creature, public Cylinder
 
 		// Disconnect protection: while the connection is down (closed without a
 		// logout, or silent), monsters cannot hurt the player and the player's
-		// conditions are frozen, for a limited time (see config.lua).
+		// conditions are frozen, for a limited time (see config.lua). The player
+		// and their summons do not attack meanwhile.
 		void onConnectionLost();
 		void onConnectionRestored();
 		void endDisconnectProtection(const char* reason);
@@ -1085,8 +1086,6 @@ class Player final : public Creature, public Cylinder
 		int64_t lastPong;
 		int64_t disconnectProtectionStart = 0;
 		int64_t disconnectProtectionEnd = 0;
-		int64_t disconnectProtectionWindowStart = 0;
-		int64_t disconnectProtectionUsed = 0;
 		int64_t nextAction = 0;
 		int64_t earliestAttackTime = 0;
 		

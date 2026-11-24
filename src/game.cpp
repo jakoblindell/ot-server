@@ -3325,6 +3325,24 @@ void Game::changeLight(const Creature* creature)
 	}
 }
 
+// Disconnect protection: monsters cannot hurt a player whose connection is
+// down; a player's attack ends the protection. Returns true to block the hit.
+static bool blockedByDisconnectProtection(Creature* attacker, Creature* target, const CombatDamage& damage)
+{
+	if (damage.value >= 0) {
+		return false;
+	}
+	Player* targetPlayer = target->getPlayer();
+	if (!targetPlayer || !targetPlayer->hasDisconnectProtection()) {
+		return false;
+	}
+	if (targetPlayer->isBlockedByDisconnectProtection(attacker)) {
+		return true;
+	}
+	targetPlayer->endDisconnectProtection("attacked by a player");
+	return false;
+}
+
 bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* target, bool checkDefense, bool checkArmor, bool field)
 {
 	if (damage.type == COMBAT_NONE) {
@@ -3332,6 +3350,11 @@ bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* ta
 	}
 
 	if (target->getPlayer() && target->isInGhostMode()) {
+		return true;
+	}
+
+	// Before the block step, so a blocked hit uses no charges and trains no skill
+	if (blockedByDisconnectProtection(attacker, target, damage)) {
 		return true;
 	}
 
@@ -3456,24 +3479,6 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 			break;
 		}
 	}
-}
-
-// Disconnect protection: monsters cannot hurt a player whose connection is
-// down; a player's attack ends the protection. Returns true to block the hit.
-static bool blockedByDisconnectProtection(Creature* attacker, Creature* target, const CombatDamage& damage)
-{
-	if (damage.value >= 0) {
-		return false;
-	}
-	Player* targetPlayer = target->getPlayer();
-	if (!targetPlayer || !targetPlayer->hasDisconnectProtection()) {
-		return false;
-	}
-	if (targetPlayer->isBlockedByDisconnectProtection(attacker)) {
-		return true;
-	}
-	targetPlayer->endDisconnectProtection("attacked by a player");
-	return false;
 }
 
 bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage& damage)
