@@ -12,9 +12,10 @@ many messages it takes.
 The estimate counts everything a player could get: every listed offer, the
 keywords of both the "asks something" and the plain line, the NPC's longest
 line with %N (a 30-letter name), %P, %A, %D (10 digits) and %S (30 letters),
-10-digit money and ids. Lines from Lua scripts are not counted. "Before #89"
-is a rough upper bound of the earlier dialog: no offers sold only by amount,
-no amountWords, and at most 12 keywords plus job, name, offer and trade.
+10-digit money, ids and prices that are not constant. Lines from Lua scripts are not counted. "Before #89"
+is a rough estimate of the earlier dialog: only offers whose rule is made of
+words alone, no amountWords, and at most 12 keywords plus job, name, offer
+and trade.
 
 It fails (exit status 1) if the part length in src/protocolgame.cpp could
 make a part longer than one string holds, or if an NPC cannot be read.
@@ -92,10 +93,21 @@ def load_items():
     return items
 
 
+def constant_value(node):
+    """A number or arithmetic of numbers ("41*20"), else None"""
+    if node and node[0] == 'number':
+        return node[1]
+    if node and node[0] == 'arith':
+        a, b = constant_value(node[2]), constant_value(node[3])
+        if a is not None and b is not None:
+            return {'+': a + b, '-': a - b, '*': a * b}.get(node[1])
+    return None
+
+
 def price_digits(offer):
     for action in offer.rule.actions:
         if action[0] == 'price' and action[1]:
-            value = check.number(action[1][0])
+            value = constant_value(action[1][0])
             return len(str(value)) if value is not None else NUMBER
     return NUMBER
 
@@ -144,7 +156,7 @@ def measure(path, items):
     offers = list_length([offer_length(o, items) for o in listed.values() if not o.travel and not o.sell]) + \
         list_length([offer_length(o, items) for o in listed.values() if o.sell]) + \
         list_length([offer_length(o, items) for o in listed.values() if o.travel])
-    older = [o for o in listed.values() if not check.takes_amount(o.rule)]
+    older = [o for o in listed.values() if all(c[0] == 'string' for c in o.rule.conditions)]
     offers_before = list_length([offer_length(o, items, False) for o in older if not o.travel and not o.sell]) + \
         list_length([offer_length(o, items, False) for o in older if o.sell]) + \
         list_length([offer_length(o, items, False) for o in older if o.travel])
