@@ -1757,6 +1757,46 @@ void BehaviourDatabase::analyseDialogRules()
 	dialogRulesAnalysed = true;
 	std::set<std::string> seenOffers, seenKeywords;
 
+	// Which way the money goes on a topic's "yes": CreateMoney (the NPC pays,
+	// the player sells) or DeleteMoney (the player pays, the player buys).
+	// "wolf","paw" -> Price=7, Topic=1 and Topic=1,"yes" -> Delete(Type),
+	// CreateMoney is a sell offer without the word "sell" (Tom, Rashid). A
+	// topic whose "yes" rules go both ways is left to the keywords.
+	std::map<int32_t, int32_t> topicMoney; // 1: the NPC pays, -1: the player pays, 0: both
+	for (const NpcBehaviour* behaviour : behaviourEntries) {
+		int32_t money = 0;
+		for (const NpcBehaviourAction* action : behaviour->actions) {
+			if (action->type == BEHAVIOUR_TYPE_CREATEMONEY) {
+				money = 1;
+			} else if (action->type == BEHAVIOUR_TYPE_DELETEMONEY) {
+				money = -1;
+			}
+		}
+		if (money == 0) {
+			continue;
+		}
+		int32_t onTopic = 0;
+		bool yes = false;
+		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+			const NpcBehaviourNode* node = condition->expression;
+			if (condition->type == BEHAVIOUR_TYPE_STRING && condition->string == "yes") {
+				yes = true;
+			} else if (condition->type == BEHAVIOUR_TYPE_OPERATION && node && node->number == BEHAVIOUR_OPERATOR_EQUALS &&
+			           node->left && node->right && node->left->type == BEHAVIOUR_TYPE_TOPIC && node->right->type == BEHAVIOUR_TYPE_NUMBER) {
+				onTopic = node->right->number;
+			}
+		}
+		if (!yes || onTopic == 0) {
+			continue;
+		}
+		auto it = topicMoney.find(onTopic);
+		if (it == topicMoney.end()) {
+			topicMoney.emplace(onTopic, money);
+		} else if (it->second != money) {
+			it->second = 0;
+		}
+	}
+
 	// Topics whose "yes" teleports: "carlin" -> Price=110, Topic=2, and
 	// Topic=2,"yes" -> Teleport(...) make a travel offer
 	std::set<int32_t> travelTopics;
@@ -1867,7 +1907,12 @@ void BehaviourDatabase::analyseDialogRules()
 			continue;
 		}
 
-		const bool sell = words.compare(0, 5, "sell ") == 0;
+		// the player sells when the NPC pays on "yes"; otherwise by the keywords
+		bool sell = words.compare(0, 5, "sell ") == 0;
+		const auto money = topicMoney.find(setsTopic);
+		if (money != topicMoney.end() && money->second != 0) {
+			sell = money->second > 0;
+		}
 		if (item != 0 && hasPrice && hasTopic && onlyWords) {
 			if (seenOffers.insert(words).second) {
 				dialogOffers.emplace_back(behaviour, words, item, sell, false);
