@@ -716,7 +716,8 @@ bool nodeUses(const NpcBehaviourNode* node, NpcBehaviourType_t type)
 }
 
 // The rule asks for a topic (Topic=1,"yes"): it goes on with what the rule
-// that set the topic began
+// that set the topic began. MIRRORED IN tools/npc-dialog-check.py
+// (continues_topic)
 bool continuesTopic(const NpcBehaviour* behaviour)
 {
 	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
@@ -1788,18 +1789,19 @@ std::string jsonString(const std::string& text)
 	return out + "\"";
 }
 
-// The word stands on its own in the text ("job" in "my job.", not in "jobless")
-bool mentionsWord(const std::string& text, const std::string& word)
+// Where the word first stands on its own in the text ("job" in "my job.",
+// not in "jobless"), or npos
+size_t wordAt(const std::string& text, const std::string& word)
 {
 	for (size_t at = text.find(word); at != std::string::npos; at = text.find(word, at + 1)) {
 		const size_t end = at + word.length();
 		const bool startsWord = at == 0 || !isalpha(static_cast<unsigned char>(text[at - 1]));
 		const bool endsWord = end >= text.length() || !isalpha(static_cast<unsigned char>(text[end]));
 		if (startsWord && endsWord) {
-			return true;
+			return at;
 		}
 	}
-	return false;
+	return std::string::npos;
 }
 
 // "bring me to port hope" -> "Port Hope"
@@ -1822,19 +1824,77 @@ std::string destinationName(const std::string& words)
 	return name;
 }
 
+// Where the answer first mentions the words (each of them as a word of its
+// own), or npos
+size_t mentionAt(const std::string& text, const std::string& words)
+{
+	size_t first = std::string::npos;
+	std::istringstream parts(words);
+	std::string word;
+	while (parts >> word) {
+		const size_t found = wordAt(text, word);
+		if (found == std::string::npos) {
+			return std::string::npos;
+		}
+		first = std::min(first, found);
+	}
+	return first;
 }
 
+// The rule's words as the player says them: its string conditions, without
+// the "$" of whole words ("hi$","nezil" -> "hi nezil").
+// MIRRORED IN tools/npc-dialog-check.py (Rule.words)
+std::string ruleWords(const NpcBehaviour* behaviour)
+{
+	std::string words;
+	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+		if (condition->type == BEHAVIOUR_TYPE_STRING) {
+			std::string word = condition->string;
+			if (!word.empty() && word.back() == '$') {
+				word.pop_back();
+			}
+			words += (words.empty() ? "" : " ") + word;
+		}
+	}
+	return words;
+}
+
+// The rule wants a number in the message (%1, $1): "5 torch", "deposit 100"
+// MIRRORED IN tools/npc-dialog-check.py (takes_amount)
+bool takesAmount(const NpcBehaviour* behaviour)
+{
+	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
+		if (condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT || condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT_NO_LIMIT ||
+		        (condition->type == BEHAVIOUR_TYPE_OPERATION && (nodeUses(condition->expression, BEHAVIOUR_TYPE_MESSAGE_COUNT) ||
+		                                                          nodeUses(condition->expression, BEHAVIOUR_TYPE_MESSAGE_COUNT_NO_LIMIT)))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// Words the dialog has buttons for already: Bye, and the greetings (the
+// dialog is open). MIRRORED IN tools/npc-dialog-check.py (BYE_WORDS)
+bool byeOrGreeting(const std::string& words)
+{
+	static const std::set<std::string> greetings = {"hello", "hi", "bye", "farewell", "good bye"};
+	return greetings.count(words) != 0;
+}
+
+}
+
+// MIRRORED IN tools/npc-dialog-check.py (Dialog.analyse): change both
 void BehaviourDatabase::analyseDialogRules()
 {
 	dialogRulesAnalysed = true;
-	std::set<std::string> seenOffers, seenKeywords;
+	std::set<std::string> seenOffers;
 
 	// Which way the money goes on a topic's "yes": CreateMoney (the NPC pays,
 	// the player sells) or DeleteMoney (the player pays, the player buys).
 	// "wolf","paw" -> Price=7, Topic=1 and Topic=1,"yes" -> Delete(Type),
 	// CreateMoney is a sell offer without the word "sell" (Tom, Rashid). A
 	// topic whose "yes" rules go both ways is left to the keywords.
-	std::map<int32_t, int32_t> topicMoney; // 1: the NPC pays, -1: the player pays, 0: both
+	std::map<int32_t, int32_t>& topicMoney = dialogTopicMoney; // 1: the NPC pays, -1: the player pays, 0: both
 	for (const NpcBehaviour* behaviour : behaviourEntries) {
 		int32_t money = 0;
 		for (const NpcBehaviourAction* action : behaviour->actions) {
@@ -1891,7 +1951,7 @@ void BehaviourDatabase::analyseDialogRules()
 
 	// Topics whose "yes" creates an item: "parcel" -> Price=15, Topic=37, and
 	// Topic=37,"yes",... -> Create(3503) sell that item (the post offices)
-	std::map<int32_t, int32_t> topicItems;
+	std::map<int32_t, int32_t>& topicItems = dialogTopicItems;
 	for (const NpcBehaviour* behaviour : behaviourEntries) {
 		int32_t created = 0;
 		for (const NpcBehaviourAction* action : behaviour->actions) {
@@ -1919,92 +1979,116 @@ void BehaviourDatabase::analyseDialogRules()
 		}
 	}
 
-	for (const NpcBehaviour* behaviour : behaviourEntries) {
-		if (behaviour->situation != SITUATION_NONE) {
-			continue;
-		}
+	// Offers: the rules for an item with a price that ask "yes" on a topic.
+	// Their other conditions (premium, vocation, quest values) are checked
+	// per player when the dialog is sent. Amount rules ("%1,1<%1,"torch"")
+	// come second: sendDialog finds the one for an offer's amount, and an
+	// item sold by amounts only (Ahmet's "%1,"worms"") is an offer of its own.
+	std::set<std::pair<int32_t, bool>> offeredItems;
+	for (int pass = 0; pass < 2; ++pass) {
+		for (const NpcBehaviour* behaviour : behaviourEntries) {
+			const bool amountOnly = pass == 1;
+			if (behaviour->situation != SITUATION_NONE || takesAmount(behaviour) != amountOnly) {
+				continue;
+			}
 
-		std::string words;
-		bool onlyWords = true, takesAmount = false;
-		for (const NpcBehaviourCondition* condition : behaviour->conditions) {
-			if (condition->type == BEHAVIOUR_TYPE_STRING) {
-				std::string word = condition->string;
-				if (!word.empty() && word.back() == '$') {
-					word.pop_back();
+			const std::string words = ruleWords(behaviour);
+			if (words.empty()) {
+				continue;
+			}
+
+			const DialogTrade trade = tradeOf(behaviour, words);
+			if (trade.item != 0 && trade.hasPrice && trade.hasTopic && !continuesTopic(behaviour)) {
+				if (!amountOnly) {
+					if (seenOffers.insert(words).second) {
+						dialogOffers.emplace_back(behaviour, words, trade.item, trade.sell, false);
+						offeredItems.emplace(trade.item, trade.sell);
+					}
+				} else if (offeredItems.emplace(trade.item, trade.sell).second) {
+					// said with an amount of one: "1 worms", "sell 1 rat"
+					const std::string bare = words.compare(0, 5, "sell ") == 0 ? words.substr(5) : words;
+					const std::string withOne = (trade.sell ? "sell 1 " : "1 ") + bare;
+					if (seenOffers.insert(withOne).second) {
+						dialogOffers.emplace_back(behaviour, withOne, trade.item, trade.sell, false, bare);
+					}
 				}
-				words += (words.empty() ? "" : " ") + word;
-			} else if (condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT || condition->type == BEHAVIOUR_TYPE_MESSAGE_COUNT_NO_LIMIT) {
-				takesAmount = true;
-				onlyWords = false;
-			} else {
-				onlyWords = false;
+			} else if (!amountOnly && ((trade.teleports && trade.hasPrice) ||
+			                           (trade.item == 0 && trade.hasPrice && travelTopics.count(trade.setsTopic)))) {
+				// several rules per destination (premium, discounts): resolved per player
+				if (seenOffers.insert(words).second) {
+					dialogOffers.emplace_back(behaviour, words, 0, false, true);
+				}
 			}
 		}
-		if (words.empty()) {
+	}
+
+	// Ways to say an amount of each item offer: its own words ("5 torch",
+	// "sell 5 rope"), then those of the amount rules for the same item and
+	// direction ("5 throwing kni" for "throwing knife")
+	for (DialogRule& offer : dialogOffers) {
+		if (offer.travel) {
 			continue;
 		}
-
-		int32_t item = 0, setsTopic = 0;
-		bool hasPrice = false, hasTopic = false, teleports = false, speaks = false;
-		for (const NpcBehaviourAction* action : behaviour->actions) {
-			switch (action->type) {
-				case BEHAVIOUR_TYPE_ITEM:
-					if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
-						item = action->expression->number;
-					}
-					break;
-				case BEHAVIOUR_TYPE_PRICE: hasPrice = true; break;
-				case BEHAVIOUR_TYPE_TOPIC:
-					hasTopic = true;
-					if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
-						setsTopic = action->expression->number;
-					}
-					break;
-				case BEHAVIOUR_TYPE_TELEPORT: teleports = true; break;
-				case BEHAVIOUR_TYPE_STRING:
-				case BEHAVIOUR_TYPE_SCRIPT: speaks = true; break;
-				default: break;
-			}
+		if (offer.sell) {
+			offer.amountWays.push_back("sell {n} " + offer.bare);
 		}
-
-		if (item == 0 && hasPrice && !teleports && topicItems.count(setsTopic)) {
-			item = topicItems[setsTopic];
-		}
-
-		if (takesAmount) {
-			if (item != 0 && hasPrice) {
-				// "%1,1<%1,"torch"" or ""sell",%1,1<%1,"rope"": the offer also takes an amount
-				dialogAmounts.insert(words);
+		offer.amountWays.push_back("{n} " + offer.bare);
+		for (const NpcBehaviour* behaviour : behaviourEntries) {
+			if (behaviour->situation != SITUATION_NONE || !takesAmount(behaviour)) {
+				continue;
 			}
-			continue;
-		}
-
-		// the player sells when the NPC pays on "yes"; otherwise by the keywords
-		bool sell = words.compare(0, 5, "sell ") == 0;
-		const auto money = topicMoney.find(setsTopic);
-		if (money != topicMoney.end() && money->second != 0) {
-			sell = money->second > 0;
-		}
-		if (item != 0 && hasPrice && hasTopic && onlyWords) {
-			if (seenOffers.insert(words).second) {
-				dialogOffers.emplace_back(behaviour, words, item, sell, false);
-			}
-		} else if ((teleports && hasPrice) || (item == 0 && hasPrice && travelTopics.count(setsTopic))) {
-			// several rules per destination (premium, discounts): resolved per player
-			if (seenOffers.insert(words).second) {
-				dialogOffers.emplace_back(behaviour, words, 0, false, true);
-			}
-		} else if (onlyWords && speaks && item == 0 && !teleports && words.length() >= 3) {
-			static const std::set<std::string> greetings = {"hello", "hi", "bye", "farewell", "good bye"};
-			if (!greetings.count(words) && seenKeywords.insert(words).second) {
-				dialogKeywords.emplace_back(behaviour, words);
+			const std::string words = ruleWords(behaviour);
+			const DialogTrade trade = tradeOf(behaviour, words);
+			if (!words.empty() && trade.item == offer.item && trade.sell == offer.sell) {
+				offer.amountWays.push_back(words.compare(0, 5, "sell ") == 0 ? "sell {n} " + words.substr(5) : "{n} " + words);
 			}
 		}
 	}
 }
 
+// What the rule trades: its Type (or what the "yes" of the topic it sets
+// creates), whether the player sells (the NPC pays on that "yes", or the
+// words say "sell"), its price and topic.
+// MIRRORED IN tools/npc-dialog-check.py (Dialog.trade_of): change both
+BehaviourDatabase::DialogTrade BehaviourDatabase::tradeOf(const NpcBehaviour* behaviour, const std::string& words) const
+{
+	DialogTrade trade;
+	for (const NpcBehaviourAction* action : behaviour->actions) {
+		switch (action->type) {
+			case BEHAVIOUR_TYPE_ITEM:
+				if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
+					trade.item = action->expression->number;
+				}
+				break;
+			case BEHAVIOUR_TYPE_PRICE: trade.hasPrice = true; break;
+			case BEHAVIOUR_TYPE_TOPIC:
+				trade.hasTopic = true;
+				if (action->expression && action->expression->type == BEHAVIOUR_TYPE_NUMBER) {
+					trade.setsTopic = action->expression->number;
+				}
+				break;
+			case BEHAVIOUR_TYPE_TELEPORT: trade.teleports = true; break;
+			default: break;
+		}
+	}
+
+	const auto created = dialogTopicItems.find(trade.setsTopic);
+	if (trade.item == 0 && trade.hasPrice && !trade.teleports && created != dialogTopicItems.end()) {
+		trade.item = created->second;
+	}
+
+	// the player sells when the NPC pays on "yes"; otherwise by the keywords
+	trade.sell = words.compare(0, 5, "sell ") == 0;
+	const auto money = dialogTopicMoney.find(trade.setsTopic);
+	if (money != dialogTopicMoney.end() && money->second != 0) {
+		trade.sell = money->second > 0;
+	}
+	return trade;
+}
+
 // The behaviour's conditions, without the money checks (the dialog shows
-// offers the player cannot pay for yet; the NPC still checks on "yes")
+// offers the player cannot pay for yet; the NPC still checks on "yes").
+// MIRRORED IN tools/npc-dialog-check.py (could_pass)
 bool BehaviourDatabase::dialogConditionsPass(const NpcBehaviour* behaviour, Player* player, const std::string& message)
 {
 	for (const NpcBehaviourCondition* condition : behaviour->conditions) {
@@ -2016,6 +2100,34 @@ bool BehaviourDatabase::dialogConditionsPass(const NpcBehaviour* behaviour, Play
 		}
 	}
 	return true;
+}
+
+// What the player says for an amount of an offer, "{n}" for the number:
+// of the ways analyseDialogRules found, the first whose first rule takes the
+// amount and trades that item the same way. Empty when the NPC sells it one
+// at a time. Called with the topic at 0.
+// MIRRORED IN tools/npc-dialog-check.py (Dialog.amount_words): change both
+std::string BehaviourDatabase::offerAmountWords(Player* player, const DialogRule& offer)
+{
+	for (const std::string& way : offer.amountWays) {
+		std::string said = way;
+		said.replace(said.find("{n}"), 3, "2");
+		for (const NpcBehaviour* candidate : behaviourEntries) {
+			if (candidate->situation != SITUATION_NONE) {
+				continue;
+			}
+			setExchangeValues(greetingValues);
+			if (!dialogConditionsPass(candidate, player, said)) {
+				continue;
+			}
+			const DialogTrade trade = tradeOf(candidate, ruleWords(candidate));
+			if (takesAmount(candidate) && trade.item == offer.item && trade.sell == offer.sell) {
+				return way;
+			}
+			break;
+		}
+	}
+	return std::string();
 }
 
 void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour)
@@ -2035,49 +2147,64 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 	}
 	const std::string lowerText = asLowerCaseString(text);
 
-	std::ostringstream json;
-	json << "{\"npc\":" << jsonString(npc->getName()) << ",\"id\":" << npc->getID() << ",\"text\":" << jsonString(text);
-	json << ",\"money\":" << player->getMoney();
-	json << ",\"question\":" << (topic != 0 && text.find('?') != std::string::npos ? "true" : "false");
+	// The lookups below evaluate rules (Count() changes Data, for one); the
+	// conversation goes on with the values the answer left
+	const int32_t savedTopic = topic;
+	const ExchangeValues savedValues = getExchangeValues();
+	const std::string savedString = string;
 
-	// Keywords the answer mentions (as with highlighted words in later clients)
-	// and the usual opening topics when the NPC has them
-	json << ",\"keywords\":[";
-	int keywords = 0;
-	std::set<std::string> listed;
-	for (const DialogRule& rule : dialogKeywords) {
-		if (keywords >= 12) {
-			break;
+	// The words the NPC takes now, as this player gets them: every rule with
+	// words whose other conditions pass on the current topic (the money
+	// aside, as for the offers), with the values react would give it. Rules
+	// that ask for the topic answer what the NPC just said; the others are
+	// its keywords. Catch-alls (no words) and amount rules ("%1") are not
+	// words to say.
+	// MIRRORED IN tools/npc-dialog-check.py (Dialog.words): change both
+	std::vector<std::string> answers, others;
+	std::set<std::string> answerSet, otherSet;
+	bool takesYes = false;
+	for (const NpcBehaviour* candidate : behaviourEntries) {
+		if (candidate->situation != SITUATION_NONE || takesAmount(candidate)) {
+			continue;
 		}
-		std::istringstream parts(rule.words);
-		std::string word;
-		bool mentioned = true;
-		while (parts >> word) {
-			if (!mentionsWord(lowerText, word)) {
-				mentioned = false;
-				break;
+		const std::string words = ruleWords(candidate);
+		if (words.empty()) {
+			continue;
+		}
+		const bool onTopic = continuesTopic(candidate);
+		setExchangeValues(onTopic ? savedValues : greetingValues);
+		if (!dialogConditionsPass(candidate, player, words)) {
+			continue;
+		}
+		takesYes = takesYes || (words == "yes" && (onTopic || savedTopic == 0));
+		if (onTopic) {
+			if (answerSet.insert(words).second) {
+				answers.push_back(words);
 			}
-		}
-		if (mentioned && listed.insert(rule.words).second) {
-			json << (keywords++ ? "," : "") << jsonString(rule.words);
-		}
-	}
-	for (const DialogRule& rule : dialogKeywords) {
-		if ((rule.words == "job" || rule.words == "name" || rule.words == "offer" || rule.words == "trade") && listed.insert(rule.words).second) {
-			json << (keywords++ ? "," : "") << jsonString(rule.words);
+		} else if (otherSet.insert(words).second) {
+			others.push_back(words);
 		}
 	}
-	json << "]";
+	setExchangeValues(savedValues);
+
+	// Yes and No: the NPC asks something and takes "yes" for an answer: on
+	// its topic, or, with no topic, a "yes" for any time (the Oracle's
+	// greeting). On a topic, a "yes" for any time is one of the keywords.
+	const bool question = takesYes && text.find('?') != std::string::npos;
 
 	// Offers as this player gets them: the first rule that answers the words
 	// decides (premium, quest discounts, vocation); the current topic is set
 	// aside while looking
 	std::ostringstream buy, sell, travel;
-	const int32_t savedTopic = topic, savedPrice = price, savedAmount = amount, savedType = type, savedData = data;
+	std::set<std::string> listedOffers;
 	topic = 0;
 	for (const DialogRule& offer : dialogOffers) {
 		for (const NpcBehaviour* candidate : behaviourEntries) {
-			if (candidate->situation != SITUATION_NONE || !dialogConditionsPass(candidate, player, offer.words)) {
+			if (candidate->situation != SITUATION_NONE) {
+				continue;
+			}
+			setExchangeValues(greetingValues);
+			if (!dialogConditionsPass(candidate, player, offer.words)) {
 				continue;
 			}
 			int32_t offerPrice = -1;
@@ -2089,27 +2216,71 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 				}
 			}
 			if (offerPrice >= 0) {
+				listedOffers.insert(offer.words);
 				if (offer.travel) {
 					travel << (travel.tellp() > 0 ? "," : "") << "{\"name\":" << jsonString(destinationName(offer.words))
 					       << ",\"price\":" << offerPrice << ",\"words\":" << jsonString(offer.words) << "}";
 				} else {
+					const std::string amountWords = offerAmountWords(player, offer);
 					const ItemType& it = Item::items[offer.item];
 					std::ostringstream& list = offer.sell ? sell : buy;
 					list << (list.tellp() > 0 ? "," : "") << "{\"item\":" << (it.disguise ? it.disguiseId : it.id)
 					     << ",\"name\":" << jsonString(it.name) << ",\"price\":" << offerPrice
 					     << ",\"weight\":" << it.weight << ",\"stackable\":" << (it.stackable ? "true" : "false")
 					     << ",\"words\":" << jsonString(offer.words)
-					     << ",\"amounts\":" << (dialogAmounts.count(offer.words) ? "true" : "false") << "}";
+					     << ",\"amounts\":" << (amountWords.empty() ? "false" : "true");
+					if (!amountWords.empty()) {
+						list << ",\"amountWords\":" << jsonString(amountWords);
+					}
+					list << "}";
 				}
 			}
 			break;
 		}
 	}
 	topic = savedTopic;
-	price = savedPrice;
-	amount = savedAmount;
-	type = savedType;
-	data = savedData;
+	setExchangeValues(savedValues);
+	string = savedString;
+
+	// The buttons: the answers first, then the keywords; each in the order
+	// the NPC's line mentions them, then the usual opening topics, then by
+	// name. Yes and No, Bye and the listed offers (Trade, Travel) have
+	// buttons of their own.
+	// MIRRORED IN tools/npc-dialog-check.py (Dialog.keywords): change both
+	auto ordered = [&lowerText](std::vector<std::string>& words) {
+		static const std::vector<std::string> usual = {"job", "name", "offer", "trade"};
+		std::vector<std::pair<std::pair<size_t, size_t>, std::string>> keyed;
+		for (const std::string& word : words) {
+			const size_t rank = std::find(usual.begin(), usual.end(), word) - usual.begin();
+			keyed.emplace_back(std::make_pair(mentionAt(lowerText, word), rank), word);
+		}
+		std::sort(keyed.begin(), keyed.end());
+		words.clear();
+		for (const auto& entry : keyed) {
+			words.push_back(entry.second);
+		}
+	};
+	ordered(answers);
+	ordered(others);
+
+	std::ostringstream json;
+	json << "{\"npc\":" << jsonString(npc->getName()) << ",\"id\":" << npc->getID() << ",\"text\":" << jsonString(text);
+	json << ",\"money\":" << player->getMoney();
+	json << ",\"question\":" << (question ? "true" : "false");
+	json << ",\"keywords\":[";
+	int keywords = 0;
+	for (const std::string& words : answers) {
+		if (!byeOrGreeting(words) && !(question && (words == "yes" || words == "no"))) {
+			json << (keywords++ ? "," : "") << jsonString(words);
+		}
+	}
+	for (const std::string& words : others) {
+		if (!byeOrGreeting(words) && !(question && (words == "yes" || words == "no")) && !answerSet.count(words) &&
+		        !listedOffers.count(words)) {
+			json << (keywords++ ? "," : "") << jsonString(words);
+		}
+	}
+	json << "]";
 
 	json << ",\"buy\":[" << buy.str() << "],\"sell\":[" << sell.str() << "],\"travel\":[" << travel.str() << "]}";
 	player->sendNpcDialog(json.str());

@@ -1,0 +1,34 @@
+# NPC dialog check (ot-server#88): every word an NPC takes in a conversation
+# state has a button in the client's tap-to-talk dialog. The checker mirrors
+# the dialog rules of src/behaviourdatabase.cpp; it fails on any word
+# without a button.
+name: NPC dialog
+
+on:
+  pull_request:
+    branches: [web-client-792]
+    paths:
+      - 'data/npc/**'
+      - 'src/behaviourdatabase.cpp'
+      - 'src/behaviourdatabase.h'
+      - 'tools/npc-dialog-check.py'
+      - '.github/workflows/npc-dialog.yml'
+  push:
+    branches: [web-client-792]
+    paths:
+      - 'data/npc/**'
+      - 'src/behaviourdatabase.cpp'
+      - 'src/behaviourdatabase.h'
+      - 'tools/npc-dialog-check.py'
+      - '.github/workflows/npc-dialog.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Every NPC word has a button
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/npc-dialog-check.py
