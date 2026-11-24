@@ -152,6 +152,8 @@ class Monster final : public Creature
 
 		void doExtraMeleeAttack();
 		void doAttacking(uint32_t interval) final;
+		// A summon does not attack for a master under disconnect protection
+		bool isMasterDisconnectProtected() const;
 		bool hasExtraSwing() override {
 			return extraMeleeAttack;
 		}

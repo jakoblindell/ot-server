@@ -93,6 +93,10 @@ class Connection : public std::enable_shared_from_this<Connection>
 		bool isWebSocketConnection() const {
 			return isWebSocket;
 		}
+		bool isClosed() {
+			std::lock_guard<std::recursive_mutex> lockClass(connectionLock);
+			return connectionState != CONNECTION_STATE_OPEN;
+		}
 		// Used by protocols that require server to send first
 		void accept(Protocol_ptr protocol);
 		void accept();
@@ -109,6 +113,7 @@ class Connection : public std::enable_shared_from_this<Connection>
 
 		void readBytes(uint8_t* buffer, size_t size, ReadHandler handler);
 		void readWebSocketFrames();
+		void releaseWebSocketRead();
 		bool parseWebSocketFrames();
 		void parseWebSocketHandshake(const boost::system::error_code& error);
 		void onWebSocketHandshakeSent(const boost::system::error_code& error);

@@ -2493,8 +2493,9 @@ void Game::playerAcceptTrade(uint32_t playerId)
 
 		bool isSuccess = false;
 
-		ReturnValue tradePartnerRet = internalAddItem(tradePartner, playerTradeItem, INDEX_WHEREEVER, 0, true);
-		ReturnValue playerRet = internalAddItem(player, partnerTradeItem, INDEX_WHEREEVER, 0, true);
+		// test with the same flags as the moves below, which need a free slot
+		ReturnValue tradePartnerRet = internalAddItem(tradePartner, playerTradeItem, INDEX_WHEREEVER, FLAG_IGNOREAUTOSTACK, true);
+		ReturnValue playerRet = internalAddItem(player, partnerTradeItem, INDEX_WHEREEVER, FLAG_IGNOREAUTOSTACK, true);
 		if (tradePartnerRet == RETURNVALUE_NOERROR && playerRet == RETURNVALUE_NOERROR) {
 			tradePartnerRet = internalRemoveItem(playerTradeItem, playerTradeItem->getItemCount(), true);
 			playerRet = internalRemoveItem(partnerTradeItem, partnerTradeItem->getItemCount(), true);
@@ -2505,14 +2506,30 @@ void Game::playerAcceptTrade(uint32_t playerId)
 				uint32_t count1 = playerTradeItem->getItemCount();
 				uint32_t count2 = partnerTradeItem->getItemCount();
 
-				tradePartnerRet = internalMoveItem(cylinder1, tradePartner, INDEX_WHEREEVER, playerTradeItem, count1, nullptr, FLAG_IGNOREAUTOSTACK, nullptr, partnerTradeItem);
+				// an inventory slot is put back as it was; elsewhere the item goes back into the same cylinder
+				int32_t index1 = dynamic_cast<Player*>(cylinder1) ? cylinder1->getThingIndex(playerTradeItem) : INDEX_WHEREEVER;
+
+				Item* movedItem1 = nullptr;
+				tradePartnerRet = internalMoveItem(cylinder1, tradePartner, INDEX_WHEREEVER, playerTradeItem, count1, &movedItem1, FLAG_IGNOREAUTOSTACK, nullptr, partnerTradeItem);
 				if (tradePartnerRet == RETURNVALUE_NOERROR) {
-					internalMoveItem(cylinder2, player, INDEX_WHEREEVER, partnerTradeItem, count2, nullptr, FLAG_IGNOREAUTOSTACK);
+					playerRet = internalMoveItem(cylinder2, player, INDEX_WHEREEVER, partnerTradeItem, count2, nullptr, FLAG_IGNOREAUTOSTACK);
+					if (playerRet == RETURNVALUE_NOERROR) {
+						playerTradeItem->onTradeEvent(ON_TRADE_TRANSFER, tradePartner);
+						partnerTradeItem->onTradeEvent(ON_TRADE_TRANSFER, player);
 
-					playerTradeItem->onTradeEvent(ON_TRADE_TRANSFER, tradePartner);
-					partnerTradeItem->onTradeEvent(ON_TRADE_TRANSFER, player);
+						isSuccess = true;
+					} else {
+						// the second half failed: return the first item to where it came from, then cancel below
+						ReturnValue undoRet = RETURNVALUE_NOTPOSSIBLE;
+						if (movedItem1 && movedItem1->getParent() && movedItem1->getItemCount() == count1) {
+							undoRet = internalMoveItem(movedItem1->getParent(), cylinder1, index1, movedItem1, count1, nullptr, FLAG_NOLIMIT | FLAG_IGNOREAUTOSTACK);
+						}
 
-					isSuccess = true;
+						if (undoRet != RETURNVALUE_NOERROR) {
+							std::cout << "[Error - Game::playerAcceptTrade] Could not return the trade item of " << player->getName()
+							          << " (item id " << playerTradeItem->getID() << ") after " << tradePartner->getName() << "'s item could not be moved." << std::endl;
+						}
+					}
 				}
 			}
 		}
@@ -3325,6 +3342,24 @@ void Game::changeLight(const Creature* creature)
 	}
 }
 
+// Disconnect protection: monsters cannot hurt a player whose connection is
+// down; a player's attack ends the protection. Returns true to block the hit.
+static bool blockedByDisconnectProtection(Creature* attacker, Creature* target, const CombatDamage& damage)
+{
+	if (damage.value >= 0) {
+		return false;
+	}
+	Player* targetPlayer = target->getPlayer();
+	if (!targetPlayer || !targetPlayer->hasDisconnectProtection()) {
+		return false;
+	}
+	if (targetPlayer->isBlockedByDisconnectProtection(attacker)) {
+		return true;
+	}
+	targetPlayer->endDisconnectProtection("attacked by a player");
+	return false;
+}
+
 bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* target, bool checkDefense, bool checkArmor, bool field)
 {
 	if (damage.type == COMBAT_NONE) {
@@ -3332,6 +3367,11 @@ bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* ta
 	}
 
 	if (target->getPlayer() && target->isInGhostMode()) {
+		return true;
+	}
+
+	// Before the block step, so a blocked hit uses no charges and trains no skill
+	if (blockedByDisconnectProtection(attacker, target, damage)) {
 		return true;
 	}
 
@@ -3456,24 +3496,6 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 			break;
 		}
 	}
-}
-
-// Disconnect protection: monsters cannot hurt a player whose connection is
-// down; a player's attack ends the protection. Returns true to block the hit.
-static bool blockedByDisconnectProtection(Creature* attacker, Creature* target, const CombatDamage& damage)
-{
-	if (damage.value >= 0) {
-		return false;
-	}
-	Player* targetPlayer = target->getPlayer();
-	if (!targetPlayer || !targetPlayer->hasDisconnectProtection()) {
-		return false;
-	}
-	if (targetPlayer->isBlockedByDisconnectProtection(attacker)) {
-		return true;
-	}
-	targetPlayer->endDisconnectProtection("attacked by a player");
-	return false;
 }
 
 bool Game::combatChangeHealth(Creature* attacker, Creature* target, CombatDamage& damage)

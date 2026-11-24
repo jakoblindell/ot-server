@@ -865,9 +865,15 @@ void Monster::onThink(uint32_t interval)
 	}
 }
 
+bool Monster::isMasterDisconnectProtected() const
+{
+	const Player* masterPlayer = master ? master->getPlayer() : nullptr;
+	return masterPlayer && masterPlayer->hasDisconnectProtection();
+}
+
 void Monster::doExtraMeleeAttack()
 {
-	if (!attackedCreature || (isSummon() && attackedCreature == this)) {
+	if (!attackedCreature || (isSummon() && attackedCreature == this) || isMasterDisconnectProtected()) {
 		return;
 	}
 
@@ -897,7 +903,7 @@ void Monster::doExtraMeleeAttack()
 
 void Monster::doAttacking(uint32_t)
 {
-	if (!attackedCreature || (isSummon() && attackedCreature == this)) {
+	if (!attackedCreature || (isSummon() && attackedCreature == this) || isMasterDisconnectProtected()) {
 		return;
 	}
 

@@ -494,6 +494,17 @@ class Game
 		void setBedSleeper(BedItem* bed, uint32_t guid);
 		void removeBedSleeper(uint32_t guid);
 		bool reload(ReloadTypes_t reloadType);
+
+		// Disconnect protection time used per character (by GUID). Kept for the
+		// server's lifetime, so logging in again or dying does not reset it.
+		struct DisconnectProtectionBudget {
+			int64_t windowStart = 0;
+			int64_t used = 0;
+		};
+		DisconnectProtectionBudget& getDisconnectProtectionBudget(uint32_t guid) {
+			return disconnectProtectionBudgets[guid];
+		}
+
 		Groups groups;
 		Map map;
 		Raids raids;
@@ -515,6 +526,7 @@ class Game
 		std::unordered_map<std::string, Player*> mappedPlayerNames;
 		std::unordered_map<uint32_t, Guild*> guilds;
 		std::map<uint32_t, uint32_t> stages;
+		std::unordered_map<uint32_t, DisconnectProtectionBudget> disconnectProtectionBudgets;
 
 		std::list<Item*> decayItems[EVENT_DECAY_BUCKETS];
 		std::list<Creature*> checkCreatureLists[EVENT_CREATURECOUNT];
