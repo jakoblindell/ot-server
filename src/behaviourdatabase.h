@@ -322,6 +322,18 @@ class BehaviourDatabase
 		int32_t amount;
 		int32_t delay;
 
+		// Data, Type, Price and Amount together (see react)
+		struct ExchangeValues {
+			int32_t data;
+			int32_t type;
+			int32_t price;
+			int32_t amount;
+		};
+		void clearExchangeValues();
+		ExchangeValues getExchangeValues() const;
+		void setExchangeValues(const ExchangeValues& values);
+		ExchangeValues greetingValues; // what the customer's greeting left
+
 		std::string string;
 
 		Npc* npc = nullptr;
