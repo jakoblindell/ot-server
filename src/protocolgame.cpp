@@ -436,20 +436,19 @@ static constexpr uint8_t EXTENDED_OPCODE_NPC_DIALOG = 103;
 
 void ProtocolGame::sendNpcDialog(const std::string& json)
 {
-	const auto connection = getConnection();
-	if (!player || !connection) {
-		return;
-	}
-	if (!connection->isWebSocketConnection() && player->getOperatingSystem() < CLIENTOS_OTCLIENT_LINUX) {
-		return;
-	}
-
-	NetworkMessage msg;
-	msg.addByte(0x32);
-	msg.addByte(EXTENDED_OPCODE_NPC_DIALOG);
-	msg.addString(json);
-	writeToOutputBuffer(msg);
+	sendExtendedOpcode(EXTENDED_OPCODE_NPC_DIALOG, json);
 }
+
+// An extended opcode's text that fits in one string goes in one message, as
+// always. A longer one (an NPC dialog with many offers) goes in parts, each
+// in a message of its own, that our client joins before decoding
+// (ProtocolGame.registerExtendedJSONOpcode in ot-client's
+// modules/gamelib/protocolgame.lua): "S" + the first part, "P" + each part in
+// between, "E" + the last part. Nothing is dropped.
+static constexpr size_t EXTENDED_OPCODE_PART_LENGTH = 6000;
+// a part and its marker fit in one string, and a part's message in one packet
+static_assert(EXTENDED_OPCODE_PART_LENGTH + 1 < NetworkMessage::MAX_STRING_LENGTH, "an extended opcode part must fit in a string");
+static_assert(1 + 1 + 2 + NetworkMessage::MAX_STRING_LENGTH < NetworkMessage::MAX_PROTOCOL_BODY_LENGTH, "an extended opcode message must fit in a packet");
 
 // Any extended opcode, for Lua scripts (Player:sendExtendedOpcode); only our
 // clients (OTClient, the browser client) understand them
@@ -463,11 +462,25 @@ void ProtocolGame::sendExtendedOpcode(uint8_t opcode, const std::string& buffer)
 		return;
 	}
 
-	NetworkMessage msg;
-	msg.addByte(0x32);
-	msg.addByte(opcode);
-	msg.addString(buffer);
-	writeToOutputBuffer(msg);
+	if (buffer.size() <= NetworkMessage::MAX_STRING_LENGTH) {
+		NetworkMessage msg;
+		msg.addByte(0x32);
+		msg.addByte(opcode);
+		msg.addString(buffer);
+		writeToOutputBuffer(msg);
+		return;
+	}
+
+	// at least two parts: the first is "S", the last "E"
+	for (size_t start = 0; start < buffer.size(); start += EXTENDED_OPCODE_PART_LENGTH) {
+		const bool last = start + EXTENDED_OPCODE_PART_LENGTH >= buffer.size();
+		const char marker = start == 0 ? 'S' : (last ? 'E' : 'P');
+		NetworkMessage msg;
+		msg.addByte(0x32);
+		msg.addByte(opcode);
+		msg.addString(marker + buffer.substr(start, EXTENDED_OPCODE_PART_LENGTH));
+		writeToOutputBuffer(msg);
+	}
 }
 
 extern LuaEnvironment g_luaEnvironment;
@@ -497,7 +510,7 @@ void ProtocolGame::sendLuaJson(uint8_t opcode, const char* name)
 	if (lua_isstring(L, -1)) {
 		sendExtendedOpcode(opcode, lua_tostring(L, -1));
 	} else if (lua_istable(L, -1)) {
-		// several parts (a string is at most 8 KB)
+		// several messages (each is also split if it is too long)
 		for (size_t i = 1, n = lua_objlen(L, -1); i <= n; ++i) {
 			lua_rawgeti(L, -1, i);
 			if (lua_isstring(L, -1)) {
