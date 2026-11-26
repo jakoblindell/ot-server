@@ -51,7 +51,7 @@ Position NetworkMessage::getPosition()
 void NetworkMessage::addString(const std::string& value)
 {
 	size_t stringLen = value.length();
-	if (!canAdd(stringLen + 2) || stringLen > 8192) {
+	if (!canAdd(stringLen + 2) || stringLen > MAX_STRING_LENGTH) {
 		return;
 	}
 

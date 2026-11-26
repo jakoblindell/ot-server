@@ -1,7 +1,9 @@
 # NPC dialog check (ot-server#88): every word an NPC takes in a conversation
 # state has a button in the client's tap-to-talk dialog. The checker mirrors
 # the dialog rules of src/behaviourdatabase.cpp; it fails on any word
-# without a button.
+# without a button. The size step (ot-server#66) shows the largest dialogs and
+# how many messages each takes, and fails if a part could be too long for a
+# message's string.
 name: NPC dialog
 
 on:
@@ -12,6 +14,9 @@ on:
       - 'src/behaviourdatabase.cpp'
       - 'src/behaviourdatabase.h'
       - 'tools/npc-dialog-check.py'
+      - 'tools/npc-dialog-size.py'
+      - 'src/protocolgame.cpp'
+      - 'src/networkmessage.h'
       - '.github/workflows/npc-dialog.yml'
   push:
     branches: [web-client-792]
@@ -20,6 +25,9 @@ on:
       - 'src/behaviourdatabase.cpp'
       - 'src/behaviourdatabase.h'
       - 'tools/npc-dialog-check.py'
+      - 'tools/npc-dialog-size.py'
+      - 'src/protocolgame.cpp'
+      - 'src/networkmessage.h'
       - '.github/workflows/npc-dialog.yml'
 
 permissions:
@@ -32,3 +40,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/npc-dialog-check.py
+      - name: Dialog sizes
+        run: python3 tools/npc-dialog-size.py

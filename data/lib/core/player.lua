@@ -69,7 +69,9 @@ end
 
 -- Player:sendExtendedOpcode(opcode, buffer) is implemented in C++
 -- (ProtocolGame::sendExtendedOpcode): it also reaches the browser client,
--- which this Lua version (OTClient only) left out.
+-- which this Lua version (OTClient only) left out. A buffer over 8 KB goes in
+-- parts that the client joins for opcodes it registered with
+-- ProtocolGame.registerExtendedJSONOpcode.
 
 APPLY_SKILL_MULTIPLIER = true
 local addSkillTriesFunc = Player.addSkillTries

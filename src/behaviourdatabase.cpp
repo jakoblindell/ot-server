@@ -2283,6 +2283,8 @@ void BehaviourDatabase::sendDialog(Player* player, const NpcBehaviour* behaviour
 	json << "]";
 
 	json << ",\"buy\":[" << buy.str() << "],\"sell\":[" << sell.str() << "],\"travel\":[" << travel.str() << "]}";
+	// Any size: a text over 8 KB goes in parts (ProtocolGame::sendExtendedOpcode).
+	// tools/npc-dialog-size.py estimates it from this format: change both
 	player->sendNpcDialog(json.str());
 }
 

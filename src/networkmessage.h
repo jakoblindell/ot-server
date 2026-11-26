@@ -40,6 +40,8 @@ class NetworkMessage
 		enum { XTEA_MULTIPLE = 8 };
 		enum { MAX_BODY_LENGTH = NETWORKMESSAGE_MAXSIZE - HEADER_LENGTH - XTEA_MULTIPLE };
 		enum { MAX_PROTOCOL_BODY_LENGTH = MAX_BODY_LENGTH - 10 };
+		// addString writes nothing, not even the length, for a longer string
+		enum { MAX_STRING_LENGTH = 8192 };
 
 		NetworkMessage() = default;
 
