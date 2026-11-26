@@ -294,22 +294,39 @@ class BehaviourDatabase
 
 		// The dialog's view of the rules, worked out once
 		struct DialogRule {
-			DialogRule(const NpcBehaviour* behaviour, std::string words, int32_t item = 0, bool sell = false, bool travel = false) :
-				behaviour(behaviour), words(std::move(words)), item(item), sell(sell), travel(travel) {}
+			DialogRule(const NpcBehaviour* behaviour, std::string words, int32_t item = 0, bool sell = false, bool travel = false,
+			           std::string bare = std::string()) :
+				behaviour(behaviour), words(std::move(words)), item(item), sell(sell), travel(travel), bare(std::move(bare)) {
+				if (this->bare.empty()) {
+					this->bare = this->words.compare(0, 5, "sell ") == 0 ? this->words.substr(5) : this->words;
+				}
+			}
 
 			const NpcBehaviour* behaviour;
 			std::string words; // the keywords, as the player would say them
 			int32_t item; // shop: the item (0: travel or talk)
 			bool sell; // shop: the NPC buys
 			bool travel;
+			std::string bare; // shop: the item's words, without "sell" or an amount
+			std::vector<std::string> amountWays; // shop: ways to say an amount, "{n}" for the number
+		};
+		struct DialogTrade {
+			int32_t item = 0;
+			int32_t setsTopic = 0;
+			bool hasPrice = false;
+			bool hasTopic = false;
+			bool teleports = false;
+			bool sell = false;
 		};
 		void analyseDialogRules();
+		DialogTrade tradeOf(const NpcBehaviour* behaviour, const std::string& words) const;
+		std::string offerAmountWords(Player* player, const DialogRule& offer);
 		bool dialogConditionsPass(const NpcBehaviour* behaviour, Player* player, const std::string& message);
 		bool dialogRulesAnalysed = false;
 		const NpcBehaviour* lastDialog = nullptr; // what the current customer last got
-		std::vector<DialogRule> dialogOffers;
-		std::vector<DialogRule> dialogKeywords;
-		std::set<std::string> dialogAmounts; // offers that also take "<amount> <words>"
+		std::vector<DialogRule> dialogOffers; // MIRRORED IN tools/npc-dialog-check.py (Dialog.analyse)
+		std::map<int32_t, int32_t> dialogTopicMoney; // topic -> 1: its "yes" pays the player, -1: the player pays, 0: both
+		std::map<int32_t, int32_t> dialogTopicItems; // topic -> the item its "yes" creates
 		void attendCustomer(uint32_t playerId);
 		void queueCustomer(uint32_t playerId, const std::string& message);
 		void idle();
